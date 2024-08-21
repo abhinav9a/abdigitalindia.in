@@ -528,7 +528,7 @@ class PaySprintPayoutBankAccountDetails(models.Model):
     acc_status = models.CharField(_("Account Status"), max_length=10, choices=AccountStatus.choices, default=AccountStatus.DocumentUploadPending)
 
 
-class PaySprintAEPSTxnDetails(models.Model):
+class PaySprintAEPSTxnDetail(models.Model):
     class Txn_Status(models.TextChoices):
         Failed = "0", _("Failed")
         Success = "1", _("Success")
@@ -562,10 +562,10 @@ class PaySprintAEPSTxnDetails(models.Model):
         super().save(*args, **kwargs)
 
     def get_status_display(self):
-        return dict(PaySprintAEPSTxnDetails.Txn_Status.choices).get(self.txn_status, '')
+        return dict(PaySprintAEPSTxnDetail.Txn_Status.choices).get(self.txn_status, '')
 
     def get_service_display(self):
-        return dict(PaySprintAEPSTxnDetails.Service_Type.choices).get(self.service_type, '')
+        return dict(PaySprintAEPSTxnDetail.Service_Type.choices).get(self.service_type, '')
 
 
 

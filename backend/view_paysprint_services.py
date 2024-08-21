@@ -18,7 +18,7 @@ from backend.utils import (is_kyc_completed, get_pay_sprint_headers, get_pay_spr
                            is_user_registered_with_paysprint, get_pay_sprint_common_payload, generate_unique_id,
                            is_bank2_last_authentication_valid, make_post_request, update_payout_statuses,
                            get_aadhaar_pay_txn_status)
-from backend.models import (PaySprintMerchantAuth, PaySprintAEPSTxnDetails, Wallet, PaySprintPayout,
+from backend.models import (PaySprintMerchantAuth, PaySprintAEPSTxnDetail, Wallet, PaySprintPayout,
                             PaySprintPayoutBankAccountDetails)
 from backend.config.consts import PaySprintRoutes, DMT_BANK_LIST, PAYOUT_TRANSACTION_STATUS
 from core.models import UserAccount
@@ -141,7 +141,7 @@ def cash_withdrawal(request):
                     'service_type': '2'  # Cash Withdrawal
                 }
 
-                merchant_auth = PaySprintAEPSTxnDetails.objects.create(**response_data)
+                merchant_auth = PaySprintAEPSTxnDetail.objects.create(**response_data)
                 response = make_post_request(url=PaySprintRoutes.CASH_WITHDRAWAL_TXN_STATUS.value, data={'reference': data.get('referenceno')})
                 if response.status_code == 200:
                     api_data = response.json()
@@ -291,7 +291,7 @@ def aadhar_pay(request):
                 'service_type': '1',  # Aadhaar Pay
                 'message':  response.get('message')
             }
-            merchant_auth = PaySprintAEPSTxnDetails.objects.create(**response_data)
+            merchant_auth = PaySprintAEPSTxnDetail.objects.create(**response_data)
             merchant_auth.txn_status = get_aadhaar_pay_txn_status(reference_no=data.get('referenceno'))
             merchant_auth.save()
 
