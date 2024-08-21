@@ -230,8 +230,8 @@ def generate_pay_sprint_token():
 
 def get_pay_sprint_headers():
     headers = {
-            "Token": generate_pay_sprint_token(),
-            "Authorisedkey": AUTHORISED_KEY
+            "Token": generate_pay_sprint_token()
+            # "Authorisedkey": AUTHORISED_KEY
         }
     return headers
 
