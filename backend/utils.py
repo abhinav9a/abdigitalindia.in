@@ -364,6 +364,28 @@ def update_payout_statuses(user):
         print(f"Error updating payout statuses: {e}")
 
 
+def get_aadhaar_pay_txn_status(reference_no: str):
+    payload = { "Raw_Body": { "body": encrypt_aes_128(json.dumps({'reference': reference_no})) } }
+    response = requests.post(url=PaySprintRoutes.AADHAR_PAY_TXN_STATUS.value, json=payload, headers=get_pay_sprint_headers())
+    if response.status_code == 200:
+        api_data = response.json()
+        status = api_data.get('status', False)
+        txn_status = api_data.get('txnstatus', 0)
+        response_code = api_data.get('response_code', 0)
+
+        if status and txn_status == 1 and response_code == 1:
+            return "1"  # Success
+        elif status and txn_status == 3 and response_code == 0:
+            return "0"  # Failed
+        elif status and txn_status == 2 and response_code == 2:
+            return "2"  # Pending
+        elif not status and response_code == 3:
+            return "3"  # Txn_Not_Found
+        else:
+            return "other"  # Bad_Request
+    return "2"
+
+
 electricity_operator_id = [22, 23, 24, 53, 55, 56, 57, 59, 60, 61, 62, 63, 69, 76, 78, 81, 82, 96, 101, 107, 109, 115, 121, 122, 125, 126, 131, 133, 136, 137, 138, 139, 140, 141, 142, 143, 145, 148, 149, 150, 153, 155, 156, 160, 164, 166, 171, 174, 175, 178, 190, 195, 198, 204, 230, 238, 239, 242, 243, 244, 245, 246, 247, 364, 375, 397, 452, 465, 473, 491, 546, 598, 603, 618, 619, 2706, 2707]
 
 recharge_postpaid_operator_id = [41, 89, 172, 254, 507, 615]

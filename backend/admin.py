@@ -2,7 +2,7 @@ from django.contrib import admin
 from .models import (UserKYCDocument, OtherServices, Wallet, WalletTransaction, QRTxnCallbackByEko, ServiceActivation,
                      AepsTxnCallbackByEko, DMTBankList, PanVerificationTxn, BankVerificationTxn, DmtTxn, Commission,
                      Payout, PaySprintPayout, BbpsTxn, CommissionTxn, CMSTxnCallbackByEko, CreditCardTxn,
-                     AdhaarVerificationTxn, OtherServices2)
+                     AdhaarVerificationTxn, OtherServices2, PaySprintAEPSTxnDetails)
 from django.utils.translation import gettext_lazy as _
 
 # Register your models here.
@@ -52,6 +52,9 @@ class PaySprintPayoutAdmin(admin.ModelAdmin):
 
     def get_model_name(self, obj=None):
         return "Payouts 2"
+
+class PaySprintAEPSTxnDetailsAdmin(admin.ModelAdmin):
+    list_display = ('id', 'userAccount', 'reference_no', 'amount', 'txn_status', 'service_type', 'timestamp')
 
 
 class ServiceStatusAdmin(admin.ModelAdmin):
@@ -375,3 +378,4 @@ admin.site.register(PaySprintPayout, PaySprintPayoutAdmin)
 admin.site.register(BbpsTxn, BbpsTxnAdmin)
 admin.site.register(CommissionTxn, CommissionTxnAdmin)
 admin.site.register(CMSTxnCallbackByEko, CMSTxnCallbackByEkoAdmin)
+admin.site.register(PaySprintAEPSTxnDetails, PaySprintAEPSTxnDetailsAdmin)

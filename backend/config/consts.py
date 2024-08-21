@@ -9,9 +9,11 @@ class PaySprintRoutes(Enum):
     # WEB_ONBOARDING = f"{PAYSPRINT_BASE_URL}api/v1/service/onboard/onboardnew/getonboardurl"   # Test URL
     WEB_ONBOARDING = "https://api.paysprint.in/api/v1/service/onboard/onboard/getonboardurl"    # Live URL
     BALANCE_ENQUIRY = f"{PAYSPRINT_BASE_URL}api/v1/service/aeps/balanceenquiry/index"
-    CASH_WITHDRAWL = f"{PAYSPRINT_BASE_URL}api/v1/service/aeps/authcashwithdraw/index"
+    CASH_WITHDRAWAL = f"{PAYSPRINT_BASE_URL}api/v1/service/aeps/authcashwithdraw/index"
+    CASH_WITHDRAWAL_TXN_STATUS = f"{PAYSPRINT_BASE_URL}api/v1/service/aeps/aepsquery/query"
     MINI_STATEMENT = f"{PAYSPRINT_BASE_URL}api/v1/service/aeps/ministatement/index"
     AADHAR_PAY = f"{PAYSPRINT_BASE_URL}api/v1/service/aadharpay/aadharpay/index"
+    AADHAR_PAY_TXN_STATUS = f"{PAYSPRINT_BASE_URL}api/v1/service/aadharpay/aadharpayquery/query"
     BANK_2_REGISTRATION = f"{PAYSPRINT_BASE_URL}api/v1/service/aeps/kyc/Twofactorkyc/registration"
     BANK_2_AUTHENTICATION = f"{PAYSPRINT_BASE_URL}api/v1/service/aeps/kyc/Twofactorkyc/authentication"
     BANK_2_MERCHANT_AUTHENTICITY = f"{PAYSPRINT_BASE_URL}api/v1/service/aeps/kyc/Twofactorkyc/merchant_authencity"

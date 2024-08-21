@@ -507,21 +507,6 @@ class PaySprintMerchantAuth(models.Model):
     bank3_MerAuthTxnId = models.CharField(max_length=255, null=True, blank=True)
 
 
-class PaySprintAadharPayTransactionDetails(models.Model):
-    userAccount = models.ForeignKey(UserAccount, on_delete=models.CASCADE)
-    ack_no = models.CharField(max_length=255, null=True, blank=True)
-    amount = models.CharField(max_length=255, null=True, blank=True)
-    balance_amount = models.CharField(max_length=255, null=True, blank=True)
-    bank_rrn = models.CharField(max_length=255, null=True, blank=True)
-    bank_iin = models.CharField(max_length=255, null=True, blank=True)
-
-class PaySprintCashWithdrawlTransactionDetails(models.Model):
-    userAccount = models.ForeignKey(UserAccount, on_delete=models.CASCADE)
-    ack_no = models.CharField(max_length=255, null=True, blank=True)
-    amount = models.CharField(max_length=255, null=True, blank=True)
-    bank_rrn = models.CharField(max_length=255, null=True, blank=True)
-    txn_status = models.CharField(max_length=255, null=True, blank=True)
-
 class PaySprintPayoutBankAccountDetails(models.Model):
     class AccountTypes(models.TextChoices):
         Primary = "PRIMARY", _("Primary")
@@ -541,6 +526,47 @@ class PaySprintPayoutBankAccountDetails(models.Model):
     name = models.CharField(_("Beneficiary Name"), max_length=255, null=True)
     account_type = models.CharField(_("Account Type"), max_length=10, choices=AccountTypes.choices, default=AccountTypes.Primary)
     acc_status = models.CharField(_("Account Status"), max_length=10, choices=AccountStatus.choices, default=AccountStatus.DocumentUploadPending)
+
+
+class PaySprintAEPSTxnDetails(models.Model):
+    class Txn_Status(models.TextChoices):
+        Failed = "0", _("Failed")
+        Success = "1", _("Success")
+        Pending = "2", _("Pending")
+        Txn_Not_Found = "3", _("Transaction Not found in system")
+        Bad_Request = "other", _("Bad request, Try again")
+
+    class Service_Type(models.TextChoices):
+        Aadhaar_Pay = "1", _("Aadhaar Pay")
+        Cash_Withdrawal = "2", _("Cash Withdrawal")
+        Balance_Inquiry = "3", _("Balance Inquiry")
+        Mini_Statement = "4", _("Mini Statement")
+
+    userAccount = models.ForeignKey(UserAccount, verbose_name=_("Linked User"), on_delete=models.CASCADE)
+    reference_no = models.CharField(_("Reference No"), max_length=500, blank=True, default="N/A")
+    txn_status = models.CharField(max_length=20, choices=Txn_Status.choices, default=Txn_Status.Pending)
+    message = models.CharField(_("Message"), max_length=500, blank=True, default="N/A")
+    ack_no = models.CharField(_("ack_no"), max_length=500, blank=True, null=True)
+    amount = models.DecimalField(_("Amount"), max_digits=10, decimal_places=2, blank=True, default=0.0)
+    balance_amount = models.CharField(_("Balance Amount"), max_length=20, blank=True, default="N/A")
+    bank_rrn = models.CharField(_("bank_rrn"), max_length=500, blank=True, default="N/A")
+    bank_iin = models.CharField(_("bank_iin"), max_length=255, blank=True, default="N/A")
+    service_type = models.CharField(max_length=20, choices=Service_Type.choices)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        if not self.timestamp:
+            # Set the timestamp to the current time in the default time zone
+            self.timestamp = timezone.now()
+
+        super().save(*args, **kwargs)
+
+    def get_status_display(self):
+        return dict(PaySprintAEPSTxnDetails.Txn_Status.choices).get(self.txn_status, '')
+
+    def get_service_display(self):
+        return dict(PaySprintAEPSTxnDetails.Service_Type.choices).get(self.service_type, '')
+
 
 
 # signals

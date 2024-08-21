@@ -13,11 +13,13 @@ import uuid
 
 from urllib3 import request
 
-from backend.utils import (is_kyc_completed, get_pay_sprint_headers, get_pay_sprint_payload, is_merchant_bank2_registered,
+from backend.utils import (is_kyc_completed, get_pay_sprint_headers, get_pay_sprint_payload,
+                           is_merchant_bank2_registered,
                            is_user_registered_with_paysprint, get_pay_sprint_common_payload, generate_unique_id,
-                           is_bank2_last_authentication_valid, make_post_request, update_payout_statuses)
-from backend.models import (PaySprintMerchantAuth, PaySprintAadharPayTransactionDetails, Wallet, PaySprintPayout,
-                            PaySprintCashWithdrawlTransactionDetails, PaySprintPayoutBankAccountDetails)
+                           is_bank2_last_authentication_valid, make_post_request, update_payout_statuses,
+                           get_aadhaar_pay_txn_status)
+from backend.models import (PaySprintMerchantAuth, PaySprintAEPSTxnDetails, Wallet, PaySprintPayout,
+                            PaySprintPayoutBankAccountDetails)
 from backend.config.consts import PaySprintRoutes, DMT_BANK_LIST, PAYOUT_TRANSACTION_STATUS
 from core.models import UserAccount
 
@@ -102,7 +104,7 @@ def balance_enquiry(request):
 @user_passes_test(is_kyc_completed, login_url='unauthorized')
 @user_passes_test(is_user_registered_with_paysprint, login_url='onboarding_user_paysprint')
 @user_passes_test(is_merchant_bank2_registered, login_url='bank2_registration_paysprint')
-def cash_withdrawl(request):
+def cash_withdrawal(request):
     user = UserAccount.objects.get(username=request.user)
     bank_list = get_pay_sprint_aeps_bank_list()
     heading = "Cash Withdrawl"
@@ -114,7 +116,7 @@ def cash_withdrawl(request):
         # if merchant_authenticity_response.get("response_code") == 1 and is_bank2_last_authentication_valid(user):
             merchant_auth_txn_id = PaySprintMerchantAuth.objects.get(userAccount=user).bank2_MerAuthTxnId
             data = get_pay_sprint_payload(request, user, "CW", merchant_auth_txn_id)
-            response = make_post_request(url=PaySprintRoutes.CASH_WITHDRAWL.value, data=data)
+            response = make_post_request(url=PaySprintRoutes.CASH_WITHDRAWAL.value, data=data)
 
             if response.status_code == 200:
             # if True:
@@ -130,13 +132,35 @@ def cash_withdrawl(request):
                 # }
                 response_data = {
                     'userAccount': user,
+                    'reference_no': data.get('referenceno'),
                     'ack_no': response.get('ackno'),
                     'amount': response.get('amount'),
                     'bank_rrn': response.get('bankrrn'),
                     'txn_status': response.get('txnstatus'),
+                    'message':  response.get('message'),
+                    'service_type': '2'  # Cash Withdrawal
                 }
 
-                merchant_auth = PaySprintCashWithdrawlTransactionDetails.objects.create(**response_data)
+                merchant_auth = PaySprintAEPSTxnDetails.objects.create(**response_data)
+                response = make_post_request(url=PaySprintRoutes.CASH_WITHDRAWAL_TXN_STATUS.value, data={'reference': data.get('referenceno')})
+                if response.status_code == 200:
+                    api_data = response.json()
+                    txn_status = None
+                    status = api_data.get('status', False)
+                    status_code = api_data.get('txnstatus', 0)
+                    response_code = api_data.get('response_code', 0)
+
+                    if status and status_code == 1 and response_code == 1:
+                        txn_status = "1"  # Success
+                    elif status and status_code == 3 and response_code == 0:
+                        txn_status = "0"  # Failed
+                    elif status and status_code == 2 and response_code == 2:
+                        txn_status = "2"  # Pending
+                else:
+                    txn_status = "3"  # Transaction not found
+                merchant_auth.txn_status = txn_status
+                merchant_auth.save()
+
                 return render(request, 'backend/Pages/paymentSuccess.html', {"cash_withdrawl_response": response_data})
             else:
                 messages.error(request, response.json().get("message"), extra_tags='danger')
@@ -258,13 +282,19 @@ def aadhar_pay(request):
             # }
             response_data = {
                 'userAccount': user,
+                'reference_no': data.get('referenceno'),
                 'ack_no': response.get('ackno'),
                 'amount': response.get('amount'),
                 'balance_amount': response.get('balanceamount'),
                 'bank_rrn': response.get('bankrrn'),
                 'bank_iin': response.get('bankiin'),
+                'service_type': '1',  # Aadhaar Pay
+                'message':  response.get('message')
             }
-            merchant_auth = PaySprintAadharPayTransactionDetails.objects.create(**response_data)
+            merchant_auth = PaySprintAEPSTxnDetails.objects.create(**response_data)
+            merchant_auth.txn_status = get_aadhaar_pay_txn_status(reference_no=data.get('referenceno'))
+            merchant_auth.save()
+
             return render(request, 'backend/Pages/paymentSuccess.html', {"aadhar_pay_response": response_data})
         else:
             messages.error(request, response.json().get("message"), extra_tags='danger')
