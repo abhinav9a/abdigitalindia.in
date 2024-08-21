@@ -34,7 +34,7 @@
                         <table class="table table-bordered border-primary table-primary table-striped">
                             <thead>
                                 <tr>
-                                    <th scope="col" class='fw-bold'>Tid</th>
+                                    <th scope="col" class='fw-bold'>UTR</th>
                                     <th scope="col" class='fw-bold'>Client ref id</th>
                                     <th scope="col" class='fw-bold'>Amount</th>
                                     <th scope="col" class='fw-bold'>Recipient Name</th>
@@ -45,10 +45,10 @@
                             <tbody>
                                 {% for transaction in transactions_page %}
                                 <tr>
-                                    <td>{{transaction.tid}}</td>
-                                    <td>{{transaction.client_ref_id}}</td>
+                                    <td>{{transaction.utr}}</td>
+                                    <td>{{transaction.ref_id}}</td>
                                     <td>{{transaction.amount}}</td>
-                                    <td>{{transaction.recipient_name}}</td>
+                                    <td>{{transaction.beneficiary_name}}</td>
                                     <td>{{transaction.txn_status}}</td>
                                     <td>{{transaction.timestamp}}</td>
                                 </tr>
