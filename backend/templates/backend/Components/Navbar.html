@@ -1,0 +1,384 @@
+<!-- partial:partials/_horizontal-navbar.html -->
+{% load custom_filters %}
+<div class="horizontal-menu position-relative">
+    <nav class="navbar top-navbar col-lg-12 col-12 p-0 bg-transparent">
+        <div class="container-fluid">
+            <div class="navbar-menu-wrapper d-flex align-items-center justify-content-between">
+                <div class="text-center navbar-brand-wrapper d-flex align-items-center justify-content-center">
+                    <a class="navbar-brand brand-logo text-white" href="{% url "dashboard" %}">
+                        {% comment %} <img src="/static/backendAssets/images/logo.svg" alt="logo" /> {% endcomment %}
+                        A.B. Digital India
+                    </a>
+                    <a class="navbar-brand brand-logo-mini text-white" href="{% url "dashboard" %}">
+                        <!-- <img src="/static/backendAssets/images/logo-mini.svg" alt="logo" /> -->
+                        AB
+                    </a>
+                </div>
+                <ul class="navbar-nav navbar-nav-right">
+                    <li class="nav-item dropdown d-md-flex d-none">
+                        <span class="text-white btn btn-danger btn-sm">BC ID : {{request.user.platform_id}} </span>
+                    </li>
+                    <li class="nav-item dropdown d-md-flex d-none">
+                        <span class="text-white btn btn-danger btn-sm">Type : {{request.user.userType}} </span>
+                    </li>
+                    <li class="nav-item dropdown d-md-flex d-none">
+                        <span class="text-white btn btn-danger btn-sm">Email : {{request.user.email}} </span>
+                    </li>
+                    <li class="nav-item dropdown d-md-flex d-none">
+                        <span class="text-white btn btn-danger btn-sm">KYC : 
+                            {% if request.user.kycStatus == 'C' %}
+                            Complete 
+                            {% elif request.user.kycStatus == 'R' %}
+                            Rejected
+                            {% else %}
+                            Pending
+                            {% endif %}
+                        </span>
+                    </li>
+
+                    {% if request.user.kycStatus == 'C' %}
+                    <li class="nav-item dropdown d-md-flex d-none">
+                        <span class="text-white btn btn-danger btn-sm" id="refreshBtn">
+                            <i class="mdi mdi-refresh mb-0 text-white"></i>
+                            <span id="walletBalance">
+                                Wallet : {{ wallet_balance }}
+                            </span> 
+                        </span>
+                    </li>
+                    {% endif %}
+                    
+                    <li class="nav-item nav-profile dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown"
+                            id="profileDropdown">
+                            <span class="nav-profile-name text-white">{{request.user}}</span>
+                            <span class="online-status"></span>
+                            <img src="{% if request.user.profile_img %}/media/{{request.user.profile_img}} {% else %} /static/backendAssets/images/faces/NoProfile.png{% endif %}" alt="profile" />
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-right navbar-dropdown"
+                            aria-labelledby="profileDropdown">
+                            {% if request.user.kycStatus == 'C' %}
+                            <a href="{% url "recharge_wallet" %}" class="dropdown-item">
+                                <i class="mdi mdi-wallet text-primary"></i>
+                                Recharge Wallet
+                            </a>
+                            <a href="{% url "transfer_fund" %}" class="dropdown-item">
+                                <i class="mdi mdi-folder-move text-primary"></i>
+                                Payout/Transfer
+                            </a>
+                            <a href="{% url "do_transaction" %}" class="dropdown-item">
+                                <i class="mdi mdi-folder-move text-primary"></i>
+                                Payout/Transfer 2
+                            </a>
+                            <a href="{% url "userServiceInquiry" %}" class="dropdown-item">
+                                <i class="mdi mdi-account-search text-primary"></i>
+                                Service Inquiry
+                            </a>
+                            {% endif %}
+                            <a href="{% url "user_profile" %}" class="dropdown-item">
+                                <i class="mdi mdi-account-convert text-primary"></i>
+                                Profile
+                            </a>
+                            <a href="{% url "change_password" %}" class="dropdown-item">
+                                <i class="mdi mdi-account-key text-primary"></i>
+                                Change Password
+                            </a>
+                            <a href="{% url "kycAction" %}" class="dropdown-item">
+                                <i class="mdi mdi-account-card-details text-primary"></i>
+                                KYC Action
+                            </a>
+                            <a href="{% url 'user_logout' %}" class="dropdown-item">
+                                <i class="mdi mdi-logout text-primary"></i>
+                                Logout
+                            </a>
+                        </div>
+                    </li>
+                </ul>
+                <button class="navbar-toggler navbar-toggler-right d-md-none align-self-center" type="button"
+                    data-toggle="horizontal-menu-toggle">
+                    <span class="mdi mdi-menu"></span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <nav class="bottom-navbar bg-transparent shadow-none">
+        <div class="container-fluid">
+            <ul class="nav page-navigation" style="display: flex;justify-content: flex-start;">
+                <li class="nav-item">
+                    <a class="nav-link" style="display: flex!important; align-items: center !important;" href="{% url "dashboard" %}">
+                        <i class="mdi mdi-home menu-icon mb-0 text-white"></i>
+                        <span class="menu-title text-white">Dashboard</span>
+                    </a>
+                </li>
+                <!-- Admin's View Only -->
+                {% if request.user|has_group:"Admin" %}
+                <li class="nav-item">
+                    <a href="#" class="nav-link" style="display: flex!important; align-items: center !important;">
+                        <i class="mdi mdi-lock menu-icon mb-0 text-white"></i>
+                        <span class="menu-title text-white">Admin</span>
+                        <i class="mdi mdi-chevron-down text-white"></i>
+                    </a>
+                    <div class="submenu" style="max-height: 80vh;overflow: scroll;">
+                        <ul>
+                            <li class="nav-item"><a class="nav-link fw-bold" href="{% url "AdminPendingKycList" %}">Pending KYCs</a></li>
+                            <li class="nav-item"><a class="nav-link fw-bold" href="{% url "AdminRejectedKycList" %}">Rejected KYCs</a></li>
+                            <li class="nav-item"><a class="nav-link fw-bold" href="{% url "allRetailers" %}">Retailers</a></li>
+                            <li class="nav-item"><a class="nav-link fw-bold" href="{% url "allDistributors" %}">Distributors</a></li>
+                            <li class="nav-item"><a class="nav-link fw-bold" href="{% url "allMasterDistributors" %}">M-Distributors</a></li>
+                            <li class="nav-item"><a class="nav-link fw-bold" href="{% url "AdminWalletAction" %}">Wallet Actions</a></li>
+                            <li class="nav-item"><a class="nav-link fw-bold" href="{% url "getServices" %}">Get services</a></li>
+                            <li class="nav-item"><a class="nav-link fw-bold" href="{% url "AdminTxnStatus" %}">Txn Status</a></li>
+                            <li class="nav-item"><a class="nav-link fw-bold" href="{% url "AdminChangeUserPassword" %}">User Password</a></li>
+                            {% comment %} <li class="nav-item"><a class="nav-link fw-bold" href="{% url "vpa_verification" %}">VPA</a></li> {% endcomment %}
+                        </ul>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" style="display: flex!important; align-items: center !important;">
+                        <i class="mdi mdi-testing menu-icon mb-0 text-white"></i>
+                        <span class="menu-title text-white">Testing APIS</span>
+                        <i class="mdi mdi-chevron-down text-white"></i>
+                    </a>
+                    <div class="submenu" style="max-height: 80vh;overflow: scroll;">
+                        <ul>
+                            {% comment %} <li class="nav-item"><a class="nav-link fw-bold" href="{% url 'import_banks_from_excel' %}">Import Banks</a></li> {% endcomment %}
+                            <li class="nav-item"><a class="nav-link fw-bold" href="{% url "pancard_uti" %}">UTI</a></li>
+                            <li class="nav-item"><a class="nav-link fw-bold" href="{% url "pancard_nsdl" %}">NSDL</a></li>
+                        </ul>
+                    </div>
+                </li>
+                {% elif request.user|has_group:"Master Distributor" %}
+                <li class="nav-item">
+                    <a href="#" class="nav-link" style="display: flex!important; align-items: center !important;">
+                        <i class="mdi mdi-lock menu-icon mb-0 text-white"></i>
+                        <span class="menu-title text-white">Admin</span>
+                        <i class="mdi mdi-chevron-down text-white"></i>
+                    </a>
+                    <div class="submenu" style="max-height: 80vh;overflow: scroll;">
+                        <ul>
+                            <li class="nav-item"><a class="nav-link fw-bold" href="{% url "allRetailers" %}">Retailers</a></li>
+                            <li class="nav-item"><a class="nav-link fw-bold" href="{% url "allDistributors" %}">Distributors</a></li>
+                        </ul>
+                    </div>
+                </li>
+                {% elif request.user|has_group:"Distributor" %}
+                <li class="nav-item">
+                    <a href="#" class="nav-link" style="display: flex!important; align-items: center !important;">
+                        <i class="mdi mdi-lock menu-icon mb-0 text-white"></i>
+                        <span class="menu-title text-white">Admin</span>
+                        <i class="mdi mdi-chevron-down text-white"></i>
+                    </a>
+                    <div class="submenu" style="max-height: 80vh;overflow: scroll;">
+                        <ul>
+                            <li class="nav-item"><a class="nav-link fw-bold" href="{% url "allRetailers" %}">Retailers</a></li>
+                        </ul>
+                    </div>
+                </li>
+                {% endif %}
+
+                <!-- Complete KYC View Only -->
+                {% if request.user.kycStatus == 'C' or user|has_group:"Admin" %}
+                <li class="nav-item">
+                    <a href="#" class="nav-link" style="display: flex!important; align-items: center !important;">
+                        <i class="mdi mdi-account-key menu-icon mb-0 text-white"></i>
+                        <span class="menu-title text-white">Verification</span>
+                        <i class="mdi mdi-chevron-down text-white"></i>
+                    </a>
+                    <div class="submenu" style="max-height: 80vh;overflow: scroll;">
+                        <ul>
+                            <li class="nav-item"><a class="nav-link fw-bold" href="{% url "bankVerification" %}">Account Verification</a></li>
+                            <li class="nav-item"><a class="nav-link fw-bold" href="{% url "panVerification" %}">Pan Verification</a></li>
+                            <li class="nav-item"><a class="nav-link fw-bold" href="{% url "adhaar_consent" %}">Adhaar Verification</a></li>
+                        </ul>
+                    </div>
+                </li>               
+                <li class="nav-item">
+                    <a href="#" class="nav-link" style="display: flex!important; align-items: center !important;">
+                        <i class="mdi mdi-fingerprint menu-icon mb-0 text-white"></i>
+                        <span class="menu-title text-white">AEPS</span>
+                        <i class="mdi mdi-chevron-down text-white"></i>
+                    </a>
+                    <div class="submenu" style="max-height: 80vh;overflow: scroll;">
+                        <ul>
+                            <li class="nav-item"><a class="nav-link fw-bold" href="{% url "aeps" %}">AEPS</a></li>
+                            <li class="nav-item"><a class="nav-link fw-bold" href="#">Aadhar Pay</a></li>
+                            <li class="nav-item"><a class="nav-link fw-bold" href="#">m-ATM</a></li>
+                        </ul>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" style="display: flex!important; align-items: center !important;">
+                        <i class="mdi mdi-fingerprint menu-icon mb-0 text-white"></i>
+                        <span class="menu-title text-white">AEPS 2</span>
+                        <i class="mdi mdi-chevron-down text-white"></i>
+                    </a>
+                    <div class="submenu" style="max-height: 80vh;overflow: scroll;">
+                        <ul>
+                            <li class="nav-item"><a class="nav-link fw-bold" href="{% url 'aadhar_pay_paysprint' %}">Aadhar Pay</a></li>
+                            <li class="nav-item"><a class="nav-link fw-bold" href="{% url 'balance_enquiry_paysprint' %}">Balance Enquiry</a></li>
+                            <li class="nav-item"><a class="nav-link fw-bold" href="{% url 'cash_withdrawl_paysprint' %}">Cash Withdrawal</a></li>
+                            <li class="nav-item"><a class="nav-link fw-bold" href="{% url 'mini_statement_paysprint' %}">Mini Statement</a></li>
+                        </ul>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" style="display: flex!important; align-items: center !important;">
+                        <i class="mdi mdi-cash-multiple menu-icon mb-0 text-white"></i>
+                        <span class="menu-title text-white">DMT</span>
+                        <i class="mdi mdi-chevron-down text-white"></i>
+                    </a>
+                    <div class="submenu" style="max-height: 80vh;overflow: scroll;">
+                        <ul>
+                            <li class="nav-item"><a class="nav-link fw-bold" href="{% url "list_dmt_recipient" %}">Money Transfer</a></li>
+                            <li class="nav-item"><a class="nav-link fw-bold" href="{% url "create_dmt_customer" %}">Create Customer</a></li>
+                            <li class="nav-item"><a class="nav-link fw-bold" href="{% url "create_dmt_recipient" %}">Add Recipient</a></li>
+                            <li class="nav-item"><a class="nav-link fw-bold" href="{% url "get_dmt_customer_info" %}">Customer Inquiry</a></li>
+                            <li class="nav-item"><a class="nav-link fw-bold" href="{% url "initiate_dmt_refund" %}">Initiate Refund</a></li>
+                        </ul>
+                    </div>
+                </li>               
+                <li class="nav-item">
+                    <a href="#" class="nav-link" style="display: flex!important; align-items: center !important;">
+                        <i class="mdi mdi-account-card-details menu-icon mb-0 text-white"></i>
+                        <span class="menu-title text-white">Pancard</span>
+                        <i class="mdi mdi-chevron-down text-white"></i>
+                    </a>
+                    <div class="submenu" style="max-height: 80vh;overflow: scroll;">
+                        <ul>
+                            <li class="nav-item"><a class="nav-link fw-bold" href="#">UTI</a></li>
+                            <li class="nav-item"><a class="nav-link fw-bold" href="#">NSDL</a></li>
+                        </ul>
+                    </div>
+                </li>               
+                <li class="nav-item">
+                    <a class="nav-link" style="display: flex!important; align-items: center !important;" href="{% url "bbps" %}">
+                        <i class="mdi mdi-account-multiple menu-icon mb-0 text-white"></i>
+                        <span class="menu-title text-white">BBPS</span>
+                    </a>
+                </li>  
+                <li class="nav-item">
+                    <a href="#" class="nav-link" style="display: flex!important; align-items: center !important;">
+                        <i class="mdi mdi-marker-check menu-icon mb-0 text-white"></i>
+                        <span class="menu-title text-white">Insurance</span>
+                        <i class="mdi mdi-chevron-down text-white"></i>
+                    </a>
+                    <div class="submenu" style="max-height: 80vh;overflow: scroll;">
+                        <ul>
+                            <li class="nav-item"><a class="nav-link fw-bold" href="#">General Insurance</a></li>
+                            <li class="nav-item"><a class="nav-link fw-bold" href="#">Life Insurance Premium</a></li>
+                        </ul>
+                    </div>
+                </li>            
+                <li class="nav-item">
+                    <a class="nav-link" style="display: flex!important; align-items: center !important;" href="{% url "dashboard" %}">
+                        <i class="mdi mdi-cash-usd menu-icon mb-0 text-white"></i>
+                        <span class="menu-title text-white">CMS</span>
+                    </a>
+                </li>   
+                <li class="nav-item">
+                    <a href="#" class="nav-link" style="display: flex!important; align-items: center !important;">
+                        <i class="mdi mdi-account-key menu-icon mb-0 text-white"></i>
+                        <span class="menu-title text-white">Recharge</span>
+                        <i class="mdi mdi-chevron-down text-white"></i>
+                    </a>
+                    <div class="submenu" style="max-height: 80vh;overflow: scroll;">
+                        <ul>
+                            <li class="nav-item"><a class="nav-link fw-bold" href="{% url "bbps_recharge" 5 %}">Mobile Recharge</a></li>
+                            <li class="nav-item"><a class="nav-link fw-bold" href="{% url "bbps_recharge" 4 %}">DTH Recharge</a></li>
+                        </ul>
+                    </div>
+                </li>               
+                <li class="nav-item">
+                    <a href="#" class="nav-link" style="display: flex!important; align-items: center !important;">
+                        <i class="mdi mdi-collage menu-icon mb-0 text-white"></i>
+                        <span class="menu-title text-white">Services</span>
+                        <i class="mdi mdi-chevron-down text-white"></i>
+                    </a>
+                    <div class="submenu" style="max-height: 80vh;overflow: scroll;">
+                        <ul>
+                            <li class="nav-item"><a class="nav-link fw-bold" href="{% url "credit_card_bill" %}">Credit Card Bill</a></li>
+                            <li class="nav-item"><a class="nav-link fw-bold" href="#">m-ATM Purchase</a></li>
+                        </ul>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" style="display: flex!important; align-items: center !important;">
+                        <i class="mdi mdi-archive menu-icon mb-0 text-white"></i>
+                        <span class="menu-title text-white">Other Services</span>
+                        <i class="mdi mdi-chevron-down text-white"></i>
+                    </a>
+                    <div class="submenu" style="max-height: 80vh;overflow: scroll;">
+                        <ul>
+                            <li class="nav-item"><a class="nav-link fw-bold" href='{% url "otherServices" "GST Services" %}'>GST Services</a></li>
+                            <li class="nav-item"><a class="nav-link fw-bold" href='{% url "otherServices" "Shop Licence" %}'>Shop Licence</a></li>
+                            <li class="nav-item"><a class="nav-link fw-bold" href='{% url "otherServices" "e-District" %}'>e-District</a></li>
+                            <li class="nav-item"><a class="nav-link fw-bold" href='{% url "otherServices" "Pan Card Services" %}'>Pan Card Services</a></li>
+                            <li class="nav-item"><a class="nav-link fw-bold" href='{% url "otherServices" "Password Seva" %}'>Password Seva</a></li>
+                            <li class="nav-item"><a class="nav-link fw-bold" href='{% url "otherServices" "RTO Services" %}'>RTO Services</a></li>
+                            <li class="nav-item"><a class="nav-link fw-bold" href='{% url "otherServices" "UP Labour Dept." %}'>UP Labour Dept.</a></li>
+                            <li class="nav-item"><a class="nav-link fw-bold" href='{% url "otherServices" "Travel Agency" %}'>Travel Agency</a></li>
+                            <li class="nav-item"><a class="nav-link fw-bold" href='{% url "otherServices" "UP Govt. Scheme" %}'>UP Govt. Scheme</a></li>
+                            <li class="nav-item"><a class="nav-link fw-bold" href='{% url "otherServices" "Insurance Services" %}'>Insurance Services</a></li>
+                            <li class="nav-item"><a class="nav-link fw-bold" href='{% url "otherServices" "Licence Services" %}'>Licence Services</a></li>
+                            <li class="nav-item"><a class="nav-link fw-bold" href='{% url "otherServices" "Central Govt. Scheme" %}'>Central Govt. Scheme</a></li>
+                            <li class="nav-item"><a class="nav-link fw-bold" href='{% url "otherServices" "UP Police Services" %}'>UP Police Services</a></li>
+                            <li class="nav-item"><a class="nav-link fw-bold" href='{% url "otherServices" "Web Services" %}'>Web Services</a></li>
+                            <li class="nav-item"><a class="nav-link fw-bold" href='{% url "otherServices" "Advertisement Services" %}'>Advertisement Services</a></li>
+                            <li class="nav-item"><a class="nav-link fw-bold" href='{% url "otherServices" "Service Provider" %}'>Service Provider</a></li>
+                        </ul>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" style="display: flex!important; align-items: center !important;">
+                        <i class="mdi mdi-archive menu-icon mb-0 text-white"></i>
+                        <span class="menu-title text-white">More Services</span>
+                        <i class="mdi mdi-chevron-down text-white"></i>
+                    </a>
+                    <div class="submenu" style="max-height: 80vh;overflow: scroll;">
+                        <ul>
+                            {% for item in external_services %}
+                            <li class="nav-item"><a class="nav-link fw-bold" href='{{item.serviceUrl}}' target="_blank">{{item.serviceName}}</a></li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" style="display: flex!important; align-items: center !important;">
+                        <i class="mdi mdi-chart-bar menu-icon mb-0 text-white"></i>
+                        <span class="menu-title text-white">Transaction</span>
+                        <i class="mdi mdi-chevron-down text-white"></i>
+                    </a>
+                    <div class="submenu" style="max-height: 80vh;overflow: scroll;">
+                        <ul>
+                            <li class="nav-item"><a class="nav-link fw-bold" href="{% url 'aeps_report' %}">AEPS Report</a></li>
+                            <li class="nav-item"><a class="nav-link fw-bold" href="{% url "dmt_report" %}">DMT Report</a></li>
+                            <li class="nav-item"><a class="nav-link fw-bold" href="{% url "pan_verification_report" %}">Pan Verification Report</a></li>
+                            <li class="nav-item"><a class="nav-link fw-bold" href="{% url "bank_verification_report" %}">Bank Verification Report</a></li>
+                            <li class="nav-item"><a class="nav-link fw-bold" href="{% url "adhaar_verification_report" %}">Adhaar Verification Report</a></li>
+                            <li class="nav-item"><a class="nav-link fw-bold" href="{% url "wallet_report" %}">Wallet Report</a></li>
+                            <li class="nav-item"><a class="nav-link fw-bold" href="{% url "payout_report" %}">Payout Report</a></li>
+                            <li class="nav-item"><a class="nav-link fw-bold" href="{% url "bbps_report" %}">BBPS Report</a></li>
+                            <li class="nav-item"><a class="nav-link fw-bold" href="{% url "commission_report" %}">Commission Report</a></li>
+                            <li class="nav-item"><a class="nav-link fw-bold" href="{% url "credit_card_report" %}">Credit Card Report</a></li>
+                        </ul>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url "festivalSeasonDhamaka" %}" class="nav-link" style="display: flex!important; align-items: center !important;">
+                        <i class="mdi mdi-emoticon menu-icon mb-0 text-white"></i>
+                        <span class="menu-title text-white">Festival Season Dhamaka</span>
+                        <i class="menu-arrow"></i>
+                    </a>
+                </li>
+                {% endif %}
+                <li class="nav-item">
+                    <a href="{% url "support" %}" class="nav-link" style="display: flex!important; align-items: center !important;">
+                        <i class="mdi mdi-alert-octagon menu-icon mb-0 text-white"></i>
+                        <span class="menu-title text-white">Support</span>
+                        <i class="menu-arrow"></i>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+</div>

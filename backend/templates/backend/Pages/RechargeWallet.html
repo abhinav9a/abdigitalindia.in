@@ -1,0 +1,87 @@
+{% extends "backend/Shared/AuthBase.html" %}
+
+{% block main %}
+
+<div class="col-12 mx-auto grid-margin">
+    <div class="card">
+        <div class="card-body">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.extra_tags }}">
+                {{message}}
+            </div>
+            {% endfor %}
+            <h4 class="card-title text-center mb-1">Add Payment in your Wallet</h4>
+            <p class="text-center text-danger mb-3">Choose one of the method to add payment</p>
+            <div class="row mx-auto">
+                <div class="col-md-6">
+                    <div class="row mx-auto">
+                        <h4 class="fw-bold text-center text-decoration-underline">Manual Payment Method</h4>
+                        <div class="col-12 text-center">
+                            <p>BANK NAME : STATE BANK OF INDIA</p>
+                            <p>NAME : AIJAD BALRAM DIGITAL INDIA PVT. LTD.</p>
+                            <p>ACCOUNT NUMBER : 20517246698</p>
+                            <p>IFSC CODE : SBIN0000670</p>
+                        </div>
+                        <hr>
+                        <div class="col-12 text-center">
+                            <p class="fw-bold">Scan the QR Code.</p>
+                            <img class='img-fluid w-75 h-auto' src="/static/backendAssets/images/aijadbalramsbi.jpg" alt="">
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <h4 class="fw-bold text-center text-decoration-underline">Automated Payment</h4>
+                    {% if service_activation.QrPaymentService %}
+                    <form id="form">
+                        <button type="submit" id="submitBtn" class="btn btn-primary mb-2 w-100">Initiate Payment</button>
+                    </form>
+                    <div id="container" class="text-center"></div>
+
+                    <script>
+                        $(document).ready(function() {
+                      
+                          $("#form").submit(function(e) {
+                            e.preventDefault();
+                            var formData = $(this).serialize();
+                            $('#submitBtn').attr("disabled", true);
+                            $('#container').empty().append(`<span id="fetchingMsg" class="text-center text-success fw-bold">Fetching Details, Wait for a second...</span>`);
+                            $.ajax({
+                              type: "POST",
+                              url: '{% url "recharge_wallet" %}',
+                              data: formData,
+                              headers: {"X-CSRFToken": '{{ csrf_token }}'},
+                              success: function(response) {
+                                if (response.success) {
+                                    $('#form').hide();
+                                    $('#container').html('<img class="img-fluid w-50 border border-1 border-primary" src="data:image/png;base64,' + response.image_bytes + '" alt="QR Code"><div><p class="text-success">Open any UPI app in your phone and Scan the above QR Code.</p></div>');
+                                } else {
+                                    $('#container').empty().append(`<span id="fetchingMsg" class="text-center text-danger fw-bold">${response.message}</span>`);
+                                }
+                              },
+                              error: function(e) {
+                                $('#container').empty().append(`<span id="fetchingMsg" class="text-center text-danger fw-bold">Some Error Occurred!!!, ${e}</span>`);
+                              },
+                              complete: function() {
+                                $('#submitBtn').attr("disabled", false);
+                              }
+                            });
+                          });
+                      
+                        });
+                    </script>
+
+                    {% else %}
+                    <form action="{% url 'activate_qr_payment' %}">
+                        {% csrf_token %}
+                        <button type="submit" id="submitBtn" class="btn btn-primary mb-2 w-100">Activate QR Payment</button>
+                    </form>
+                    <div id="container" class="text-center"></div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+  
+
+{% endblock main %}

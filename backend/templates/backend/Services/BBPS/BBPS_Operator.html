@@ -1,0 +1,95 @@
+{% extends "backend/Shared/AuthBase.html" %}
+
+{% load custom_filters %}
+{% block main %}
+<div class="row">
+    <div class="col-md-8 mx-auto grid-margin">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title">Bharat bill payment service</h4>
+                <p class="card-description">Please enter a valid Utility number</p>
+                <form action="{% url 'get_bbps_operator_param' %}" method="get">
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <div class="form-group">
+                                        <label for="getOperatorId">Select an operator</label>
+                                        <select name="operator_id" class="form-control form-control-lg" id="getOperatorId" required>
+                                            <option value="none" disabled selected>Select a operator</option>
+                                            {% for item in api_data.data %}
+                                            <option value="{{item.operator_id}}">{{item.name}}{% if item.high_commission_channel %} - High Commission Available{% endif %}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary mb-2">Select Operator</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- <form id='form'></form>
+<div id="container"></div>
+
+<script>
+    $(document).ready(function() {
+        $('#form').hide();
+
+        $("#form").submit(function(e) {
+            e.preventDefault();
+            var formData = $(this).serialize();
+            // console.log(formData);
+            $('#container').empty().append(`<span id="fetchingMsg" class="text-center text-success fw-bold">Fetching Details, Please Wait...</span>`);
+            $.ajax({
+                type: "GET",
+                url: "{% url 'bbps_paybill' %}",
+                data: formData,
+                headers: {"X-CSRFToken": '{{ csrf_token }}'},
+                success: function(response) {
+                    console.log(response);
+                },
+                error: function(e) {
+                    $('#container').empty().append(`<span id="fetchingMsg" class="text-center text-danger fw-bold">Some Error Occurred!!!, ${e}</span>`);
+                }
+            });
+        });
+
+        $("#getOperatorId").on('change', function() {
+            var operator_id = $('#getOperatorId').val();
+            $('#container').empty().append(`<span id="fetchingMsg" class="text-center text-success fw-bold">Fetching Details, Please Wait...</span>`);
+            $.ajax({
+                type: "GET",
+                url: "{% url 'get_bbps_operator_param' %}",
+                data: {'operator_id':operator_id},
+                headers: {"X-CSRFToken": '{{ csrf_token }}'},
+                success: function(response) {
+                    $('#form').append(`
+                        <input name="operator_id" value="${response.context.operator_id}" type="text">
+                        <br>
+                        <label for="amount">Amount</label>
+                        <input name="amount" type="text" id="amount">
+                        <br>
+                        <label for="${response.context.data[0].param_id}">${response.context.data[0].param_label}</label>
+                        <input name="${response.context.data[0].param_name}" pattern="${response.context.data[0].regex}" type="text" id="${response.context.data[0].param_id}">
+                        <br>
+                        <input type="submit" value="Submit">
+                    `);
+                    $('#form').show();
+                    $('#container').empty()
+                },
+                error: function(e) {
+                    $('#container').empty().append(`<span id="fetchingMsg" class="text-center text-danger fw-bold">Some Error Occurred!!!, ${e}</span>`);
+                }
+            });
+        });
+
+    });
+</script> -->
+
+{% endblock main %}

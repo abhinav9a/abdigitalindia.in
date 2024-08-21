@@ -1,0 +1,22 @@
+{% extends "backend/Shared/AuthBase.html" %}
+
+{% load custom_filters %}
+{% block main %}
+<div class="row">
+    <div class="col-md-8 mx-auto grid-margin">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title">PANCARD UTI</h4>
+                {{api_data}}
+                <p class="card-description">Please enter a valid details</p>
+                <form method="post" action="{{api_data.data.url}}">
+                    {% csrf_token %}
+                    <textarea name="encdata" style="display:none">{{api_data.data.encdata}}</textarea>
+                    <input type="submit" value="Submit">
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock main %}

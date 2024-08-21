@@ -1,0 +1,91 @@
+{% extends "backend/Shared/AuthBase.html" %}
+
+{% block main %}
+
+<div class="row">
+  <div class="col-md-12 mx-auto grid-margin stretch-card">
+    <div class="card">
+      <div class="card-body">
+        <h4 class="card-title">Get services list</h4>
+        <form class="forms-sample my-3" id="form">
+          <button type="submit" class="btn btn-primary me-2" id='submitBtn'>get Services</button>
+        </form>
+        <div class="table-responsive">
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th>
+                  S.no.
+                </th>
+                <th>
+                  Service Name
+                </th>
+                <th>
+                  Service Code
+                </th>
+                <th>
+                  Provider name
+                </th>
+              </tr>
+            </thead>
+            <tbody id='tbody'>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  $(document).ready(function() {
+
+    $("#form").submit(function(e) {
+      $('#submitBtn').attr("disabled", true);
+      e.preventDefault();
+      $('#tbody').empty();
+      $('#tbody').append('<tr id="fetchingMsg"><td colspan="4" class="text-center text-success fw-bold">Fetching Details, Wait for a second...</td></tr>');
+      $.ajax({
+        type: "POST",
+        url: '{% url "getServices" %}',
+        headers: {"X-CSRFToken": '{{ csrf_token }}'},
+        success: function(response) {
+          if (response.success) {
+            
+            var apiData = response.api_data.data.service_list;
+
+            if (apiData != undefined) {
+              for (var i = 0; i < apiData.length; i++) {
+                $('#tbody').append(`<tr>
+                  <td>${i+1}</td>
+                  <td>${apiData[i].service_name}</td>
+                  <td>${apiData[i].service_code}</td>
+                  <td>${apiData[i].provider_name}</td>
+                </tr>`);
+              }
+              document.getElementById('fetchingMsg').style.display = 'none';
+              $('#submitBtn').attr("disabled", false);
+            }else{
+              $('#tbody').empty();
+              $('#tbody').append('<tr id="fetchingMsg"><td colspan="4" class="text-center text-danger fw-bold">Some Error Occurred!!!</td></tr>');
+              $('#submitBtn').attr("disabled", false);
+            }
+          } else {
+            $('#tbody').empty();
+            $('#tbody').append(`<tr id="fetchingMsg"><td colspan="4" class="text-center text-danger fw-bold">Some Error Occurred!!!, ${response.message}</td></tr>`);
+            $('#submitBtn').attr("disabled", false);
+          }
+        },
+        error: function(e) {
+          $('#tbody').empty();
+          $('#tbody').append(`<tr id="fetchingMsg"><td colspan="4" class="text-center text-danger fw-bold">Some Error Occurred!!!, ${e.statusText}</td></tr>`);
+          $('#submitBtn').attr("disabled", false);
+        }
+      });
+    });
+
+  });
+</script>
+
+
+{% endblock main %}

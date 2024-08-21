@@ -1,0 +1,275 @@
+{% extends "backend/Shared/AuthBase.html" %}
+
+{% load custom_filters %}
+{% block main %}
+<div class="row">
+    <div class="col-sm-8 mx-auto grid-margin d-flex stretch-card">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between">
+                    {% for message in messages %}
+                    <p class="{% if message.success == 'error' %} text-danger {% else %} text-success {% endif %}">
+                        {{message}}</p>
+                    {% endfor %}
+                    <h4 class="card-title mb-2">BBPS - {{api_data.operator_name}}</h4>
+                </div>
+                <div>
+                    <ul class="nav nav-tabs tab-no-active-fill" role="tablist">
+                        <li class="nav-item">
+                            <a class="nav-link active ps-2 pe-2" id="fetch-bill-tab" data-bs-toggle="tab" href="#fetch-bill"
+                                role="tab" aria-controls="fetch-bill" aria-selected="true">Fetch Bill</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link ps-2 pe-2" id="pay-bill-tab" data-bs-toggle="tab" href="#pay-bill"
+                                role="tab" aria-controls="pay-bill" aria-selected="false">Pay Bill</a>
+                        </li>
+                    </ul>
+                    <div class="tab-content tab-no-active-fill-tab-content">
+
+                        <div class="tab-pane fade show active" id="fetch-bill" role="tabpanel" aria-labelledby="fetch-bill-tab">
+                            <div class="row">
+                                <div class="col-md-6 border-right-md border-black">
+                                    <form id="fetchBillForm">
+                                        <div class="row">
+                                            <input type="hidden" name="operator_id" value="{{api_data.operator_id}}" required>
+                                            <input type="hidden" name="latlong" id="latlong1" required>
+                                            <input type="hidden" name="amount" value="100" required>
+                                            <div class="col-md-12">
+                                                <div class="row">
+                                                    {% for item in api_data.data %}
+                                                    <div class="col-md-12">
+                                                        <div class="form-group">
+                                                            <label class="text-dark"
+                                                                for="{{item.param_id}}">{{item.param_label}}</label>
+                                                            <input type="text" class="form-control"
+                                                                name="{{item.param_name}}" pattern="{{item.regex}}"
+                                                                id="{{item.param_id}}" required>
+                                                            <span class="text-danger small"
+                                                                id="error_msg">{{item.error_message}}</span>
+                                                        </div>
+                                                    </div>
+                                                    {% endfor %}
+                                                    <div class="col-md-12">
+                                                        <div class="form-group">
+                                                            <label for="confirmation_mobile_no" class="text-dark">Confirmation Mobile No</label>
+                                                            <input type="text" class="form-control" name="confirmation_mobile_no"
+                                                                id="confirmation_mobile_no" required>
+                                                            <span id="error_msg" class="text-danger small">Please enter a valid Mobile No.</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <button type="submit" id="submitBtn" class="btn btn-primary me-2 my-2">Fetch
+                                            Bill</button>
+                                    </form>
+                                </div>
+                                <div class="col-md-6">
+                                    <h5 class="card-title">Bill Fetch Details</h5>
+                                    <p class="card-text">Bill Fetch for the Number you entered.</p>
+                                    <div id='container'></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="tab-pane fade" id="pay-bill" role="tabpanel"
+                            aria-labelledby="pay-bill-tab">
+                            <div class="row">
+                                <div class="col-md-6 border-right-md border-black">
+                                    <form id="payBillForm">
+                                        <div class="row">
+                                            <input type="hidden" name="operator_id" value="{{api_data.operator_id}}"
+                                                required>
+                                            <input type="hidden" name="latlong" class="form-control" id="latlong"
+                                                readonly required>
+                                            <div class="col-md-12">
+                                                <div class="row">
+                                                    {% for item in api_data.data %}
+                                                    <div class="col-md-12">
+                                                        <div class="form-group">
+                                                            <label class="text-dark"
+                                                                for="{{item.param_id}}">{{item.param_label}}</label>
+                                                            <input type="text" class="form-control"
+                                                                name="{{item.param_name}}" pattern="{{item.regex}}"
+                                                                id="{{item.param_id}}" required>
+                                                            <span id="error_msg"
+                                                                class="text-danger small">{{item.error_message}}</span>
+                                                        </div>
+                                                    </div>
+                                                    {% endfor %}
+                                                    <div class="col-md-12">
+                                                        <div class="form-group">
+                                                            <label for="confirmation_mobile_no" class="text-dark">Confirmation Mobile No</label>
+                                                            <input type="text" class="form-control" name="confirmation_mobile_no"
+                                                                id="confirmation_mobile_no" required>
+                                                            <span id="error_msg" class="text-danger small">Please enter a valid Mobile No.</span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-12">
+                                                        <div class="form-group">
+                                                            <label for="amount1" class="text-dark">Amount</label>
+                                                            <input type="text" class="form-control" name="amount"
+                                                                id="amount1" required>
+                                                            <span id="error_msg" class="text-danger small">Please enter a
+                                                                valid amount.</span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-12">
+                                                        <div class="form-group">
+                                                            <label class="toggle-switch">
+                                                                <input type="checkbox" id="hcc" name="hcc">
+                                                                <span class="toggle-slider round"></span>
+                                                            </label> 
+                                                            <span class="text-primary small">Check High Commission Channel.</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <button type="submit" id="submitBtn1" class="btn btn-primary me-2 my-2">Pay
+                                            Bill</button>
+                                    </form>
+                                </div>
+                                <div class="col-md-6">
+                                    <h5 class="card-title">Bill Pay Details</h5>
+                                    <p class="card-text">Bill Pay for the Number you entered.</p>
+                                    <div id='container1'></div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    $(document).ready(function () {
+
+        $("#fetchBillForm").submit(function (e) {
+            e.preventDefault();
+            var formData = $(this).serialize();
+            $('#submitBtn').attr("disabled", true);
+            $('#submitBtn').text('Fetching...');
+            $('#container').empty().append(`<span id="fetchingMsg" class="text-center text-success fw-bold">Fetching Details, Please Wait...</span>`);
+            $.ajax({
+                type: "GET",
+                url: "{% url 'bbps_fetch_bill' %}",
+                data: formData,
+                headers: { "X-CSRFToken": '{{ csrf_token }}' },
+                success: function (response) {
+                    if (response.success) {
+                        $('#container').html(`<p class="text-success">${response.context.message}</p>
+                        <ul>
+                            <li>Amount : ${response.context.data && response.context.data.amount ? response.context.data.amount : 'N/A'}</li>
+                            <li>Customer Name : ${response.context.data && response.context.data.utilitycustomername ? response.context.data.utilitycustomername : 'N/A'}</li>
+                            <li>Customer id : ${response.context.data && response.context.data.customer_id ? response.context.data.customer_id : 'N/A'}</li>
+                        </ul>
+                        `);
+
+                        $('#submitBtn').attr("disabled", false);
+                        $('#submitBtn').text('Fetch Bill');
+                    } else {
+                        $('#container').empty().append(`<span id="fetchingMsg" class="text-center text-danger fw-bold">${response.message}</span>`);
+                        $('#submitBtn').attr("disabled", false);
+                        $('#submitBtn').text('Fetch Bill');
+                    }
+                },
+                error: function (e) {
+                    $('#container').empty().append(`<span id="fetchingMsg" class="text-center text-danger fw-bold">Some Error Occurred!!!, ${e}</span>`);
+                    $('#submitBtn').attr("disabled", false);
+                    $('#submitBtn').text('Fetch Bill');
+                }
+            });
+        });
+
+        $("#payBillForm").submit(function (e) {
+            e.preventDefault();
+            var formData = $(this).serialize();
+            $('#submitBtn1').attr("disabled", true);
+            $('#submitBtn1').text('Paying...');
+            $('#container1').empty().append(`<span id="fetchingMsg" class="text-center text-success fw-bold">Fetching Details, Please Wait...</span>`);
+            $.ajax({
+                type: "GET",
+                url: "{% url 'bbps_paybill' %}",
+                data: formData,
+                headers: { "X-CSRFToken": '{{ csrf_token }}' },
+                success: function (response) {
+                    if (response.success) {
+                        $('#container1').html(`<p class="text-success">${response.context.message}</p>
+                        <ul>
+                            <li>Tx status : ${response.context.data && response.context.data.txstatus_desc ? response.context.data.txstatus_desc : 'N/A'}</li>
+                            <li>Customer Name : ${response.context.data && response.context.data.utilitycustomername ? response.context.data.utilitycustomername : 'N/A'}</li>
+                            <li>Tid : ${response.context.data && response.context.data.tid ? response.context.data.tid : 'N/A'}</li>
+                            <li>Timestamp : ${response.context.data && response.context.data.timestamp ? response.context.data.timestamp : 'N/A'}</li>
+                            <li>Amount : ${response.context.data && response.context.data.amount ? response.context.data.amount : 'N/A'}</li>
+                            <li>Customer Mobile Number : ${response.context.data && response.context.data.customermobilenumber ? response.context.data.customermobilenumber : 'N/A'}</li>
+                            <li>Operator Name : ${response.context.data && response.context.data.operator_name ? response.context.data.operator_name : 'N/A'}</li>
+                            <li>Total Amount : ${response.context.data && response.context.data.totalamount ? response.context.data.totalamount : 'N/A'}</li>
+                            <li>Approval Reference Number : ${response.context.data && response.context.data.approvalreferencenumber ? response.context.data.approvalreferencenumber : 'N/A'}</li>
+                            <li>Account : ${response.context.data && response.context.data.account ? response.context.data.account : 'N/A'}</li>
+                        </ul>`);
+
+                        $('#submitBtn1').attr("disabled", false);
+                        $('#submitBtn1').text('Pay Bill');
+                    } else {
+                        $('#container1').empty().append(`<span id="fetchingMsg" class="text-center text-danger fw-bold">${response.message}</span>`);
+                        $('#submitBtn1').attr("disabled", false);
+                        $('#submitBtn1').text('Pay Bill');
+                    }
+                },
+                error: function (e) {
+                    $('#container1').empty().append(`<span id="fetchingMsg" class="text-center text-danger fw-bold">Some Error Occurred!!!, ${e}</span>`);
+                    $('#submitBtn1').attr("disabled", false);
+                    $('#submitBtn1').text('Pay Bill');
+                }
+            });
+        });
+
+    });
+</script>
+
+<script>
+
+    function getLocation() {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                function (position) {
+                    var latitude = position.coords.latitude;
+                    var longitude = position.coords.longitude;
+                    $('#latlong').val(latitude + ',' + longitude)
+                    $('#latlong1').val(latitude + ',' + longitude)
+                },
+                function (error) {
+                    handleGeolocationError(error);
+                }
+            );
+        } else {
+            alert("Geolocation is not supported by this browser.");
+        }
+    }
+
+    function handleGeolocationError(error) {
+        switch (error.code) {
+            case error.PERMISSION_DENIED:
+                alert("User denied the request for Geolocation.");
+                break;
+            case error.POSITION_UNAVAILABLE:
+                alert("Location information is unavailable.");
+                break;
+            case error.TIMEOUT:
+                alert("The request to get user location timed out.");
+                break;
+            case error.UNKNOWN_ERROR:
+                alert("An unknown error occurred.");
+                break;
+        }
+    }
+
+    getLocation()
+</script>
+
+{% endblock main %}

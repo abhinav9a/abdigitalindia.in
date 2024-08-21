@@ -1,0 +1,45 @@
+{% extends "backend/Shared/AuthBase.html" %}
+
+{% block main %}
+
+<div class="row">
+    <div class="col-md-8 mx-auto grid-margin stretch-card">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title">VPA-Virtual Payment Address</h4>
+                {% for message in messages %}
+                    <p class="text-success">{{message}}</p> 
+                {% endfor %}
+                <p class="card-description">fill the details.</p>
+                <form class="forms-sample" method='POST'>
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group mb-0">
+                                        <label for="mobile_number">Customer Mobile</label>
+                                        <input type="text" name='mobile_number' class="form-control" id="mobile_number" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group mb-0">
+                                        <label for="customer_vpa">Customer VPA</label>
+                                        <input type="text" name="customer_vpa" class="form-control" id="customer_vpa" required>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" id="submitBtn" class="btn btn-primary me-2 my-2">Validate</button>
+                </form>
+
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+
+{% endblock main %}

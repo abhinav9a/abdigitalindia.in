@@ -1,0 +1,67 @@
+{% extends "backend/Shared/AuthBase.html" %}
+
+{% block main %}
+
+<div class="row">
+    <div class="col-md-10 mx-auto grid-margin">
+        <div class="card-group">
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="card-title">Pan Verification</h4>
+                    <p class="card-description">Please enter a valid pan number</p>
+                    <form class="forms-sample" id='form'>
+                        <div class="form-group">
+                            <label for="exampleInputPanNumber">Pan number</label>
+                            <input type="text" name='pan' style="text-transform: uppercase;" class="form-control" id="exampleInputPanNumber" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary me-2 w-100" id="submitBtn">Submit</button>
+                    </form>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Pan Details</h5>
+                    <p class="card-text">The Details are fetched from the Pan number you entered.</p>
+                    <div id='container'></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function() {
+  
+      $("#form").submit(function(e) {
+        e.preventDefault();
+        var formData = $(this).serialize();
+        $('#submitBtn').attr("disabled", true);
+        $('#container').empty().append(`<span id="fetchingMsg" class="text-center text-success fw-bold">Fetching Details, Please Wait...</span>`);
+        $.ajax({
+          type: "POST",
+          url: "{% url 'panVerification' %}",
+          data: formData,
+          headers: {"X-CSRFToken": '{{ csrf_token }}'},
+          success: function(response) {
+            if (response.success) {
+                $('#container').html(`<ul>
+                    <li>Pancard Number : ${response.context.pan_number}</li>
+                    <li>Full Name : ${response.context.title} ${response.context.first_name} ${response.context.last_name}</li>
+                </ul>`);
+            } else {
+                $('#container').empty().append(`<span id="fetchingMsg" class="text-center text-danger fw-bold">${response.message}</span>`);
+            }
+          },
+          error: function(e) {
+            $('#container').empty().append(`<span id="fetchingMsg" class="text-center text-danger fw-bold">Some Error Occurred!!!, ${e}</span>`);
+          },
+          complete: function() {
+            $('#submitBtn').attr("disabled", false);
+          }
+        });
+      });
+  
+    });
+</script>
+
+{% endblock main %}

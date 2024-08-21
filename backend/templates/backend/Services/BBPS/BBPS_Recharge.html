@@ -1,0 +1,173 @@
+{% extends "backend/Shared/AuthBase.html" %}
+
+{% load custom_filters %}
+{% block main %}
+<div class="row">
+    <div class="col-md-8 mx-auto grid-margin">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title">Bharat bill payment service</h4>
+                <p class="card-description">Please enter a valid Utility number</p>
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="form-group">
+                                    <label for="getOperatorId">Select an operator</label>
+                                    <select name="operator_id" class="form-select" id="getOperatorId"
+                                        required>
+                                        <option value="none" disabled selected>Select a operator</option>
+                                        {% for item in api_data.data %}
+                                        <option value="{{item.operator_id}}">
+                                            {{item.name}}{% if item.high_commission_channel %} - High Commission
+                                            Available{% endif %}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="msg"></div>
+                <form id="form">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="row" id="container"></div>
+                        </div>
+                    </div>
+                </form>
+                <div id="container1"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    $(document).ready(function () {
+
+        $("#form").submit(function (e) {
+            e.preventDefault();
+            var formData = $(this).serialize();
+            $('#container1').empty();
+            $('#submitBtn').attr("disabled", true);
+            $('#submitBtn').text('Processing...');
+            $.ajax({
+                type: "GET",
+                url: "{% url 'bbps_paybill' %}",
+                data: formData,
+                headers: { "X-CSRFToken": '{{ csrf_token }}' },
+                success: function (response) {
+                    if (response.success) {
+                        $('#container1').html(`
+                        <p class="text-success">${response.context.message}</p>`);
+                        alert("Recharge Successful.\n" + `TID: ${response.context.data && response.context.data.tid ? response.context.data.tid : 'N/A'}\n` + 
+                            `Txstatus desc : ${response.context.data && response.context.data.txstatus_desc ? response.context.data.txstatus_desc : 'N/A'}\n` +
+                            `Amount : ${response.context.data && response.context.data.amount ? response.context.data.amount : 'N/A'}\n` +
+                            `Mobile Number : ${response.context.data && response.context.data.customermobilenumber ? response.context.data.customermobilenumber : 'N/A'}\n` +
+                            `Operator Name : ${response.context.data && response.context.data.operator_name ? response.context.data.operator_name : 'N/A'}`
+                        );
+
+                        $('#submitBtn').text('Recharge');
+                    } else {
+                        $('#container1').empty().append(`<span id="fetchingMsg" class="text-center text-danger fw-bold">${response.message}</span>`);
+                        alert("Recharge Failed.");
+                        $('#submitBtn').attr("disabled", false);
+                        $('#submitBtn').text('Recharge');
+                    }
+                },
+                error: function (e) {
+                    $('#container1').empty().append(`<span id="fetchingMsg" class="text-center text-danger fw-bold">Some Error Occurred!!!, ${e}</span>`);
+                    $('#submitBtn').attr("disabled", false);
+                    $('#submitBtn').text('Recharge');
+                }
+            });
+        });
+
+
+        $("#getOperatorId").on('change', function () {
+            var operator_id = $('#getOperatorId').val();
+            $('#container').empty();
+            $('#container1').empty();
+            $('#msg').empty().append(`<span id="fetchingMsg" class="text-center text-success fw-bold">Fetching Details, Please Wait...</span>`);
+            $.ajax({
+                type: "GET",
+                url: "{% url 'get_bbps_recharge_param' %}",
+                data: { 'operator_id': operator_id },
+                headers: { "X-CSRFToken": '{{ csrf_token }}' },
+                success: function (response) {
+                    response.context.data.forEach(function (param) {
+                        var paramElement = $('<div class="col-md-6">');
+                        var paramElement1 = $('<div class="form-group">');
+                            
+                        paramElement1.append('<label class="text-dark">' + param.param_label + ': </label>');
+                        paramElement1.append('<input type="text" class="form-control" id="' + param.param_id + '" name="' + param.param_name + '" pattern="' + param.regex + '">');
+                        paramElement1.append('<span class="text-danger small" id="error_msg" class="error-message" style="color: red;"></span>');
+                        paramElement.append(paramElement1);
+                        $('#container').append(paramElement);
+                    });
+
+                    // Extra Input
+                    $('#container').append(`<input type="hidden" name="operator_id" value="${response.context.operator_id}" required>`);
+                    $('#container').append(`<input type="hidden" name="latlong" id="latlong1" required>`);
+                    
+                    // Amount Input
+                    $('#container').append('<div class="col-md-6"><div class="form-group"><label for="amount1" class="text-dark">Amount</label><input type="text" class="form-control" name="amount" id="amount1" required><span id="error_msg" class="text-danger small">Please enter a valid amount.</span></div></div>');
+
+                    // High Commision input
+                    $('#container').append('<div class="col-md-12"><div class="form-group"><label class="toggle-switch" for="hcc"><input type="checkbox" id="hcc" name="hcc"><span class="toggle-slider round"></span></label><span class="text-primary small">Check High Commission Channel.</span></div></div>');
+                    
+                    // Submit btn
+                    $('#container').append('<button type="submit" id="submitBtn" class="btn btn-primary me-2 my-2">Recharge</button>');
+                    $('#msg').empty();
+                    getLocation();
+                },
+                error: function (e) {
+                    $('#msg').empty().append(`<span id="fetchingMsg" class="text-center text-danger fw-bold">Some Error Occurred!!!</span>`);
+                }
+            });
+        });
+
+    });
+</script>
+
+<script>
+
+    function getLocation() {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                function (position) {
+                    var latitude = position.coords.latitude;
+                    var longitude = position.coords.longitude;
+                    $('#latlong1').val(latitude + ',' + longitude)
+                },
+                function (error) {
+                    handleGeolocationError(error);
+                }
+            );
+        } else {
+            alert("Geolocation is not supported by this browser.");
+        }
+    }
+
+    function handleGeolocationError(error) {
+        switch (error.code) {
+            case error.PERMISSION_DENIED:
+                alert("User denied the request for Geolocation.");
+                break;
+            case error.POSITION_UNAVAILABLE:
+                alert("Location information is unavailable.");
+                break;
+            case error.TIMEOUT:
+                alert("The request to get user location timed out.");
+                break;
+            case error.UNKNOWN_ERROR:
+                alert("An unknown error occurred.");
+                break;
+        }
+    }
+
+    getLocation()
+</script>
+
+{% endblock main %}

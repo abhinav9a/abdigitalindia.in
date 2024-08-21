@@ -1,0 +1,23 @@
+{
+  "name": "abdigitalindia",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/imjatinx/ab_digital_india.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/imjatinx/ab_digital_india/issues"
+  },
+  "homepage": "https://github.com/imjatinx/ab_digital_india#readme",
+  "dependencies": {
+    "@ekoindia/aeps-gateway-lib": "^1.5.0",
+    "fingerprintjs": "^0.5.3"
+  }
+}

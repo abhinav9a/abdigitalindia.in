@@ -1,0 +1,108 @@
+{% extends "backend/Shared/AuthBase.html" %}
+
+{% block main %}
+
+<div class="row">
+    {% if onboarding_details.pay_sprint_ref_no != None %}
+
+    <div class="col-md-8 mx-auto grid-margin stretch-card">
+        <div class="card">
+            <div class="card-body">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.extra_tags }}">
+                {{message}}
+            </div>
+            {% endfor %}
+            <h4 class="card-title">You're Onboarded</h4>
+            </div>
+        </div>
+    </div>
+
+    {% else %}
+
+    <div class="col-md-8 mx-auto grid-margin stretch-card">
+        <div class="card">
+            <div class="card-body">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.extra_tags }}">
+                {{message}}
+            </div>
+            {% endfor %}
+            <h4 class="card-title">Onboard Your Profile for PaySprint</h4>
+            <p class="card-description">
+                This is the one time process. please check all the details to avoid rejection.
+            </p>
+
+            <form class="forms-sample" method="post" action="{% url 'onboarding_user_paysprint' %}" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="row">
+                    <input type="hidden" name="latlong" id="latlong1" required>
+                    <div class="col-md-4">
+                        <div class="form-group mb-0">
+                            <label for="shop_name">Shop Name</label>
+                            <input type="text" name='shop_name' value="{{onboarding_details.shopName}}" style="text-transform: uppercase;" class="form-control" id="shop_name" readonly>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group mb-0">
+                            <label for="mobile_number">Mobile Number</label>
+                            <input type="text" name='mobile_number' value=" {{onboarding_details.mobile}}" style="text-transform: uppercase;" class="form-control" id="mobile_number" readonly>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group mb-0">
+                            <label for="email">Email</label>
+                            <input type="email" name='email' value="{{onboarding_details.email}}" style="text-transform: uppercase;" class="form-control" id="email" readonly>
+                        </div>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary me-2 my-2">Onboard</button>
+                <button class="btn btn-light">Cancel</button>
+            </form>
+            </div>
+        </div>
+    </div>
+
+    {% endif %}
+
+</div>
+
+<script>
+
+    function getLocation() {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                function (position) {
+                    var latitude = position.coords.latitude;
+                    var longitude = position.coords.longitude;
+                    $('#latlong1').val(latitude + ',' + longitude)
+                },
+                function (error) {
+                    handleGeolocationError(error);
+                }
+            );
+        } else {
+            alert("Geolocation is not supported by this browser.");
+        }
+    }
+
+    function handleGeolocationError(error) {
+        switch (error.code) {
+            case error.PERMISSION_DENIED:
+                alert("User denied the request for Geolocation.");
+                break;
+            case error.POSITION_UNAVAILABLE:
+                alert("Location information is unavailable.");
+                break;
+            case error.TIMEOUT:
+                alert("The request to get user location timed out.");
+                break;
+            case error.UNKNOWN_ERROR:
+                alert("An unknown error occurred.");
+                break;
+        }
+    }
+
+    getLocation()
+</script>
+{% endblock main %}

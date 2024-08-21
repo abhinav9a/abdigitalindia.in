@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Welcome to A.B. Digital India Pvt. Ltd.</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link href="/static/LoginAssets/Style/font-awesome.css" rel="stylesheet" />
+    <link href="/static/LoginAssets/Style/flaticon.css" rel="stylesheet" />
+    <link href="/static/LoginAssets/Style/styleLogin.css" rel="stylesheet" />
+    <link href="/static/LoginAssets/Style/custom-rsp.css" rel="stylesheet" />
+    <script src="/static/LoginAssets/JScripts/js-image-slider.js" type="text/javascript"></script>
+    <link href="/static/LoginAssets/Style/js-image-slider.css" rel="stylesheet" type="text/css" />
+    <link href="/static/LoginAssets/Style/Site.css" rel="stylesheet" type="text/css" />
+    <script src="/static/LoginAssets/JScripts/abdigital.js" type="text/javascript"></script>
+    <link rel="SHORTCUT ICON" href="/static/assets/img/favicon.ico" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.1/dist/jquery.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+
+</head>
+
+<body style="background: rgb(2,47,74); background: linear-gradient(0deg, rgba(2,47,74,1) 0%, rgba(2,47,74,1) 48%, rgba(244,245,255,1) 48%, rgba(244,245,255,1) 100%);">
+
+    <section class="top-header" style="padding-top: 28px;">
+        <div class="container-login" style="padding: 0 20px;">
+            <div class="row">
+                <div class="col-md-12">
+                    <img src="/static/assets/img/logo.jpg" style="height: 80px; width: auto;" alt="mobisafar-logo"
+                        class="img-fluid mobisafar-logo" />
+                    <img src="/static/LoginAssets/Images/WebSite/digital-india.png" alt="digital-india-logo"
+                        class="img-fluid digitalindia-logo" />
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <form method="post" action="" id="form1" autocomplete="off">
+        {% csrf_token %}
+        <section class="form-slider">
+            <div class="container-login">
+                <div class="col-md-12">
+                    <div class="row">
+                        
+                        <div class="col-md-4">
+                            <div class="row">
+                                <div class="login-form">
+                                    <div id="divlogin">
+                                        <h2>Sign In</h2>
+                                        <p>Welcome back! Please enter your details.</p>
+                                        {% if form.errors %}
+                                            {% for error in form.non_field_errors %}
+                                                <div class="invalid-feedback d-block text-center small">{{error}}</div>
+                                            {% endfor %}
+                                        {% endif %}
+                                        <div class="form-group">
+                                            {{form.username}}
+                                            <label class="form-control-placeholder" for="{{form.username.auto_id}}">{{form.username.label}}</label>
+                                        </div>
+                                        <div class="form-group">
+                                            {{form.password}}
+                                            <span id="rfvPwd" style="visibility:hidden;"></span>
+                                            <label class="form-control-placeholder" for="{{form.password.auto_id}}">{{form.password.label}}</label>
+                                            <i class="toggle-password fa fa-fw fa-eye-slash"></i>
+                                        </div>
+                                        <input id="CheckBox1" type="checkbox" name="CheckBox1" checked="checked" />
+                                        <a href="#" target="_blank">Terms & Conditions</a>&nbsp;|&nbsp;<a href="#" target="_blank">Privacy Policy</a>&nbsp;|&nbsp;<a id="lnkbtnForgotPwd" href="#">Forgot Password?</a>
+                                        <input type="submit" name="btnLogin" value="Login" id="btnLogin" tabindex="4" />
+                                    </div>
+                                    <div>
+                                        <a href="{% url "user_signup" %}">Already have an account?</a>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-8">
+                            <div class="row h-100" style="flex-wrap: nowrap">
+                                <div id="carouselExampleControls" class="carousel slide" data-ride="carousel"
+                                    data-interval="2500">
+                                    <div class="carousel-inner h-100">
+                                        <div class="carousel-item active h-100">
+                                            <img src="/static/LoginAssets/Images/WebSite/AEPS.jpg" alt="Slider-images"
+                                                class="img-responsive d-block w-100 h-100" />
+                                        </div>
+                                        <div class="carousel-item h-100">
+                                            <img src="/static/LoginAssets/Images/WebSite/aeps1.jpg" alt="Slider-images"
+                                                class="img-responsive d-block w-100 h-100" />
+                                        </div>
+                                        {% comment %}
+                                        <div class="carousel-item">
+                                            <img src="/static/LoginAssets/Images/WebSite/login_yblbanner.png" alt="Slider-images"
+                                                class="img-responsive d-block w-100" />
+                                        </div>
+                                        <div class="carousel-item">
+                                            <img src="/static/LoginAssets/Images/WebSite/login_cashcollbanner.png" alt="Slider-images"
+                                                class="img-responsive d-block w-100" />
+                                        </div>
+                                        <div class="carousel-item">
+                                            <img src="/static/LoginAssets/Images/WebSite/login_nsdlpanbanner.png" alt="Slider-images"
+                                                class="img-responsive d-block w-100" />
+                                        </div> {% endcomment %}
+                                    </div>
+                                    <a class="carousel-control-prev" href="#carouselExampleControls" role="button"
+                                        data-slide="prev">
+                                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                        <span class="sr-only">Previous</span>
+                                    </a>
+                                    <a class="carousel-control-next" href="#carouselExampleControls" role="button"
+                                        data-slide="next">
+                                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                        <span class="sr-only">Next</span>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="client-carsousel">
+            <div class="container-login">
+                <div class="col-md-12">
+                    <div class="row">
+                        <div class="clients">
+                            <h5>Our Alliances</h5>
+                            <marquee behavior="scroll" direction="left" scrollamount="10" style="margin-left: 10px;">
+                                <img src="/static/LoginAssets/Images/WebSite/umang-partner.png" style="width:60px;" />
+                                <img src="/static/LoginAssets/Images/WebSite/yes-bank.jpg" alt="" class="img-responsive mobisafar-logo" />
+                                <img src="/static/LoginAssets/Images/WebSite/Suryoday-Bank.jpg" />
+                                <img src="/static/LoginAssets/Images/WebSite/prabhu-money-transfer.jpg" />
+                                <img src="/static/LoginAssets/Images/WebSite/npci.jpg" />
+                                <img src="/static/LoginAssets/Images/WebSite/mobikwik.jpg" />
+                                <img src="/static/LoginAssets/Images/WebSite/irctc.jpg" />
+                                <img src="/static/LoginAssets/Images/WebSite/fino.jpg" />
+                                <img src="/static/LoginAssets/Images/WebSite/bharat-bill-pay.jpg" />
+                                <img src="/static/LoginAssets/Images/WebSite/bajaj-finsrv.jpg" />
+                                <img src="/static/LoginAssets/Images/WebSite/AxisBank_logo.png" />
+                                <img src="/static/LoginAssets/Images/WebSite/airtel-payment-bank.jpg" />
+                                <img src="/static/LoginAssets/Images/WebSite/abhi-bus.jpg" />
+                            </marquee>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <section class="footer">
+            <div class="container-login" style="padding: 0 20px;">
+                <div class="row">
+                    <div class="col-md-3">
+                        <a href="#" target="_blank">
+                            <h2>A.B. Digital
+                                <br />
+                                <span style="font-size: 20px;">India Private Limited</span>
+                            </h2>
+                        </a>
+                        <div class="social-icons circle social-hover">
+                            <ul class="list-inline">
+                                <li class="social-facebook">
+                                    <a class="tooltip-top" target="_blank" href="#" data-tooltip="Facebook">
+                                        <i class="fa fa-facebook" aria-hidden="true"></i>
+                                    </a>
+                                </li>
+                                <li class="social-twitter">
+                                    <a class="tooltip-top" target="_blank" href="#" data-tooltip="Twitter">
+                                        <i class="fa fa-twitter" aria-hidden="true"></i>
+                                    </a>
+                                </li>
+                                <li class="social-flickr">
+                                    <a class=" tooltip-top" target="_blank" href="#" data-tooltip="Instagram">
+                                        <i class="fa fa-instagram" aria-hidden="true"></i>
+                                    </a>
+                                </li>
+                                <li class="social-linkedin">
+                                    <a class=" tooltip-top" target="_blank" href="#" data-tooltip="LinkedIn">
+                                        <i class="fa fa-linkedin" aria-hidden="true"></i>
+                                    </a>
+                                </li>
+                                <li class="social-linkedin">
+                                    <a class=" tooltip-top" target="_blank" href="#" data-tooltip="Telegram">
+                                        <i class="fa fa-telegram" aria-hidden="true"></i>
+                                    </a>
+                                </li>
+                                <li class="social-linkedin">
+                                    <a class=" tooltip-top" target="_blank" href="#" data-tooltip="Whatsapp">
+                                        <i class="fa fa-whatsapp" aria-hidden="true"></i>
+                                    </a>
+                                </li>
+                                <li class="social-linkedin">
+                                    <a class=" tooltip-top" target="_blank" href="#" data-tooltip="youtube"><i class="fa fa-youtube" aria-hidden="true"></i>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                        <p>
+                            © A.B. Digital India Pvt. Ltd. 2023 |
+                            <br />
+                            All Rights Reserved
+                        </p>
+                    </div>
+                    <div class="col-md-3">
+                        <h3>Customer Care No.</h3>
+                        <h4>9AM to 6PM: +91 8077039923 (Mon-Sat)</h4>
+                        <img src="/static/LoginAssets/Images/WebSite/bsi-white 1.png" class="img-responsive" alt="bsi-logo" />
+                    </div>
+                    <div class="col-md-3">
+                        <h3>Customer care email: </h3>
+                        <h4>support@abdigitalindia.in</h4>
+                    </div>
+                    <div class="col-md-3">
+                        <h3>Corporate Address:</h3>
+                        <p>OLD GT ROAD NEAR RAILWAY STATION KOSI KALAN MATHURA 281403</p>
+                        <div class="footer-menu">
+                            <ul>
+                                <li><a href="#" target="_blank">Terms & Conditions</a>
+                                </li>
+                                <li><a href="#" target="_blank">Privacy Policy</a></li>
+                                <li><a href="#">FAQs</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div>
+            <div align="center">
+                <div>
+                    <div class="Login-wrapper">
+                        <!--header logo section starts-->
+                        <div>
+                        </div>
+                        <!-- header logo section ends-->
+                        <div class="clearboth">
+                        </div>
+                        <div>
+                        </div>
+                        <div class="clearboth">
+                        </div>
+                        <div class="padL15 padR15" style="padding-top: 4px;">
+                            <!--center content starts here-->
+                            <div class="clearboth padB-20">
+                            </div>
+                            <div>
+                            </div>
+                            <!--center content ends here-->
+                        </div>
+                        <div class="clearboth">
+                        </div>
+                        <br />
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </form>
+
+    <script>
+        $(".toggle-password").click(function () {
+            $(this).toggleClass("fa-eye fa-eye-slash");
+            input = $(this).parent().find("input");
+            if (input.attr("type") == "password") {
+                input.attr("type", "text");
+            } else {
+                input.attr("type", "password");
+            }
+        });
+    </script>
+
+</bodym>
+
+</html>

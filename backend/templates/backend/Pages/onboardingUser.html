@@ -1,0 +1,132 @@
+{% extends "backend/Shared/AuthBase.html" %}
+
+{% block main %}
+
+<div class="row">
+    {% if onboardingDetails.eko_user_code != None %}
+
+    <div class="col-md-8 mx-auto grid-margin stretch-card">
+        <div class="card">
+            <div class="card-body">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.extra_tags }}">
+                {{message}}
+            </div>
+            {% endfor %}
+            <h4 class="card-title">You're Onboarded</h4>
+            </div>
+        </div>
+    </div>
+
+    {% else %}
+    
+    <div class="col-md-8 mx-auto grid-margin stretch-card">
+        <div class="card">
+            <div class="card-body">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.extra_tags }}">
+                {{message}}
+            </div>
+            {% endfor %}
+            <h4 class="card-title">Onboard Your Profile</h4>
+            <p class="card-description">
+                This is the one time process. please check all the details to avoid rejection.
+            </p>
+            <form class="forms-sample" method="post" action="{% url 'onboardingUser' %}">
+                {% csrf_token %}
+
+                <div class="row">
+                    
+                    <div class="col-md-4">
+                        <div class="form-group mb-0">
+                            <label for="exampleInputPanNumber">First Name</label>
+                            <input type="text" name='pan' value="{{onboardingDetails.first_name}}" style="text-transform: uppercase;" class="form-control" id="exampleInputPanNumber" disabled>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group mb-0">
+                            <label for="exampleInputPanNumber">Last Name</label>
+                            <input type="text" name='pan' value="{{onboardingDetails.last_name}}" style="text-transform: uppercase;" class="form-control" id="exampleInputPanNumber" disabled>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group mb-0">
+                            <label for="exampleInputPanNumber">Shop Name</label>
+                            <input type="text" name='pan' value="{{onboardingDetails.shopName}}" style="text-transform: uppercase;" class="form-control" id="exampleInputPanNumber" disabled>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group mb-0">
+                            <label for="exampleInputPanNumber">Mobile Number</label>
+                            <input type="text" name='pan' value=" {{onboardingDetails.mobile}}" style="text-transform: uppercase;" class="form-control" id="exampleInputPanNumber" disabled>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group mb-0">
+                            <label for="exampleInputPanNumber">Email</label>
+                            <input type="text" name='pan' value="{{onboardingDetails.email}}" style="text-transform: uppercase;" class="form-control" id="exampleInputPanNumber" disabled>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group mb-0">
+                            <label for="exampleInputPanNumber">Pancard Number</label>
+                            <input type="text" name='pan' value="{{onboardingDetails.pancard_no}}" style="text-transform: uppercase;" class="form-control" id="exampleInputPanNumber" disabled>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group mb-0">
+                            <label for="exampleInputPanNumber">Date of birth <sup class="text-danger fw-bold">*</sup></label>
+                            <input type="text" id="dateInput" value="{{dob}}" placeholder="yyyy-mm-dd" name='dob' pattern="\d{4}-\d{2}-\d{2}" style="text-transform: uppercase;" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="col-md-12">
+                        <div class="form-group mb-0">
+                            <label for="exampleInputPanNumber">Residence Address</label>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <input type="text" name='line' placeholder="Line" style="text-transform: uppercase;" class="form-control" id="exampleInputPanNumber" required>
+                                </div>
+                                <div class="col-md-4">
+                                    <input type="text" name='city' placeholder="City" style="text-transform: uppercase;" class="form-control" id="exampleInputPanNumber" required>
+                                </div>
+                                <div class="col-md-4">
+                                    <input type="text" name='pincode' placeholder="Pin Code" style="text-transform: uppercase;" class="form-control" id="exampleInputPanNumber" required>
+                                </div>
+                                <div class="col-md-4">
+                                    <input type="text" name='state' placeholder="State" style="text-transform: uppercase;" class="form-control" id="exampleInputPanNumber" required>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    
+                </div>
+                <button type="submit" class="btn btn-primary me-2 my-2">Onboard</button>
+                <button class="btn btn-light">Cancel</button>
+            </form>
+            </div>
+        </div>
+    </div>
+
+    {% endif %}
+
+</div>
+
+<script>
+
+    // for handling dob
+    document.getElementById('dateInput').addEventListener('input', function () {
+      this.setCustomValidity('');
+    });
+
+    document.getElementById('dateInput').addEventListener('invalid', function () {
+      if (this.value === '') {
+        this.setCustomValidity('Please enter a date in the format yyyy-mm-dd.');
+      } else {
+        this.setCustomValidity('Invalid date format. Use yyyy-mm-dd.');
+      }
+    });
+
+</script>
+
+{% endblock main %}

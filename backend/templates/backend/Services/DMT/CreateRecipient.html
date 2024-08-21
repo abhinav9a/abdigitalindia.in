@@ -1,0 +1,73 @@
+{% extends "backend/Shared/AuthBase.html" %}
+
+{% block main %}
+
+<div class="row">
+    <div class="col-md-8 mx-auto grid-margin stretch-card">
+        <div class="card">
+            <div class="card-body">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.extra_tags }}">
+                {{message}}
+            </div>
+            {% endfor %}
+            <h4 class="card-title">DMT-Add new Recipient</h4>
+            <p class="card-description">
+                fill the details.
+            </p>
+            <form class="forms-sample" method="post" action="{% url 'create_dmt_recipient' %}">
+                {% csrf_token %}
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-0">
+                                    <label for="customer_mobile">Customer Mobile</label>
+                                    <input type="text" name="customer_mobile" class="form-control" id="customer_mobile" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="bank_id">Recipient Bank code</label>
+                                    <select name="bank_id" class="form-control form-control-lg" id="bank_id" required>
+                                        {% for bank in bank_list %}
+                                        <option value="{{bank.bank_id}}">{{bank.bank_name}}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-0">
+                                    <label for="account">Recipient Account number</label>
+                                    <input type="text" name="account" class="form-control" id="account" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-0">
+                                    <label for="ifsc">Recipient IFSC Code</label>
+                                    <input type="text" name="ifsc" class="form-control" id="ifsc" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-0">
+                                    <label for="recipient_name">Recipient Name</label>
+                                    <input type="text" name="recipient_name" class="form-control" id="recipient_name">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="recipient_mobile">Recipient Mobile</label>
+                                    <input type="text" name="recipient_mobile" class="form-control" id="recipient_mobile" required>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <button type="submit" id="submitBtn" class="btn btn-primary">Create</button>
+            </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock main %}

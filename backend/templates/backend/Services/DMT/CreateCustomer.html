@@ -1,0 +1,194 @@
+{% extends "backend/Shared/AuthBase.html" %}
+
+{% block main %}
+
+<div class="row">
+    <div class="col-md-8 mx-auto grid-margin stretch-card">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title">DMT-Create new customer</h4>
+                <p class="card-description">fill the details.</p>
+                <form class="forms-sample" id="createCustomerForm">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group mb-0">
+                                        <label for="customer_mobile">Customer Mobile</label>
+                                        <input type="text" name='customer_mobile' value="" class="form-control" id="customer_mobile" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group mb-0">
+                                        <label for="name">Customer Name</label>
+                                        <input type="text" name="name" class="form-control" id="name" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group mb-0">
+                                        <label for="dob">Date of birth</label>
+                                        <input type="text" id="dateInput" placeholder="yyyy-mm-dd" name='dob' pattern="\d{4}-\d{2}-\d{2}" style="text-transform: uppercase;" class="form-control" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group mb-0">
+                                        <label for="line">Line</label>
+                                        <input type="text" name="line" class="form-control" id="line" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group mb-0">
+                                        <label for="city">City</label>
+                                        <input type="text" name="city" class="form-control" id="city" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group mb-0">
+                                        <label for="state">State</label>
+                                        <input type="text" name="state" class="form-control" id="state" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group mb-0">
+                                        <label for="pincode">Pincode</label>
+                                        <input type="text" name="pincode" class="form-control" id="pincode" required>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" id="submitBtn" class="btn btn-primary me-2 my-2">Create</button>
+                </form>
+                <div id="container" class="text-center"></div>
+                
+                <form class="forms-sample" id="verifyOTPForm" style="display: none;">
+                    <div class="row">
+                        <div class="col-md-6 col-sm-6 col-12 mx-auto">
+                            <div class="row">
+                                <input type="hidden" name='customer_id' value="" class="form-control" id="customer_id">
+                                <div class="col-md-12">
+                                    <div class="input-group mb-3">
+                                        <input type="text" name="otp" class="form-control" placeholder="OTP Here">
+                                        <button class="btn btn-primary" type="submit" id="submitBtn1">Verify</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+                <div id="container1" class="text-center"></div>
+
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+<script>
+
+    $(document).ready(function () {
+
+        // for handling dob
+        document.getElementById('dateInput').addEventListener('input', function () {
+        this.setCustomValidity('');
+        });
+
+        document.getElementById('dateInput').addEventListener('invalid', function () {
+        if (this.value === '') {
+            this.setCustomValidity('Please enter a date in the format yyyy-mm-dd.');
+        } else {
+            this.setCustomValidity('Invalid date format. Use yyyy-mm-dd.');
+        }
+        });
+
+        // create customer
+        $("#createCustomerForm").submit(function (e) {
+            e.preventDefault();
+            $('#submitBtn').attr("disabled", true);
+            var formData = $(this).serialize();
+
+            $("#customer_id").val($('#customer_mobile').val());
+
+            $('#container').empty();
+            $('#container1').empty();
+            $('#verifyOTPForm')[0].reset();
+            $('#verifyOTPForm').hide();
+
+            $('#container').append('<span id="fetchingMsg" class="text-center text-success fw-bold">Processing Details, Wait for a second...</span>');
+            $.ajax({
+                type: "POST",
+                url: '{% url "create_dmt_customer" %}',
+                data: formData,
+                headers: { "X-CSRFToken": '{{ csrf_token }}' },
+                success: function (response) {
+                    if (response.success) {
+                        $('#container').empty();
+                        var apiData = response.context;
+                        if (apiData != undefined) {
+                            $('#container').append(`<span id="fetchingMsg" class="text-center text-success fw-bold">${response.message}</span>`);
+                            $('#submitBtn').attr("disabled", false);
+                        } else {
+                            $('#container').append(`<span id="fetchingMsg" class="text-center text-success fw-bold">${response.message}</span>`);
+                            if (response.message == 'OTP sent. Proceed with verification.') {
+                                $('#verifyOTPForm').show();
+                            }
+                            $('#submitBtn').attr("disabled", false);
+                        }
+                    } else {
+                        $('#container').empty();
+                        $('#container').append(`<span id="fetchingMsg" class="text-center text-danger fw-bold">Something went wrong: ${response.message}</span>`);
+                        $('#submitBtn').attr("disabled", false);
+                    }
+                },
+                error: function (e) {
+                    $('#container').empty();
+                    $('#container').append(`<span id="fetchingMsg" class="text-center text-danger fw-bold">Some Error Occurred: ${e.statusText}</span>`);
+                    $('#submitBtn').attr("disabled", false);
+                }
+            });
+        });
+        
+        $("#verifyOTPForm").submit(function (e) {
+            e.preventDefault();
+            $('#submitBtn1').attr("disabled", true);
+            var formData = $(this).serialize();
+
+            $('#container1').empty();
+            $('#container1').append('<span id="fetchingMsg1" class="text-center text-success fw-bold">Verifying OTP, Wait for a second...</span>');
+            $.ajax({
+                type: "POST",
+                url: '{% url "verify_dmt_otp" %}',
+                data: formData,
+                headers: { "X-CSRFToken": '{{ csrf_token }}' },
+                success: function (response) {
+                    if (response.success) {
+                        $('#container1').empty();
+                        var apiData = response.context;
+                        if (apiData != undefined) {
+                            $('#container1').append(`<span id="fetchingMsg1" class="text-center text-success fw-bold">${response.message}</span>`);
+                            $('#submitBtn1').attr("disabled", false);
+                        } else {
+                            $('#container1').append(`<span id="fetchingMsg1" class="text-center text-success fw-bold">${response.message}</span>`);
+                            $('#submitBtn1').attr("disabled", false);
+                        }
+                    } else {
+                        $('#container1').empty();
+                        $('#container1').append(`<span id="fetchingMsg1" class="text-center text-danger fw-bold">Something went wrong: ${response.message}</span>`);
+                        $('#submitBtn1').attr("disabled", false);
+                    }
+                },
+                error: function (e) {
+                    $('#container1').empty();
+                    $('#container1').append(`<span id="fetchingMsg1" class="text-center text-danger fw-bold">Some Error Occurred: ${e.statusText}</span>`);
+                    $('#submitBtn1').attr("disabled", false);
+                }
+            });
+        });
+
+    });
+
+</script>
+
+
+{% endblock main %}

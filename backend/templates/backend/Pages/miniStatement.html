@@ -1,0 +1,61 @@
+{% extends "backend/Shared/AuthBase.html" %}
+{% block main %}
+{% load custom_filters %}
+
+{% include "backend/Components/AEPSSearchForm.html"  with action_url='mini_statement_paysprint' %}
+
+{% if data %}
+<div class="row">
+    <div class="col-md-8 mx-auto grid-margin stretch-card">
+        <div class="card">
+            <div class="card-body">
+                <h1 class="mb-4">Results</h1>
+                <table class="table table-bordered table-striped mb-4">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th>Acknowledgement Number</th>
+                            <th>Balance Amount</th>
+                            <th>Bank RRN</th>
+                            <th>Bank IIN</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>{{ data.ackno }}</td>
+                            <td>{{ data.balanceamount }}</td>
+                            <td>{{ data.bankrrn }}</td>
+                            <td>{{ data.bankiin }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <!-- Mini-Statement Table -->
+                <h2 class="mb-4">Mini-Statement</h2>
+                <table class="table table-bordered table-striped">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th>Date</th>
+                            <th>Transaction Type</th>
+                            <th>Amount</th>
+                            <th>Narration</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for txn in data.ministatement %}
+                            <tr>
+                                <td>{{ txn.date|format_date }}</td>
+                                <td>{{ txn.txnType }}</td>
+                                <td>{{ txn.amount }}</td>
+                                <td>{{ txn.narration }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+
+{% endblock main %}

@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en" oncontextmenu="return false;">
+
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<title>A.B. Digital India Pvt. Ltd. </title>
+	<link rel="stylesheet" href="/static/backendAssets/vendors/mdi/css/materialdesignicons.min.css">
+	<link rel="stylesheet" href="/static/backendAssets/vendors/base/vendor.bundle.base.css">
+	<link rel="stylesheet" href="/static/backendAssets/css/style.css">
+	<link rel="stylesheet" href="/static/backendAssets/css/custom.css">
+	<link rel="shortcut icon" href="/static/assets/img/favicon.ico" />
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+	{% comment %} <script >
+		document.onkeypress = function (event) {
+			event = (event || window.event);
+			return keyFunction(event);
+		}
+		document.onmousedown = function (event) {
+			event = (event || window.event);
+			return keyFunction(event);
+		}
+		document.onkeydown = function (event) {
+			event = (event || window.event);
+			return keyFunction(event);
+		}
+		
+		//Disable right click script 
+		var message="Sorry, right-click has been disabled"; 
+		
+		function clickIE() {if (document.all) {alert(message);return false;}} 
+		function clickNS(e) {if 
+		(document.layers||(document.getElementById&&!document.all)) { 
+		if (e.which==2||e.which==3) {alert(message);return false;}}} 
+		if (document.layers) 
+		{document.captureEvents(Event.MOUSEDOWN);document.onmousedown=clickNS;} 
+		else{document.onmouseup=clickNS;document.oncontextmenu=clickIE;} 
+		document.oncontextmenu=new Function("return false")
+		
+		function keyFunction(event){
+		//"F12" key
+		if (event.keyCode == 123) {
+		return false;
+		}
+		
+		if (event.ctrlKey && event.shiftKey && event.keyCode == 73) {
+		return false;
+		}
+		//"J" key
+		if (event.ctrlKey && event.shiftKey && event.keyCode == 74) {
+		return false;
+		}
+		//"S" key
+		if (event.keyCode == 83) {
+		return false;
+		}
+		//"U" key
+		if (event.ctrlKey && event.keyCode == 85) {
+		return false;
+		}
+		}
+	</script> {% endcomment %}
+
+</head>
+
+<body>
+	{% include "backend/Components/Navbar.html" %}
+	{% include "backend/Components/Noticebar.html" %}
+
+	<div class="container-scroller">
+		<!-- partial -->
+		<div class="container-fluid page-body-wrapper">
+			<div class="main-panel pt-0">
+				<div class="content-wrapper">
+					{% include "backend/Components/Greeting.html" %}
+					{% block main %}{% endblock main %}
+				</div>
+			</div>
+		</div>
+	</div>
+	
+	{% include "backend/Components/Footer.html" %}
+
+	<script>
+		$(document).ready(function() {
+			$("#refreshBtn").click(function() {
+				$('#walletBalance').text('Refreshing...')
+				$.ajax({
+					type: "POST",
+					url: '{% url "reload_wallet" %}',
+					headers: {"X-CSRFToken": '{{ csrf_token }}'},
+					success: function(response) {
+						if (response.success) {
+							$('#walletBalance').text(`Wallet : ${response.balance.wallet_balance}`)
+						} else {
+							$('#walletBalance').text(response.message)
+						}
+				},
+				error: function(e) {console.log(e)}
+				});
+		  	});
+		});
+	</script>
+
+	<script src="/static/backendAssets/vendors/base/vendor.bundle.base.js"></script>
+	<script src="/static/backendAssets/js/template.js"></script>
+	<script src="/static/backendAssets/vendors/chart.js/Chart.min.js"></script>
+	<script src="/static/backendAssets/vendors/progressbar.js/progressbar.min.js"></script>
+	<script src="/static/backendAssets/vendors/chartjs-plugin-datalabels/chartjs-plugin-datalabels.js"></script>
+	<script src="/static/backendAssets/vendors/justgage/raphael-2.1.4.min.js"></script>
+	<script src="/static/backendAssets/vendors/justgage/justgage.js"></script>
+	<script src="/static/backendAssets/js/jquery.cookie.js" type="text/javascript"></script>
+</body>
+
+</html>

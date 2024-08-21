@@ -1,0 +1,135 @@
+{% extends "backend/Shared/AuthBase.html" %}
+
+{% block main %}
+<style>
+    .divider-text {
+        position: relative;
+        text-align: center;
+        margin-top: 15px;
+        margin-bottom: 15px;
+    }
+
+    .divider-text span {
+        padding: 7px;
+        font-size: 12px;
+        position: relative;
+        z-index: 2;
+    }
+
+    .divider-text:after {
+        content: "";
+        position: absolute;
+        width: 100%;
+        border-bottom: 1px solid #ddd;
+        top: 55%;
+        left: 0;
+        z-index: 1;
+    }
+</style>
+
+<div class="row">
+    <div class="col-lg-6 mx-auto grid-margin stretch-card">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title">Recharge Wallet for your users</h4>
+                {% for message in messages %}
+                <p class="text-{{message.extra_tags}}">{{message}}</p>
+                {% endfor %}
+                <p class="card-description">
+                    Please fill correct details.
+                </p>
+
+                <form action="{% url 'AdminWalletAction' %}" method="post">
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="addWallet">Add to wallet</label>
+                                        <input type="radio" name="actionType" value="addWallet" id="addWallet" checked>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="deductWallet">Deduct from wallet</label>
+                                        <input type="radio" name="actionType" value="deductWallet" id="deductWallet">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="userType">User Type</label>
+                                        <select name="userType" class="form-control form-control-lg" id="userType"
+                                            required>
+                                            <option value="Admin">Admin</option>
+                                            <option value="Retailer">Retailer</option>
+                                            <option value="Distributor">Distributor</option>
+                                            <option value="Master Distributor">Master Distributor</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="username">Username</label>
+                                        <input type="text" class="form-control" name="username" id="username" onkeyup="fetchUser(event)" required>
+                                        <span id="user_status"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="txnid">Transaction ID</label>
+                                        <input type="text" class="form-control" name="txnid" id="txnid" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="amount">Amount in Rs.</label>
+                                        <input type="text" class="form-control" name="amount" id="amount" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="description">Description</label>
+                                        <input type="text" class="form-control" name="description" id="description"
+                                            required>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary mb-2">Recharge Wallet</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function fetchUser(event) {
+        $('#user_status').empty();
+        const userType = $('#userType').val();
+        $.ajax({
+            type: "GET",
+            url: '{% url "AdminGetUser" %}',
+            data: {'username': event.target.value, 'userType': userType},
+            headers: { "X-CSRFToken": '{{ csrf_token }}' },
+            success: function (response) {
+                if (response.success) {
+                    var apiData = response.user;
+                    $('#user_status').empty();
+                    $('#user_status').removeClass('text-danger').text(response.message);
+                    $('#user_status').addClass('text-success').text(response.message);
+                } else {
+                    $('#user_status').empty();
+                    $('#user_status').addClass('text-danger').text(response.message);
+                    $('#user_status').removeClass('text-success').text(response.message);
+                }
+            },
+            error: function (e) {
+                $('#user_status').empty();
+                $('#user_status').text(`Some Error Occurred: ${e.statusText}`);
+            }
+        });
+    }
+</script>
+{% endblock main %}

@@ -1,0 +1,65 @@
+{% extends "backend/Shared/AuthBase.html" %}
+
+{% block main %}
+<div class="row">
+    <div class="col-md-8 mx-auto grid-margin stretch-card">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title" style="font-size:2rem;">Payment Successful</h4>
+                <p class="card-description">
+                    Your payment has been processed successfully.
+                </p>
+                <br/>
+                {% if aadhar_pay_response %}
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped mb-3">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Acknowledgement Number</th>
+                                <th>Amount</th>
+                                <th>Balance Amount</th>
+                                <th>Bank RRN</th>
+                                <th>Bank IIN</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>{{ aadhar_pay_response.ack_no }}</td>
+                                <td>{{ aadhar_pay_response.amount }}</td>
+                                <td>{{ aadhar_pay_response.balanc_eamount }}</td>
+                                <td>{{ aadhar_pay_response.bank_rrn }}</td>
+                                <td>{{ aadhar_pay_response.bank_iin }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                {% endif %}
+
+
+                {% if cash_withdrawl_response %}
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped mb-4">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Acknowledgement Number</th>
+                                <th>Amount</th>
+                                <th>Bank RRN</th>
+                                <th>Transaction Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>{{ cash_withdrawl_response.ack_no }}</td>
+                                <td>{{ cash_withdrawl_response.amount }}</td>
+                                <td>{{ cash_withdrawl_response.bank_rrn }}</td>
+                                <td>{{ cash_withdrawl_response.txn_status }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,62 @@
+{% extends "backend/Shared/AuthBase.html" %}
+
+{% block main %}
+
+<div class="row">
+    <div class="col-md-8 mx-auto grid-margin stretch-card">
+        <div class="card">
+            <div class="card-body">
+                {% for message in messages %}
+                <p class="text-success">{{message}}</p> 
+                {% endfor %}
+                <h4 class="card-title">Fund Transfer</h4>
+                <p class="card-description">Minimum Payout 100 Rs | Available fund : {{wallet_balance}}</p>
+                {% if userObj.acc_name and userObj.acc_no and userObj.acc_type and userObj.ifsc and userObj.payment_mode %}
+                <button type="button" data-bs-toggle="modal" data-bs-target="#makePayout" class="btn btn-primary me-2 my-2">Transferring to - {{userObj.acc_name}} <br> {{userObj.acc_no}} - {{userObj.ifsc}}</button>
+                {% else %}
+                <a href='{% url "add_bank" %}' class="btn btn-primary me-2 my-2">Compelete Bank A/c Details</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Make Payment Modal Start -->
+    <div class="modal fade" id="makePayout" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+        aria-labelledby="makePayoutLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="makePayoutLabel">Initiate Payout</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form method='post' id="PayoutForm" action='{% url "transfer_fund" %}'>
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="form-group mb-0">
+                                            <label for="amount">Amount</label>
+                                            <input type="text" class="form-control" id="amount" name="amount"
+                                                placeholder="Min. 100 INR" required>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="submit" id="submitBtn" class="btn btn-primary">Confirm</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>document.getElementById('PayoutForm').addEventListener('submit', function(event) {event.preventDefault();document.getElementById('submitBtn').style.display = 'none';this.submit();});</script>
+
+
+{% endblock main %}

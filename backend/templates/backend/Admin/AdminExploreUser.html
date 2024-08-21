@@ -1,0 +1,186 @@
+{% extends "backend/Shared/AuthBase.html" %}
+
+{% block main %}
+
+{% load custom_filters %}
+<div class="row">
+    <div class="col-sm-12 grid-margin d-flex stretch-card">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between">
+                    {% for message in messages %}
+                    <p class="{% if message.success == 'error' %} text-danger {% else %} text-success {% endif %}">{{message}}</p> 
+                    {% endfor %}
+                    <h4 class="card-title mb-2">Exploring {{user.username}}'s Profile</h4>
+                </div>
+                <div>
+                    <ul class="nav nav-tabs tab-no-active-fill" role="tablist">
+                        <!-- reports -->
+                        <li class="nav-item">
+                            <a class="nav-link ps-2 pe-2 active" id="report-tab" data-bs-toggle="tab" href="#report" role="tab" aria-controls="report" aria-selected="true">Reports</a>
+                        </li>
+                        
+                        <!-- profile -->
+                        <li class="nav-item">
+                            <a class="nav-link ps-2 pe-2" id="profile-tab" data-bs-toggle="tab" href="#profile-action" role="tab" aria-controls="profile-action" aria-selected="false">Profile</a>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content tab-no-active-fill-tab-content">
+                        <!-- report -->
+                        <div class="tab-pane fade show active" id="report" role="tabpanel" aria-labelledby="report-tab">
+                            <div class="row my-2">
+                                <div class="col-12">Wallet Balance : {{wallet.balance}}</div>
+                            </div>
+                            <div class="row">
+                                <div class="col-lg-2 stretch-card">
+                                    <div class="card">
+                                        <div class="text-center p-2 border border-2">
+                                            <a class="text-dark" href="{% url 'AdminExploreAepsReport' user.id %}">
+                                                AEPS Report
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-2 stretch-card">
+                                    <div class="card">
+                                        <div class="text-center p-2 border border-2">
+                                            <a class="text-dark" href="{% url 'AdminExploreDmtReport' user.id %}">
+                                                DMT Report
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-2 stretch-card">
+                                    <div class="card">
+                                        <div class="text-center p-2 border border-2">
+                                            <a class="text-dark" href="{% url 'AdminExplorePanVerificationReport' user.id %}">    
+                                                PAN Verification
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-2 stretch-card">
+                                    <div class="card">
+                                        <div class="text-center p-2 border border-2">
+                                            <a class="text-dark" href="{% url 'AdminExploreBankVerificationReport' user.id %}">
+                                                Bank Verification
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-2 stretch-card">
+                                    <div class="card">
+                                        <div class="text-center p-2 border border-2">
+                                            <a class="text-dark" href="{% url 'AdminExploreWalletReport' user.id %}">
+                                                Wallet
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-2 stretch-card">
+                                    <div class="card">
+                                        <div class="text-center p-2 border border-2">
+                                            <a class="text-dark" href="{% url 'AdminExplorePayoutReport' user.id %}">
+                                                Payout
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-2 stretch-card">
+                                    <div class="card">
+                                        <div class="text-center p-2 border border-2">
+                                            <a class="text-dark" href="{% url 'AdminExploreBBPSReport' user.id %}">
+                                                BBPS
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-2 stretch-card">
+                                    <div class="card">
+                                        <div class="text-center p-2 border border-2">
+                                            <a class="text-dark" href="{% url 'AdminExploreCreditCardReport' user.id %}">
+                                                Credit Card
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% comment %} <div class="col-lg-2 stretch-card my-3">
+                                    <div class="card">
+                                        <div class="text-center p-2 border border-2">
+                                            <a class="text-dark" href="{% url 'balance_sheet' user.id %}">
+                                                Balance Sheet
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div> {% endcomment %}
+                            </div>
+                        </div>
+
+                        <!-- profile -->
+                        <div class="tab-pane fade" id="profile-action" role="tabpanel" aria-labelledby="profile-tab">
+                            <div class="row my-3">
+                                <div class="col-12 fw-bold text-black">PERSONAL DETAILS</div>
+                                <div class="col-3">First Name : {{user.first_name}}</div>
+                                <div class="col-3">Last Name : {{user.last_name}}</div>
+                                <div class="col-3">Phone Number : {{user.mobile}}</div>
+                                <div class="col-3">Address : {{user.address}}</div>
+                            </div>
+                            <div class="row my-3">
+                                <div class="col-12 fw-bold text-black">BUSINESS DETAILS</div>
+                                <div class="col-3">Shop Name : {{user.shopName}}</div>
+                                <div class="col-3">PAN Number : {{user.pancard_no}}</div>
+                                <div class="col-3">KYC Status : {{user.kycStatus}}</div>
+                                <div class="col-3">User Manager : {{user.userManager|get_user_by_id}}</div>                                
+                            </div>
+                            <div class="row my-3">
+                                <div class="col-12 fw-bold text-black">PLATFORM DETAILS</div>
+                                <div class="col-3">BC Id : {{user.platform_id}}</div>
+                                <div class="col-3">User Code : {{user.eko_user_code}}</div>
+                                <div class="col-3">User type : {{user.userType}}</div>
+                                <div class="col-3">D.O.B. : {{user.dob}}</div>                               
+                            </div>
+                            <div class="row my-3">
+                                <div class="col-12 fw-bold text-black">BANK DETAILS</div>
+                                <div class="col-3">Account Name : {{user.acc_name}}</div>
+                                <div class="col-3">Account Number : {{user.acc_no}}</div>
+                                <div class="col-3">Account Type : {{user.acc_type}}</div>
+                                <div class="col-3">IFSC : {{user.ifsc}}</div>
+                                <div class="col-3 my-2">Payment Mode : {{user.payment_mode}}</div>
+                            </div>
+                            <div class="row my-3">
+                                <div class="col-12 fw-bold text-black">KYC DETAILS</div>
+                                <div class="col-3">Aadhar Front : 
+                                    {% if kycDoc.aadharFront %}  
+                                    <a class="btn btn-primary btn-sm m-2" target="_blank" href="{{kycDoc.aadharFront.url}}">View</a>
+                                    <a href="{{kycDoc.aadharFront.url}}" download><i class="mdi mdi-download"></i></a>
+                                    {% else %}
+                                    N/A
+                                    {% endif %}
+                                </div>
+                                <div class="col-3">Aadhar Back : 
+                                    {% if kycDoc.aadharBack %}  
+                                    <a class="btn btn-primary btn-sm m-2" target="_blank" href="{{kycDoc.aadharBack.url}}">View</a>
+                                    <a href="{{kycDoc.aadharBack.url}}" download><i class="mdi mdi-download"></i></a>
+                                    {% else %}
+                                    N/A
+                                    {% endif %}
+                                </div>
+                                <div class="col-3">Pancard : 
+                                    {% if kycDoc.pancard %}  
+                                    <a class="btn btn-primary btn-sm m-2" target="_blank" href="{{kycDoc.pancard.url}}">View</a>
+                                    <a href="{{kycDoc.pancard.url}}" download><i class="mdi mdi-download"></i></a>
+                                    {% else %}
+                                    N/A
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock main %}

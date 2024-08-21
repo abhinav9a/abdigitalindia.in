@@ -1,0 +1,83 @@
+{% extends "backend/Shared/AuthBase.html" %}
+
+{% block main %}
+
+<div class="row">
+
+    <div class="col-md-10 mx-auto grid-margin">
+        <div class="card-group">
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="card-title">DMT-Customer Inquiry</h4>
+                    <p class="card-description">Please enter a valid mobile number</p>
+                    <form class="forms-sample" id="inquiryForm">
+                        <div class="form-group">
+                            <label for="customer_mobile">Mobile number</label>
+                            <input type="text" name='customer_mobile' class="form-control" id="customer_mobile"
+                                required>
+                        </div>
+                        <button type="submit" class="btn btn-primary me-2 w-100" id='submitBtn'>Fetch Info</button>
+                    </form>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Available Customer Details</h5>
+                    <p class="card-text">The Details are fetched from the mobile number.</p>
+                    <div id="container"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+<script>
+
+    $(document).ready(function () {
+
+        // create customer
+        $("#inquiryForm").submit(function (e) {
+            e.preventDefault();
+            $('#submitBtn').attr("disabled", true);
+            $('#container').empty();
+            var formData = $(this).serialize();
+
+            $('#container').append('<span id="fetchingMsg" class="text-center text-success fw-bold">Processing Details, Wait for a second...</span>');
+            $.ajax({
+                type: "POST",
+                url: '{% url "get_dmt_customer_info" %}',
+                data: formData,
+                headers: { "X-CSRFToken": '{{ csrf_token }}' },
+                success: function (response) {
+                    if (response.success) {
+                        $('#container').empty();
+                        var apiData = response.context;
+                        if (apiData != undefined) {
+                            $('#container').append(`<ul><li>Name : ${apiData.name}</li><li>Total Limit : ${apiData.total_limit}</li><li>Available Limit : ${apiData.available_limit}</li><li>Used Limit : ${apiData.used_limit}</li><li>Currency : ${apiData.currency}</li></ul>`);
+                            $('#submitBtn').attr("disabled", false);
+                        } else {
+                            $('#container').append(`<span id="fetchingMsg" class="text-center text-success fw-bold">${response.message}</span>`);
+                            $('#submitBtn').attr("disabled", false);
+                        }
+                    } else {
+                        $('#container').empty();
+                        $('#container').append(`<span id="fetchingMsg" class="text-center text-danger fw-bold">Something went wrong: ${response.message}</span>`);
+                        $('#submitBtn').attr("disabled", false);
+                    }
+                },
+                error: function (e) {
+                    $('#container').empty();
+                    $('#container').append(`<span id="fetchingMsg" class="text-center text-danger fw-bold">Some Error Occurred: ${e.statusText}</span>`);
+                    $('#submitBtn').attr("disabled", false);
+                }
+            });
+        });
+
+    });
+
+</script>
+
+
+{% endblock main %}

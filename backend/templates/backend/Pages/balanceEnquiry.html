@@ -1,0 +1,41 @@
+{% extends "backend/Shared/AuthBase.html" %}
+{% block main %}
+
+{% include "backend/Components/AEPSSearchForm.html" with action_url='balance_enquiry_paysprint' %}
+
+{% if data %}
+<div class="row">
+    <div class="col-md-8 mx-auto grid-margin stretch-card">
+        <div class="card">
+            <div class="card-body">
+                <h1 class="mb-4">{{heading}} Results</h1>
+                <table class="table table-bordered table-striped">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th>Acknowledgement Number</th>
+                            <th>Amount</th>
+                            <th>Balance Amount</th>
+                            <th>Bank RRN</th>
+                            <th>Bank IIN</th>
+                            <th>Client Reference Number</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>{{ data.ackno }}</td>
+                            <td>{{ data.amount }}</td>
+                            <td>{{ data.balanceamount }}</td>
+                            <td>{{ data.bankrrn }}</td>
+                            <td>{{ data.bankiin }}</td>
+                            <td>{{ data.clientrefno }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+
+{% endblock main %}

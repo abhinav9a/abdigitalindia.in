@@ -1,0 +1,44 @@
+<!-- ======= Header ======= -->
+<header id="header" class="d-flex align-items-center">
+  <div class="container d-flex justify-content-between">
+
+    <div id="logo">
+      <a href="{% url "home" %}"><img style="height: 80px; width: auto;" src="static/assets/img/logo.jpg" alt=""></a>
+    </div>
+
+    <nav id="navbar" class="navbar">
+      <ul>
+        <li><a class="nav-link scrollto active" href="{% url "home" %}#hero">Home</a></li>
+        <li><a class="nav-link scrollto" href="{% url "home" %}#services">Services</a></li>
+        <li><a class="nav-link scrollto" href="{% url "home" %}#about">About</a></li>
+        <li><a class="nav-link scrollto" href="{% url "home" %}#pricing">Pricing</a></li>
+        <li class="dropdown"><a href="javascript:void(0)"><span>For Bank Mittra CSP</span> <i
+              class="bi bi-chevron-down"></i></a>
+          <ul>
+            <li><a href="javascript:void(0)">1. घर का बिजली बिल</a></li>
+            <li><a class="dropdown-item" href="javascript:void(0)">2. आधार कार्ड</a></li>
+            <li><a class="dropdown-item" href="javascript:void(0)">3. पैन कार्ड</a></li>
+            <li><a class="dropdown-item" href="javascript:void(0)">4. एस बी आई बैंक पासबुक फ़ोटो कॉपी</a></li>
+            <li><a class="dropdown-item" href="javascript:void(0)">5. पुलिस वेरिफिकेशन</a></li>
+            <li><a class="dropdown-item" href="javascript:void(0)">6.Affidavite दस रुपये के स्टाम्प पेपर पर</a></li>
+            <li><a class="dropdown-item" href="javascript:void(0)">7.आफिस अगर अपना है तो बिजली बिल और किराये पर <br> है
+                तो 100 रुपये के
+                स्टाम्प पेपर पर किराया नाम</a></li>
+            <li><a class="dropdown-item" href="javascript:void(0)">8. 3 पासपोर्ट साइज फ़ोटो</a></li>
+            <li><a class="dropdown-item" href="javascript:void(0)">9. 12th की मार्क शीट साथ मे 10th का सर्टिफिकेट</a>
+            </li>
+            <li><a class="dropdown-item" href="javascript:void(0)">10.CIBIL REPORT</a></li>
+            <li><a class="dropdown-item" href="javascript:void(0)">11.Apply </a></li>
+          </ul>
+        </li>
+        <li><a class="nav-link scrollto" href="{% url "home" %}#contact">Contact</a></li>
+        <div class="text-center">
+          <li style="display: inline-block;"><a class="signup_btn" href="{% url "user_signup" %}">SignUp</a></li>
+          <li style="display: inline-block;"><a class="login_btn" href="{% url "user_login" %}">Login</a></li>
+        </div>
+        </ul>
+      <i class="bi bi-list mobile-nav-toggle"></i>
+    </nav><!-- .navbar -->
+
+  </div>
+</header><!-- End Header -->

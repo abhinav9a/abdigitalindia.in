@@ -1,0 +1,52 @@
+{% extends "backend/Shared/AuthBase.html" %}
+
+{% block main %}
+
+{% load custom_filters %}
+<div class="row">
+  <div class="col-lg-12 grid-margin stretch-card">
+    <div class="card">
+      <div class="card-body">
+        <h4 class="card-title">
+          Balance sheet : {{context.user}}
+          {% for message in messages %}
+          <p class="text-success">{{message}}</p>
+          {% endfor %}
+        </h4>
+        <div class="row">
+            <div class="col-12">
+                <p>Pending Transactions</p>
+                DMT Pending : {{context.dmt_txn_pending_count}}
+                <details>
+                    <summary>Click to See</summary>
+                    <div class="row">
+                        {% for i in context.dmt_txn_pending %}
+                        <div class="col-3">
+                            <div class="card text-white bg-danger mb-3" style="max-width: 18rem;">
+                                <div class="card-body">
+                                    <ul>
+                                        <li>Status : {{i.txn_status}} || Tid : {{i.txnid}} || Client Ref Id : {{i.client_ref_id}} || Sender Name : {{i.sender_name}} || Time : {{i.timestamp}}</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </details>
+                Aeps Pending : {{context.aeps_txn_pending_count}}
+                <details>
+                    <summary>Click to See</summary>
+                    <ul>
+                        {% for i in context.aeps_txn_pending %}
+                        <li>User : {{i.userAccount.username}} || Status : {{i.tx_status}} || Tid : {{i.tid}} || Client Ref Id : {{i.client_ref_id}} || Sender Name : {{i.aadhar_no}} || Time : {{i.timestamp}}</li>
+                        {% endfor %}
+                    </ul>
+                </details>
+            </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock main %}

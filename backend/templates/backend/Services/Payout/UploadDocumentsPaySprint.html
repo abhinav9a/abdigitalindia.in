@@ -1,0 +1,87 @@
+{% extends "backend/Shared/AuthBase.html" %}
+
+{% block main %}
+
+<div class="row">
+    {% for message in messages %}
+        <p class="text-{% if message.tags %}{{ message.tags }}{% else %}success{% endif %} text-center fs-3 pb-4">{{message}}</p>
+    {% endfor %}
+    <div class="col-md-8 mx-auto grid-margin stretch-card">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title">Upload Documents</h4>
+                <p class="card-description">Please fill complete details carefully. For blood relative, please upload Aadhaar front and back images.</p>
+                <form class="forms-sample" method='post' action='{% url "upload_documents" %}?bene_id={{ bene_id }}' enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="bank_details">Bank Details</label>
+                                        <input type="text" class="form-control" id="bank_details" value="{{ bank_details }}" style="background-color: #f8f9fa; border: 1px solid #d3d3d3; border-radius: 0.25rem; padding: 16px; color: #495057;" readonly>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="doctype">Document Type</label>
+                                        <select name="doctype" class="form-control" style="background-color: #ffffff; border: 1px solid #d3d3d3; border-radius: 0.25rem; padding: 16px; color: #000000;" id="doctype" required>
+                                            <option value="">Select Document Type</option>
+                                            <option value="PAN">PAN</option>
+                                            <option value="AADHAAR">AADHAAR</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="passbook">Passbook Image</label>
+                                        <input type="file" name='passbook' class="form-control" id="passbook" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 pan-field" style="display: none;">
+                                    <div class="form-group">
+                                        <label for="panimage">PAN Image</label>
+                                        <input type="file" name='panimage' class="form-control" id="panimage">
+                                    </div>
+                                </div>
+                                <div class="col-md-6 aadhaar-field" style="display: none;">
+                                    <div class="form-group">
+                                        <label for="front_aadhar">Front Aadhaar Image</label>
+                                        <input type="file" name='front_aadhar' class="form-control" id="front_aadhar">
+                                    </div>
+                                </div>
+                                <div class="col-md-6 aadhaar-field" style="display: none;">
+                                    <div class="form-group">
+                                        <label for="back_aadhar">Back Aadhaar Image</label>
+                                        <input type="file" name='back_aadhar' class="form-control" id="back_aadhar">
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-primary me-2 my-2">Upload Documents</button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('doctype').addEventListener('change', function() {
+    var panFields = document.querySelectorAll('.pan-field');
+    var aadhaarFields = document.querySelectorAll('.aadhaar-field');
+
+    if (this.value === 'PAN') {
+        panFields.forEach(field => field.style.display = 'block');
+        aadhaarFields.forEach(field => field.style.display = 'none');
+    } else if (this.value === 'AADHAAR') {
+        panFields.forEach(field => field.style.display = 'none');
+        aadhaarFields.forEach(field => field.style.display = 'block');
+    } else {
+        panFields.forEach(field => field.style.display = 'none');
+        aadhaarFields.forEach(field => field.style.display = 'none');
+    }
+});
+</script>
+
+{% endblock main %}

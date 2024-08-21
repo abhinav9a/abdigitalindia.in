@@ -1,0 +1,115 @@
+<div class="row">
+    <div class="col-md-8 mx-auto grid-margin stretch-card">
+        <div class="card">
+            <div class="card-body">
+              {% for message in messages %}
+              <div class="alert alert-{{ message.extra_tags }}">
+                  {{message}}
+              </div>
+              {% endfor %}
+              <h4 class="card-title" style="font-size:2rem;">{{ heading }}</h4>
+  <!--            <p class="card-description">-->
+  <!--                This is the one time process. please check all the details to avoid rejection.-->
+  <!--            </p>-->
+
+              <form class="forms-sample" method="post" action="{% url action_url %}" enctype="multipart/form-data">
+                  {% csrf_token %}
+                  <div class="row">
+                      <input type="hidden" name="latlong" id="latlong1" required>
+                      <div class="col-md-3">
+                          <div class="form-group">
+                              <label for="aadhar_no">Aadhar Number</label>
+                              <input type="text" name='aadhar_no' style="text-transform: uppercase;" class="form-control" id="aadhar_no">
+                          </div>
+                      </div>
+
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label for="bank_identifier">Bank</label>
+                            <select name="bank_identifier" class="form-control" style="background-color: #ffffff; border: 1px solid #d3d3d3; border-radius: 0.25rem; padding: 16px; color: #000000;" id="bank_identifier">
+                                <option value="">Select Bank</option>
+                                {% for bank in bank_list %}
+                                <option value="{{ bank.iinno }}">{{ bank.bankName }}</option>
+                                {% endfor %}
+                            </select>
+                         </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label for="data" class="form-label">Fingerprint Data</label>
+                            <button type="button" class="form-control btn btn-primary me-2 py-3" onclick="captureFingerprint()" id="data">Capture Fingerprint</button>
+                         </div>
+                    </div>
+                  </div>
+                <button type="submit" class="btn btn-primary px-5 py-3 my-4">Submit</button>
+              </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/@fingerprintjs/fingerprintjs@3"></script>
+<script>
+
+    function getLocation() {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                function (position) {
+                    var latitude = position.coords.latitude;
+                    var longitude = position.coords.longitude;
+                    $('#latlong1').val(latitude + ',' + longitude)
+                },
+                function (error) {
+                    handleGeolocationError(error);
+                }
+            );
+        } else {
+            alert("Geolocation is not supported by this browser.");
+        }
+    }
+
+    function handleGeolocationError(error) {
+        switch (error.code) {
+            case error.PERMISSION_DENIED:
+                alert("User denied the request for Geolocation.");
+                break;
+            case error.POSITION_UNAVAILABLE:
+                alert("Location information is unavailable.");
+                break;
+            case error.TIMEOUT:
+                alert("The request to get user location timed out.");
+                break;
+            case error.UNKNOWN_ERROR:
+                alert("An unknown error occurred.");
+                break;
+        }
+    }
+    getLocation();
+
+     const fpNavigator = new FingerprintJS.FingerprintNavigator();
+
+    async function captureFingerprint() {
+        try {
+            const fingerprintData = await getFingerprintData();
+            document.getElementById('data').value = fingerprintData;
+            document.querySelector('button[type="submit"]').disabled = false;
+        } catch (error) {
+            console.error('Error capturing fingerprint:', error);
+            alert('Failed to capture fingerprint. Please try again.');
+        }
+    }
+
+    function getFingerprintData() {
+        return new Promise((resolve, reject) => {
+            fpNavigator.getUserEngineDataAsXML(
+                (fingerprintData) => {
+                    resolve(fingerprintData);
+                },
+                (error) => {
+                    reject(error);
+                }
+            );
+        });
+    }
+</script>

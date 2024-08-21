@@ -1,0 +1,233 @@
+{% extends "backend/Shared/AuthBase.html" %}
+
+{% block main %}
+
+<div class="row d-flex justify-content-center">
+
+    <div class="col-md-5">
+        <div class="card">
+            {% for message in messages %}
+            <p class="text-center{% if message.tags == 'error' %} text-danger {% else %} text-success {% endif %}">{{message}}</p> 
+            {% endfor %}
+            <div class="card-body">
+                <h4 class="card-title">Complete this KYC Form</h4>
+                <form class="form-sample" method="post" action="{% url 'kycAction' %}" enctype="multipart/form-data">
+                    {% csrf_token %}
+
+                    <p class="card-description">
+                        Please submit original and valid documents.
+                    </p>
+
+                    <div class="form-group d-flex flex-column">
+                        <label class="col-form-label m-0 p-0" for='{{form.photo.auto_id}}'>{{form.photo.label}}</label>
+                        {{form.photo}}
+                        {% if form.photo.errors %}
+                            {% for error in form.photo.errors %}
+                            <div class="invalid-feedback d-block">{{ error }}</div>
+                            {% endfor %}
+                        {% endif %}
+                        <span class="small text-danger">PDF, JPG, JPEG, PNG. MAX SIZE: 1MB</span>
+                    </div>
+
+                    <div class="form-group d-flex flex-column">
+                        <label class="col-form-label m-0 p-0" for='{{form.aadharFront.auto_id}}'>{{form.aadharFront.label}}</label>
+                        {{form.aadharFront}}
+                        {% if form.aadharFront.errors %}
+                            {% for error in form.aadharFront.errors %}
+                            <div class="invalid-feedback d-block">{{ error }}</div>
+                            {% endfor %}
+                        {% endif %}
+                        <span class="small text-danger">PDF, JPG, JPEG, PNG. MAX SIZE: 1MB</span>
+                    </div>
+                    
+                    <div class="form-group d-flex flex-column">
+                        <label class="col-form-label m-0 p-0" for='{{form.aadharBack.auto_id}}'>{{form.aadharBack.label}}</label>
+                        {{form.aadharBack}}
+                        {% if form.aadharBack.errors %}
+                            {% for error in form.aadharBack.errors %}
+                            <div class="invalid-feedback d-block">{{ error }}</div>
+                            {% endfor %}
+                        {% endif %}
+                        <span class="small text-danger">PDF, JPG, JPEG, PNG. MAX SIZE: 1MB</span>
+                    </div>
+                    <div class="form-group d-flex flex-column">
+                        <label class="col-form-label m-0 p-0" for='{{form.pancard.auto_id}}'>{{form.pancard.label}}</label>
+                        {{form.pancard}}
+                        {% if form.pancard.errors %}
+                            {% for error in form.pancard.errors %}
+                            <div class="invalid-feedback d-block">{{ error }}</div>
+                            {% endfor %}
+                        {% endif %}
+                        <span class="small text-danger">PDF, JPG, JPEG, PNG. MAX SIZE: 1MB</span>
+                    </div>
+
+                    <div class="form-group d-flex flex-column">
+                        <label class="col-form-label m-0 p-0" for='{{form.cancelChequePassbook.auto_id}}'>{{form.cancelChequePassbook.label}}</label>
+                        {{form.cancelChequePassbook}}
+                        {% if form.cancelChequePassbook.errors %}
+                            {% for error in form.cancelChequePassbook.errors %}
+                            <div class="invalid-feedback d-block">{{ error }}</div>
+                            {% endfor %}
+                        {% endif %}
+                        <span class="small text-danger">PDF, JPG, JPEG, PNG. MAX SIZE: 1MB</span>
+                    </div>
+
+                    <div class="form-group d-flex flex-column">
+                        <label class="col-form-label m-0 p-0" for='{{form.policeVerification.auto_id}}'>{{form.policeVerification.label}}</label>
+                        {{form.policeVerification}}
+                        {% if form.policeVerification.errors %}
+                            {% for error in form.policeVerification.errors %}
+                            <div class="invalid-feedback d-block">{{ error }}</div>
+                            {% endfor %}
+                        {% endif %}
+                        <span class="small text-danger">PDF, JPG, JPEG, PNG. MAX SIZE: 1MB</span>
+                    </div>
+
+                    <div class="form-group d-flex flex-column">
+                        <a href="/static/backendAssets/declarationform.pdf" download>Download Declaration form and upload below <i class="mdi mdi-download"></i></a>
+                        <label class="col-form-label m-0 p-0" for='{{form.declarationForm.auto_id}}'>{{form.declarationForm.label}}</label>
+                        {{form.declarationForm}}
+                        {% if form.declarationForm.errors %}
+                            {% for error in form.declarationForm.errors %}
+                            <div class="invalid-feedback d-block">{{ error }}</div>
+                            {% endfor %}
+                        {% endif %}
+                        <span class="small text-danger">PDF, JPG, JPEG, PNG. MAX SIZE: 1MB</span>
+                    </div>
+
+                    
+
+                    <div class="form-group d-flex flex-column">
+                        <label class="col-form-label mb-0 pb-0" for="{{form.documentComment.auto_id}}">{{form.documentComment.label}}</label>
+                        {{form.documentComment}}
+                        {% if form.documentComment.errors %}
+                            {% for error in form.documentComment.errors %}
+                            <div class="invalid-feedback d-block">{{ error }}</div>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+
+                    <button type="submit" class="btn btn-primary me-2 w-100">Submit</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-5">
+
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title">Your Documents</h4>
+                
+                {% if documentList %}
+                <ol>
+                    {% for list in documentList %}
+                        {% if list.aadharFront %}
+                        <li>
+                            <div>
+                                <h5><a href="{{list.aadharFront.url}}" download>Aadhar Front</a></h5>
+                            </div>
+                        </li>
+                        {% else %}
+                        <li>
+                            <div>
+                                <h5>Aadhar Front not uploaded</h5>
+                            </div>
+                        </li>
+                        {% endif %}
+                        {% if list.aadharBack %}
+                        <li>
+                            <div>
+                                <h5><a href="{{list.aadharBack.url}}" download>Aadhar Back</a></h5>
+                            </div>
+                        </li>
+                        {% else %}
+                        <li>
+                            <div>
+                                <h5>Aadhar Back not uploaded</h5>
+                            </div>
+                        </li>
+                        {% endif %}
+                        {% if list.pancard %}
+                        <li>
+                            <div>
+                                <h5><a href="{{list.pancard.url}}" download>Pancard</a></h5>
+                            </div>
+                        </li>
+                        {% else %}
+                        <li>
+                            <div>
+                                <h5>Pancard not uploaded</h5>
+                            </div>
+                        </li>
+                        {% endif %}
+                        {% if list.cancelChequePassbook %}
+                        <li>
+                            <div>
+                                <h5><a href="{{list.cancelChequePassbook.url}}" download>Cancel Cheque/Passbook</a></h5>
+                            </div>
+                        </li>
+                        {% else %}
+                        <li>
+                            <div>
+                                <h5>Cancel Cheque/Passbook not uploaded</h5>
+                            </div>
+                        </li>
+                        {% endif %}
+                        {% if list.declarationForm %}
+                        <li>
+                            <div>
+                                <h5><a href="{{list.declarationForm.url}}" download>Self Declaration Form</a></h5>
+                            </div>
+                        </li>
+                        {% else %}
+                        <li>
+                            <div>
+                                <h5>Self Declaration Form not uploaded</h5>
+                            </div>
+                        </li>
+                        {% endif %}
+                        {% if list.photo %}
+                        <li>
+                            <div>
+                                <h5><a href="{{list.photo.url}}" download>Passport Size Photo</a></h5>
+                            </div>
+                        </li>
+                        {% else %}
+                        <li>
+                            <div>
+                                <h5>Passport Size Photo not uploaded</h5>
+                            </div>
+                        </li>
+                        {% endif %}
+                        {% if list.policeVerification %}
+                        <li>
+                            <div>
+                                <h5><a href="{{list.policeVerification.url}}" download>Police Verification</a></h5>
+                            </div>
+                        </li>
+                        {% else %}
+                        <li>
+                            <div>
+                                <h5>Police Verification not uploaded</h5>
+                            </div>
+                        </li>
+                        {% endif %}
+
+                        <p class="text-muted">Comment : {{list.documentComment}}</p>
+                    {% endfor %}
+                </ol>
+                {% else %}
+                    <div>
+                        <h5>No Documents Uploaded Yet.</h5>
+                    </div>
+                {% endif %}
+
+            </div>
+        </div>
+
+    </div>
+    
+</div>
+
+{% endblock main %}

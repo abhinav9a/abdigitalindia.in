@@ -1,0 +1,21 @@
+{% extends "backend/Shared/AuthBase.html" %}
+
+{% block main %}
+
+<div class="row">
+    <div class="col-sm-12 grid-margin d-flex stretch-card">
+        <div class="card">
+            <div class="card-body">
+                <div class="">
+                    <form action="{% url 'import_banks_from_excel' %}" method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <input type="file" name="excel_file" id="excel_file">
+                        <input type="submit" value="Import">
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock main %}

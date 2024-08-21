@@ -1,0 +1,51 @@
+.horizontal-menu {
+    background-image: url('/static/backendAssets/images/dashboard/nav-background.jpg');
+}
+
+@media (min-width: 768px) {
+    .horizontal-menu .bottom-navbar .page-navigation>.nav-item:not(.mega-menu) .submenu {
+        top: 52px;
+    }
+}
+
+.dropdownAnimation,
+.horizontal-menu .top-navbar .navbar-menu-wrapper .dropdown .dropdown-menu,
+.horizontal-menu .bottom-navbar .page-navigation>.nav-item .submenu {
+    animation: none;
+}
+
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #ffffff3a;
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: #ffffff;
+    border-radius: 20px;
+}
+
+.noticebar {
+    background: linear-gradient(110deg, #0567cc 47%, #ee5b5b 47%);
+    color: white;
+    font-weight: bold;
+}
+
+.horizontal-menu .bottom-navbar .page-navigation>.nav-item>.nav-link {
+    padding: 17px 10px;
+}
+
+.horizontal-menu .bottom-navbar .page-navigation>.nav-item:not(.mega-menu) .submenu ul {
+    padding: 5px 10px;
+}
+
+.horizontal-menu .bottom-navbar .page-navigation > .nav-item:not(.mega-menu) .submenu li a{
+    padding-left: 10px;
+}
+
+#unauthorized{
+    -webkit-text-stroke: 1px #ee5b5b;
+    -webkit-text-fill-color: transparent;
+}

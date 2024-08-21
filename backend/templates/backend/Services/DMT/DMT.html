@@ -1,0 +1,229 @@
+{% extends "backend/Shared/AuthBase.html" %}
+
+{% block main %}
+
+<div class="row">
+
+    <div class="col-md-10 mx-auto grid-margin">
+        <div class="card-group">
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="card-title">Domestic Money Transer</h4>
+                    <p class="card-description">Please enter a valid mobile number</p>
+                    <form class="forms-sample" id="dmt_form">
+                        <div class="form-group">
+                            <label for="customer_mobile">Mobile number</label>
+                            <input type="text" name='customer_mobile' class="form-control" id="customer_mobile"
+                                required>
+                        </div>
+                        <button type="submit" class="btn btn-primary me-2 w-100" id='submitBtn'>Fetch Info</button>
+                    </form>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Available Recipients Details</h5>
+                    <p class="card-text">The Details are fetched from the mobile number.</p>
+                    <div>
+                        <ul class="list-group" id="container"></ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Make Payment Modal Start -->
+    <div class="modal fade" id="makePayment" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+        aria-labelledby="makePaymentLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="makePaymentLabel">Initiate a Payment</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" onclick="$('#container1').empty();$('#submitBtn1').attr('disabled', false);"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="payment_form">
+                        <div class="row">
+                            <input type="hidden" name="latlong" class="form-control" id="latlong" readonly>
+                            <div class="col-md-12">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group mb-0">
+                                            <label for="customer_id">Customer Number</label>
+                                            <input type="text" name="customer_id" class="form-control" id="customer_id"
+                                                readonly>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group mb-0">
+                                            <label for="recipient_id">Recipients ID</label>
+                                            <input type="text" name="recipient_id" class="form-control"
+                                                id="recipient_id" readonly>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-12">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group mb-0">
+                                            <label for="amount">Amount</label>
+                                            <input type="text" class="form-control" id="amount" name="amount"
+                                                placeholder="Min. 100 INR" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group mb-0">
+                                            <label for="currency">Currency</label>
+                                            <select name="currency" class="form-control form-control-lg" id="currency"
+                                                required>
+                                                <option value="INR" selected>INR</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="channel">Channel</label>
+                                            </select>
+                                            <select name="channel" class="form-control form-control-lg" id="channel"
+                                                required>
+                                                <option value="2" selected>IMPS</option>
+                                                <option value="1">NEFT</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="container1" class="text-center"></div>
+                        <div class="modal-footer">
+                            <button type="submit" id="submitBtn1" class="btn btn-primary">Confirm</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+
+    $(document).ready(function () {
+
+        // Get List of recipients
+        $("#dmt_form").submit(function (e) {
+            $('#submitBtn').attr("disabled", true);
+            e.preventDefault();
+            var formData = $(this).serialize();
+
+            $("#customer_id").val($('#customer_mobile').val());
+
+            $('#container').empty();
+            $('#container').append('<span id="fetchingMsg" class="text-center text-success fw-bold">Fetching Details, Wait for a second...</span>');
+            $.ajax({
+                type: "POST",
+                url: '{% url "list_dmt_recipient" %}',
+                data: formData,
+                headers: { "X-CSRFToken": '{{ csrf_token }}' },
+                success: function (response) {
+                    if (response.success) {
+                        var apiData = response.context.recipient_list;
+                        if (apiData != undefined) {
+                            for (var i = 0; i < apiData.length; i++) {
+                                $('#container').append(`
+                                    <li class="list-group-item d-flex justify-content-between"><label class="form-label">${apiData[i].recipient_name} - ${apiData[i].account}</label><button class="btn btn-primary btn-sm me-1" data-bs-toggle="modal" data-bs-target="#makePayment" type="button" id="${apiData[i].recipient_id}" onclick="$('#recipient_id').val(event.target.id)">Pay</button></li>`);
+                            }
+                            document.getElementById('fetchingMsg').style.display = 'none';
+                            $('#submitBtn').attr("disabled", false);
+                        } else {
+                            $('#container').empty();
+                            $('#container').append(`<span id="fetchingMsg" class="text-center text-danger fw-bold">${response.message}</span>`);
+                            $('#submitBtn').attr("disabled", false);
+                        }
+                    } else {
+                        $('#container').empty();
+                        $('#container').append(`<span id="fetchingMsg" class="text-center text-danger fw-bold">Something went wrong: ${response.message}</span>`);
+                        $('#submitBtn').attr("disabled", false);
+                    }
+                },
+                error: function (e) {
+                    $('#container').empty();
+                    $('#container').append(`<span id="fetchingMsg" class="text-center text-danger fw-bold">Some Error Occurred: ${e.statusText}</span>`);
+                    $('#submitBtn').attr("disabled", false);
+                }
+            });
+        });
+
+        // Make payment to the recipient
+        $("#payment_form").submit(function (e) {
+            e.preventDefault();
+            var formData = $(this).serialize();
+            $('#submitBtn1').attr("disabled", true);
+            $('#container1').empty();
+            $('#container1').append('<span id="fetchingMsg1" class="text-center text-success fw-bold">Fetching Details, Wait for a second...</span>');
+            $.ajax({
+                type: "POST",
+                url: '{% url "initiate_dmt_payment" %}',
+                data: formData,
+                headers: { "X-CSRFToken": '{{ csrf_token }}' },
+                success: function (response) {
+                    if (response.success) {
+                        var apiData = response.context;
+                        // $('#submitBtn1').attr("disabled", false);
+                        $('#container1').empty();
+                        $('#container1').append(`<span id="fetchingMsg1" class="text-center text-success fw-bold">${response.message} <br> Tid : ${apiData.tid}</span>`);
+                    } else {
+                        $('#container1').empty();
+                        $('#container1').append(`<span id="fetchingMsg1" class="text-center text-danger fw-bold">${response.message}</span>`);
+                        // $('#submitBtn1').attr("disabled", false);
+                    }
+                },
+                error: function (e) {
+                    $('#container1').empty();
+                    $('#container1').append(`<span id="fetchingMsg1" class="text-center text-danger fw-bold">Some Error Occurred: ${e.statusText}</span>`);
+                    // $('#submitBtn1').attr("disabled", false);
+                }
+            });
+        });
+
+        function getLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    function (position) {
+                        var latitude = position.coords.latitude;
+                        var longitude = position.coords.longitude;
+                        $('#latlong').val(latitude + ',' + longitude)
+                    },
+                    function (error) {
+                        handleGeolocationError(error);
+                    }
+                );
+            } else {
+                alert("Geolocation is not supported by this browser.");
+            }
+        }
+
+        function handleGeolocationError(error) {
+            switch (error.code) {
+                case error.PERMISSION_DENIED:
+                    alert("User denied the request for Geolocation.");
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    alert("Location information is unavailable.");
+                    break;
+                case error.TIMEOUT:
+                    alert("The request to get user location timed out.");
+                    break;
+                case error.UNKNOWN_ERROR:
+                    alert("An unknown error occurred.");
+                    break;
+            }
+        }
+
+        getLocation()
+    });
+
+</script>
+
+{% endblock main %}

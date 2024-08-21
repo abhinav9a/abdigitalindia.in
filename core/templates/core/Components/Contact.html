@@ -1,0 +1,109 @@
+<!-- ======= Contact Section ======= -->
+<section id="contact">
+  <div class="container" data-aos="fade-up">
+    <div class="section-header">
+      <h2>Contact Us</h2>
+      {% comment %} <p>Sed tamen tempor magna labore dolore dolor sint tempor duis magna elit veniam aliqua esse amet veniam enim
+        export quid quid veniam aliqua eram noster malis nulla duis fugiat culpa esse aute nulla ipsum velit export
+        irure minim illum fore</p> {% endcomment %}
+    </div>
+
+    <div class="row contact-info">
+
+      <div class="col-md-4">
+        <div class="contact-address">
+          <i class="bi bi-geo-alt"></i>
+          <h3>Address</h3>
+          <address>OLD GT ROAD NEAR RAILWAY STATION KOSI KALAN MATHURA 281403</address>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="contact-phone">
+          <i class="bi bi-phone"></i>
+          <h3>Phone Number</h3>
+          <p><a href="tel:+918077039923">+91 8077039923</a></p>
+          <p><a href="tel:+917900240446">+91 7900240446</a></p>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="contact-email">
+          <i class="bi bi-envelope"></i>
+          <h3>Email</h3>
+          <p><a href="mailto:support@abdigitalindia.in">support@abdigitalindia.in</a></p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="container mb-4">
+    <iframe
+      src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d301104.45884267177!2d77.3919958872903!3d27.599705150073344!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x39733d5ff8ab4359%3A0xdebc660a0e46b672!2sKosi%20kalan%20railway%20station!5e0!3m2!1sen!2sin!4v1699967415489!5m2!1sen!2sin"
+      width="100%" height="380" frameborder="0" style="border:0" allowfullscreen></iframe>
+  </div>
+
+  <div class="container">
+    <div class="form">
+      <form onsubmit="submitForm(event)" method="post" class="php-email-form">
+        {% csrf_token %}
+        <div class="row">
+          <div class="form-group col-md-6">
+            {{form.name}}
+          </div>
+
+          <div class="form-group col-md-6 mt-3 mt-md-0">
+            {{form.email}}
+          </div>
+        </div>
+
+        <div class="form-group mt-3">
+          {{form.subject}}
+        </div>
+
+        <div class="form-group mt-3">
+          {{form.message}}
+        </div>
+
+        <div class="text-center my-3"><button type="submit">Send Message</button></div>
+        <div id="id_submitForm" class="text-white py-2 text-center" style="display: none;"></div>
+      </form>
+    </div>
+
+  </div>
+</section><!-- End Contact Section -->
+
+
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+
+<script>
+  function submitForm(event) {  
+        event.preventDefault();     
+        var formData = new FormData(event.target);
+        $.ajax({
+            type: "POST",
+            url: "{% url 'home' %}",
+            data: formData,
+            processData: false,
+            contentType: false,
+            dataType: 'json',
+            success: function(response) {
+                // Handle the successful response
+                $('#id_submitForm').css('display', 'block');
+                if (response.success){
+                  $('#id_submitForm').text(response.message);
+                  $('#id_submitForm').addClass('bg-success');
+                }else{
+                  $('#id_submitForm').text(response.message);
+                  $('#id_submitForm').addClass('bg-danger');
+                }
+              },
+              error: function(response) {
+              // Handle the error response
+              $('#id_submitForm').text('Something went wrong!!!');
+              $('#id_submitForm').addClass('bg-danger');
+            }
+        });
+    };
+</script>

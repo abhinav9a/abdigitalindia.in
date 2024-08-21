@@ -1,0 +1,55 @@
+{% extends "backend/Shared/AuthBase.html" %}
+
+{% load custom_filters %}
+{% block main %}
+
+<div class="row">
+    <div class="col-sm-12 grid-margin d-flex stretch-card">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between">
+                    {% for message in messages %}
+                    <p class="{% if message.success == 'error' %} text-danger {% else %} text-success {% endif %}">{{message}}</p> 
+                    {% endfor %}
+                    <h4 class="card-title mb-2">Dashboard Status</h4>
+                </div>
+                <div>
+                    <ul class="nav nav-tabs tab-no-active-fill" role="tablist">
+                        <li class="nav-item">
+                            <a class="nav-link active ps-2 pe-2" id="pending-action-tab" data-bs-toggle="tab" href="#pending-action" role="tab" aria-controls="pending-action" aria-selected="false">Pending Action</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link ps-2 pe-2" id="issues-tab" data-bs-toggle="tab" href="#issues" role="tab" aria-controls="issues" aria-selected="true">Issues</a>
+                        </li>
+                    </ul>
+                    <div class="tab-content tab-no-active-fill-tab-content">
+                        <div class="tab-pane fade show active" id="pending-action" role="tabpanel" aria-labelledby="pending-action-tab">
+                            {% if request.user.kycStatus == 'P' %}
+                            <div class="d-flex">
+                                1. <p class="mb-4 fw-bold"><a class="text-primary" href="{% url 'kycAction' %}">KYC Pending</a></p>
+                                <span class="text-black fw-normal text-uppercase">&nbsp;&nbsp;(NOTE : you're not able to use any service untill kyc complete.)</span>
+                            </div>
+                            {% elif request.user.kycStatus == 'R' %}
+                            <div class="d-flex">
+                                1. <p class="mb-4 fw-bold"><a class="text-danger" href="{% url 'kycAction' %}">KYC Rejected</a></p>
+                                <span class="text-black fw-normal text-uppercase">&nbsp;&nbsp;(NOTE : you're not able to use any service untill kyc complete.)</span>
+                            </div>
+                            {% else %}
+                            <div class="d-lg-flex">
+                                <p class="mb-4">No Issues.</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="tab-pane fade" id="issues" role="tabpanel" aria-labelledby="issues-tab">
+                            <div class="d-lg-flex">
+                                <p class="mb-4">No Issues.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock main %}

@@ -1,0 +1,9 @@
+{% extends "backend/Shared/AuthBase.html" %}
+{% block main %}
+{% load custom_filters %}
+
+{% include "backend/Components/AEPSPaymentForm.html"  with action_url='aadhar_pay_paysprint' %}
+
+
+
+{% endblock main %}

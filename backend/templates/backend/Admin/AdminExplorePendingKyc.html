@@ -1,0 +1,97 @@
+{% extends "backend/Shared/AuthBase.html" %}
+
+{% block main %}
+
+<div class="row d-flex justify-content-center">
+
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                {% for message in messages %}
+                <p class="text-center{% if message.tags == 'error' %} text-danger {% else %} text-success {% endif %}">{{message}}</p> 
+                {% endfor %}
+                <h4 class="card-title">Verify User's KYC</h4>
+
+                <p class="card-description">
+                    Please check all documents carefully before mark the status complete.
+                </p>
+
+                <div class="form-check d-flex align-items-center">
+                    <p>
+                        <span class="fw-bold">Username :</span> {{userDetails.username}},
+                        <span class="fw-bold">Fullname :</span> {{userDetails.first_name}} {{userDetails.last_name}},
+                        <span class="fw-bold">User Type :</span> {{userDetails.userType}},
+                        <span class="fw-bold">Shop Name :</span> {{userDetails.shopName}},
+                        <span class="fw-bold">Mobile :</span> {{userDetails.mobile}}
+                    </p>
+                </div>
+
+                {% if reviewDocumentList %}                                
+                    <ol>
+                        {% for item in reviewDocumentList %}
+                            {% if item.aadharFront %}                        
+                            <li>
+                                <div class="form-check fw-bold d-flex align-items-center">
+                                    Aadhar Front
+                                    <a class="btn btn-primary btn-sm m-2" target="_blank" href="{{item.aadharFront.url}}">View</a>
+                                    <a href="{{item.aadharFront.url}}" download><i class="mdi mdi-download"></i></a>
+                                </div>
+                            </li>
+                            {% endif %}
+                            {% if item.aadharBack %}                        
+                            <li>
+                                <div class="form-check fw-bold d-flex align-items-center">
+                                    Aadhar Back
+                                    <br>
+                                    <a class="btn btn-primary btn-sm m-2" target="_blank" href="{{item.aadharBack.url}}">View</a>
+                                    <a href="{{item.aadharBack.url}}" download><i class="mdi mdi-download"></i></a>
+                                </div>
+                            </li>
+                            {% endif %}
+                            {% if item.pancard %}                        
+                            <li>
+                                <div class="form-check fw-bold d-flex align-items-center">
+                                    Pancard
+                                    <br>
+                                    <a class="btn btn-primary btn-sm m-2" target="_blank" href="{{item.pancard.url}}">View</a>
+                                    <a href="{{item.pancard.url}}" download><i class="mdi mdi-download"></i></a>
+                                </div>
+                            </li>
+                            {% endif %}
+                        {% endfor %}
+                    </ol>
+
+                    <form class="form-sample" method="post" action="">
+                        {% csrf_token %}
+
+                        <div class="form-check">
+                            <label class="form-check-label">
+                            <input type="radio" class="form-check-input" name="kycStatus" value="Complete" required>
+                            Mark as Complete
+                            <i class="input-helper"></i></label>
+                        </div>
+                        <div class="form-check">
+                            <label class="form-check-label">
+                            <input type="radio" class="form-check-input" name="kycStatus" value="Rejected" required>
+                            Mark as Rejected
+                            <i class="input-helper"></i></label>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary me-2">Submit</button>
+                        <button class="btn btn-light">Cancel</button>
+                    </form>
+                {% else %}
+                <div class="form-check fw-bold">
+                    User not uploaded any documents.
+                    <br>
+                    Ask to upload, 
+                    <br>Call : <a href="tel:{{userDetails.mobile}}">{{userDetails.mobile}}</a>, Email : <a href="mailto:{{userDetails.email}}">{{userDetails.email}}</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+</div>
+
+{% endblock main %}

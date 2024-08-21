@@ -1,0 +1,152 @@
+{% extends "backend/Shared/AuthBase.html" %}
+
+{% block main %}
+
+<div class="row">
+    <div class="col-md-10 mx-auto grid-margin">
+        <div class="card-group">
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="card-title">Adhaar Verification</h4>
+                    <p class="card-description">Please enter a valid adhaar number</p>
+
+                    <form class="forms-sample" id="adhaarConsentForm">
+                        <div class="form-group">
+                            <label for="adhaar">Adhaar Number</label>
+                            <input type="text" name='adhaar' style="text-transform: uppercase;" class="form-control" id="adhaar" required>
+                        </div>
+                        <button type="submit" id="submitBtn" class="btn btn-primary me-2 w-100">Submit</button>
+                    </form>
+
+                    <form class="forms-sample my-3" id="verifyOTPForm" style="display: none;">
+                        <div class="row">
+                            <div class="col-md-12 col-sm-12 col-12 mx-auto">
+                                <div class="row">
+                                    <input type="hidden" name='adhaarVerify' value="" class="form-control" id="adhaarVerify">
+                                    <input type="hidden" name='accessKeyVerify' value="" class="form-control" id="accessKeyVerify">
+                                    <div class="col-md-12">
+                                        <div class="input-group mb-3">
+                                            <input type="text" name="otp" class="form-control" placeholder="OTP Here">
+                                            <button class="btn btn-primary" type="submit" id="submitBtn1">Verify</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Adhaar Details</h5>
+                    <p class="card-text">The Details are fetched from the Adhaar number you entered.</p>
+                    <div id='container'></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+
+    $(document).ready(function () {
+
+        // Adhaar Consent Form
+        $("#adhaarConsentForm").submit(function (e) {
+            e.preventDefault();
+            $('#submitBtn').attr("disabled", true);
+            var formData = $(this).serialize();
+
+            $('#container').empty();
+            
+            $('#verifyOTPForm')[0].reset();
+            $('#verifyOTPForm').hide();
+
+            $('#container').append('<span id="fetchingMsg" class="text-center text-success fw-bold">Processing Details, Wait for a second...</span>');
+
+            $.ajax({
+                type: "POST",
+                url: '{% url "adhaar_consent" %}',
+                data: formData,
+                headers: { "X-CSRFToken": '{{ csrf_token }}' },
+                success: function (response) {
+                    // console.log(response);
+                    if (response.success) {
+                        $('#container').empty();
+                        var apiData = response.context;
+                        if (apiData != undefined) {                            
+                            $("#accessKeyVerify").val(apiData.access_key);
+                            $("#adhaarVerify").val($('#adhaar').val());
+                            $('#verifyOTPForm').show();
+
+                            $('#container').append(`<span id="fetchingMsg" class="text-center text-success fw-bold">${response.message}</span>`);
+                            $('#submitBtn').attr("disabled", false);
+                        }
+                    } else {
+                        $('#container').empty();
+                        $('#container').append(`<span id="fetchingMsg" class="text-center text-danger fw-bold">Something went wrong: ${response.message}</span>`);
+                        $('#submitBtn').attr("disabled", false);
+                    }
+                },
+                error: function (e) {
+                    $('#container').empty();
+                    $('#container').append(`<span id="fetchingMsg" class="text-center text-danger fw-bold">Some Error Occurred: ${e.statusText}</span>`);
+                    $('#submitBtn').attr("disabled", false);
+                }
+            });
+        });
+        
+        $("#verifyOTPForm").submit(function (e) {
+            e.preventDefault();
+            $('#submitBtn1').attr("disabled", true);
+            var formData = $(this).serialize();
+
+            $('#container').empty();
+            $('#container').append('<span id="fetchingMsg" class="text-center text-success fw-bold">Verifying OTP, Wait for a second...</span>');
+            $.ajax({
+                type: "POST",
+                url: '{% url "adhaar_verification" %}',
+                data: formData,
+                headers: { "X-CSRFToken": '{{ csrf_token }}' },
+                success: function (response) {
+                    if (response.success) {
+                        $('#container').empty();
+                        var apiData = response.context;
+                        if (apiData != undefined) {
+                            $('#container').html(`<ul>
+                                    <li>Name : ${response.context.name}</li>
+                                    <li>D.O.B. : ${response.context.dob}</li>
+                                    <li>Gender : ${response.context.gender}</li>
+                                    <li>Father Name : ${response.context.fatherName ? response.context.fatherName : "N/A"}</li>
+                                    <li>Generated Date/Time : ${response.context.generatedDateTime}</li>
+                                    <li>Masked Aadhaar Number : ${response.context.maskedAadhaarNumber}</li>
+                                    <li>Combined Address : ${response.context.combinedAddress}</li>
+                                </ul>`);
+
+                            $('#submitBtn1').attr("disabled", false);
+                        } else {
+                            $('#container').append(`<span id="fetchingMsg" class="text-center text-success fw-bold">${response.message}</span>`);
+                            $('#submitBtn1').attr("disabled", false);
+                        }
+                    } else {
+                        $('#container').empty();
+                        $('#container').append(`<span id="fetchingMsg" class="text-center text-danger fw-bold">Something went wrong: ${response.message}</span>`);
+                        $('#submitBtn1').attr("disabled", false);
+                    }
+                },
+                error: function (e) {
+                    $('#container').empty();
+                    $('#container').append(`<span id="fetchingMsg" class="text-center text-danger fw-bold">Some Error Occurred: ${e.statusText}</span>`);
+                    $('#submitBtn1').attr("disabled", false);
+                }
+            });
+        });
+
+    });
+
+</script>
+
+
+{% endblock main %}

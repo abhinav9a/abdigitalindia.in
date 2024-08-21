@@ -1,0 +1,72 @@
+{% extends "backend/Shared/AuthBase.html" %}
+
+{% block main %}
+
+<div class="row">
+    <div class="col-md-8 mx-auto grid-margin stretch-card">
+        <div class="card">
+            <div class="card-body">
+                {% for message in messages %}
+                    <p class="text-success">{{message}}</p> 
+                {% endfor %}
+                <h4 class="card-title">Add Bank Account</h4>
+                <p class="card-description">Please fill complete details carefully</p>
+                <form class="forms-sample" method='post' action='{% url "add_bank" %}'>
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="mode">Payment Mode</label>
+                                        <select {% if userObj.acc_name and userObj.acc_no and userObj.acc_type and userObj.ifsc and userObj.payment_mode %} disabled {% endif %} name="mode" class="form-control form-control-lg" id="mode" required="">
+                                            <option value="4" {% if userObj.payment_mode == '4' %} selected {% endif %}>NEFT</option>
+                                            <option value="5" {% if userObj.payment_mode == '5' %} selected {% endif %}>IMPS</option>
+                                            <option value="13" {% if userObj.payment_mode == '13' %} selected {% endif %}>RTGS</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="acc_type">Account Type</label>
+                                        <select {% if userObj.acc_name and userObj.acc_no and userObj.acc_type and userObj.ifsc and userObj.payment_mode %} disabled {% endif %} name="acc_type" class="form-control form-control-lg" id="acc_type" required="">
+                                            <option value="1" {% if userObj.acc_type == '1' %} selected {% endif %}>Saving Account</option>
+                                            <option value="2" {% if userObj.acc_type == '2' %} selected {% endif %}>Current Account</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group mb-0">
+                                        <label for="recipient_name">Recipient Name</label>
+                                        <input {% if userObj.acc_name and userObj.acc_no and userObj.acc_type and userObj.ifsc and userObj.payment_mode %} disabled {% endif %} type="text" name='recipient_name' value="{{userObj.acc_name}}" class="form-control" id="recipient_name" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group mb-0">
+                                        <label for="account">Account Number</label>
+                                        <input {% if userObj.acc_name and userObj.acc_no and userObj.acc_type and userObj.ifsc and userObj.payment_mode %} disabled {% endif %} type="text" name='account' value="{{userObj.acc_no}}" class="form-control" id="account" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group mb-0">
+                                        <label for="ifsc">IFSC</label>
+                                        <input {% if userObj.acc_name and userObj.acc_no and userObj.acc_type and userObj.ifsc and userObj.payment_mode %} disabled {% endif %} type="text" name='ifsc' value="{{userObj.ifsc}}" class="form-control" id="ifsc" required>
+                                    </div>
+                                </div>
+                                {% if userObj.acc_name and userObj.acc_no and userObj.acc_type and userObj.ifsc and userObj.payment_mode %}
+                                <button class="btn btn-primary me-2 my-2" disabled>Contact admin to update details</button>
+                                {% else %}
+                                <button type="submit" class="btn btn-primary me-2 my-2">Add Account</button>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+{% endblock main %}

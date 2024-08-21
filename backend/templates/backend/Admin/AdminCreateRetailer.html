@@ -1,0 +1,173 @@
+{% extends "backend/Shared/AuthBase.html" %}
+
+{% block main %}
+
+<div class="row">
+    <div class="col-md-8 mx-auto grid-margin stretch-card">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title">Create a New Retailer</h4>
+                <p class="card-description">Please fill all the details carefully.</p>
+                <form class="forms-sample" method='post' action='{% url "create_retailer" %}'>
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="form-group mb-0">
+                                        <label for="{{form.first_name.auto_id}}">{{form.first_name.label}}</label>
+                                        {{form.first_name}}
+                                        {% if form.first_name.errors %}
+                                        {% for error in form.first_name.errors %}
+                                        <div class="invalid-feedback d-block">{{ error }}</div>
+                                        {% endfor %}
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="form-group mb-0">
+                                        <label for="{{form.last_name.auto_id}}">{{form.last_name.label}}</label>
+                                        {{form.last_name}}
+                                        {% if form.last_name.errors %}
+                                        {% for error in form.last_name.errors %}
+                                        <div class="invalid-feedback d-block">{{ error }}</div>
+                                        {% endfor %}
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="form-group mb-0">
+                                        <label for="{{form.email.auto_id}}">{{form.email.label}}</label>
+                                        {{form.email}}
+                                        {% if form.email.errors %}
+                                        {% for error in form.email.errors %}
+                                        <div class="invalid-feedback d-block">{{ error }}</div>
+                                        {% endfor %}
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="form-group mb-0">
+                                        <label for="{{form.mobile.auto_id}}">{{form.mobile.label}}</label>
+                                        {{form.mobile}}
+                                        {% if form.mobile.errors %}
+                                        {% for error in form.mobile.errors %}
+                                        <div class="invalid-feedback d-block">{{ error }}</div>
+                                        {% endfor %}
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="form-group mb-0">
+                                        <label for="{{form.username.auto_id}}">{{form.username.label}}</label>
+                                        {{form.username}}
+                                        {% if form.username.errors %}
+                                        {% for error in form.username.errors %}
+                                        <div class="invalid-feedback d-block">{{ error }}</div>
+                                        {% endfor %}
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="form-group mb-0">
+                                        <label for="{{form.password1.auto_id}}">{{form.password1.label}}</label>
+                                        {{form.password1}}
+                                        {% if form.password1.errors %}
+                                        {% for error in form.password1.errors %}
+                                        <div class="invalid-feedback d-block">{{ error }}</div>
+                                        {% endfor %}
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="form-group mb-0">
+                                        <label for="{{form.password2.auto_id}}">{{form.password2.label}}</label>
+                                        {{form.password2}}
+                                        {% if form.password2.errors %}
+                                        {% for error in form.password2.errors %}
+                                        <div class="invalid-feedback d-block">{{ error }}</div>
+                                        {% endfor %}
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="form-group mb-0">
+                                        <label for="{{form.shopName.auto_id}}">{{form.shopName.label}}</label>
+                                        {{form.shopName}}
+                                        {% if form.shopName.errors %}
+                                        {% for error in form.shopName.errors %}
+                                        <div class="invalid-feedback d-block">{{ error }}</div>
+                                        {% endfor %}
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-12">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="form-group mb-0">
+                                        <label for="{{form.pancard_no.auto_id}}">{{form.pancard_no.label}}</label>
+                                        {{form.pancard_no}}
+                                        {% if form.pancard_no.errors %}
+                                        {% for error in form.pancard_no.errors %}
+                                        <div class="invalid-feedback d-block">{{ error }}</div>
+                                        {% endfor %}
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-12">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="form-group mb-0">
+                                        <label for="{{form.address.auto_id}}">{{form.address.label}}</label>
+                                        {{form.address}}
+                                        {% if form.address.errors %}
+                                        {% for error in form.address.errors %}
+                                        <div class="invalid-feedback d-block">{{ error }}</div>
+                                        {% endfor %}
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary my-3">Create Retailer</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+{% endblock main %}

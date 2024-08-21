@@ -1,0 +1,95 @@
+{% extends "backend/Shared/AuthBase.html" %}
+
+{% block main %}
+
+<div class="col-10 mx-auto grid-margin">
+    <div class="card">
+        <div class="card-body">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.extra_tags }}">
+                {{message}}
+            </div>
+            {% endfor %}
+            <h4 class="card-title">Profile Details</h4>
+            <form method="post" action="{% url 'user_profile' %}" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group d-flex flex-column">
+
+                            <img src="{% if userProfile.profile_img %}{{userProfile.profile_img.url}}{% else %}/static/backendAssets/images/faces/NoProfile.png{% endif %}" alt="profile_img" height="100" width="100" style="border-radius: 50%;">
+
+                            <input type="file" class="form-control" name="profile_img" id="profile_img" {% if userProfile.profile_img %}disabled{% endif %}>
+
+                        </div>
+                        <div class="form-group">
+                            <label for="exampleInputUsername1">Shop Name</label>
+                            <input type="text" class="form-control" id="exampleInputUsername1" value="{{userProfile.shopName}}" disabled>
+                        </div>
+                        <div class="form-group">
+                            <label for="exampleInputUsername1">Pancard Number</label>
+                            <input type="text" class="form-control" id="exampleInputUsername1" value="{{userProfile.pancard_no}}" disabled>
+                        </div>
+                        <div class="form-group">
+                            <label for="exampleInputUsername1">Residence Address</label>
+                            <input type="text" class="form-control" id="exampleInputUsername1" value="{{userProfile.address}}" disabled>
+                        </div>
+                        {% if userProfile.eko_user_code != None %}
+                        <div class="form-group">
+                            <label for="exampleInputUsername1">D.O.B</label>
+                            <input type="text" value="{{dob}}" style="text-transform: uppercase;" class="form-control" disabled>
+                        </div>
+                        {% else %}
+                        <div class="form-group">
+                            <label for="exampleInputUsername1">D.O.B</label>
+                            <input type="text" id="dateInput" placeholder="yyyy-mm-dd" name='dob' value="{{dob}}" pattern="\d{4}-\d{2}-\d{2}" style="text-transform: uppercase;" class="form-control" required>
+                        </div>
+                        {% endif %}
+                        
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="exampleInputUsername1">Full Name</label>
+                            <input type="text" class="form-control" id="exampleInputUsername1" value="{{userProfile.first_name}} {{userProfile.last_name}}" disabled>
+                        </div>
+                        <div class="form-group">
+                            <label for="exampleInputUsername1">Mobile</label>
+                            <input type="text" class="form-control" id="exampleInputUsername1" value="{{userProfile.mobile}}" disabled>
+                        </div>
+                        <div class="form-group">
+                            <label for="exampleInputUsername1">Email</label>
+                            <input type="text" class="form-control" id="exampleInputUsername1" value="{{userProfile.email}}" disabled>
+                        </div>
+                        <div class="form-group">
+                            <a href="{% url 'generate_id_card' %}">Download ID Card</a>
+                        </div>
+                    </div>
+                    {% if userProfile.eko_user_code != None %}
+                    <p class="text-center text-danger">Contact Admin To Update Details</p>
+                    {% else %}
+                    <button type="submit" class="btn btn-primary mb-2">Submit</button>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+
+    // for handling dob
+    document.getElementById('dateInput').addEventListener('input', function () {
+      this.setCustomValidity('');
+    });
+
+    document.getElementById('dateInput').addEventListener('invalid', function () {
+      if (this.value === '') {
+        this.setCustomValidity('Please enter a date in the format yyyy-mm-dd.');
+      } else {
+        this.setCustomValidity('Invalid date format. Use yyyy-mm-dd.');
+      }
+    });
+
+</script>
+
+{% endblock main %}

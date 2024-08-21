@@ -1,0 +1,258 @@
+{% extends "backend/Shared/AuthBase.html" %}
+
+{% load custom_filters %}
+{% block main %}
+
+<div class="row text-center">
+    {% for message in messages %}
+    <h4 class="text-danger fw-bold">
+        {{message}}
+    </h4>
+    {% endfor %}
+</div>
+
+<div class="row">
+    <div class="col-md-3 col-sm-4 grid-margin stretch-card">
+        <div class="card">
+            <div class="card-body pb-0">
+                <a href="{% url 'bbps_operator' 1 %}" style="text-decoration: none;">
+                    <div class="d-flex align-items-center justify-content-center flex-column">
+                        <i class="mdi mdi-access-point-network mdi-24px text-dark"></i>
+                        <h3 class="text-dark font-weight-bold">Broadband Postpaid</h3>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-4 grid-margin stretch-card">
+        <div class="card">
+            <div class="card-body pb-0">
+                <a href="{% url 'bbps_operator' 2 %}" style="text-decoration: none;">
+                    <div class="d-flex align-items-center justify-content-center flex-column">
+                        <i class="mdi mdi-gas-station mdi-24px text-dark"></i>
+                        <h3 class="text-dark font-weight-bold">Gas</h3>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-4 grid-margin stretch-card">
+        <div class="card">
+            <div class="card-body pb-0">
+                <a href="{% url 'bbps_operator' 6 %}" style="text-decoration: none;">
+                    <div class="d-flex align-items-center justify-content-center flex-column">
+                        <i class="mdi mdi-tag-outline mdi-24px text-dark"></i>
+                        <h3 class="text-dark font-weight-bold">Tax</h3>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-4 grid-margin stretch-card">
+        <div class="card">
+            <div class="card-body pb-0">
+                <a href="{% url 'bbps_operator' 8 %}" style="text-decoration: none;">
+                    <div class="d-flex align-items-center justify-content-center flex-column">
+                        <i class="mdi mdi-lightbulb mdi-24px text-dark"></i>
+                        <h3 class="text-dark font-weight-bold">Electricity</h3>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-4 grid-margin stretch-card">
+        <div class="card">
+            <div class="card-body pb-0">
+                <a href="{% url 'bbps_operator' 9 %}" style="text-decoration: none;">
+                    <div class="d-flex align-items-center justify-content-center flex-column">
+                        <i class="mdi mdi-access-point mdi-24px text-dark"></i>
+                        <h3 class="text-dark font-weight-bold">Landline Postpaid</h3>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-4 grid-margin stretch-card">
+        <div class="card">
+            <div class="card-body pb-0">
+                <a href="{% url 'bbps_operator' 10 %}" style="text-decoration: none;">
+                    <div class="d-flex align-items-center justify-content-center flex-column">
+                        <i class="mdi mdi-access-point mdi-24px text-dark"></i>
+                        <h3 class="text-dark font-weight-bold">Mobile Postpaid</h3>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-4 grid-margin stretch-card">
+        <div class="card">
+            <div class="card-body pb-0">
+                <a href="{% url 'bbps_operator' 11 %}" style="text-decoration: none;">
+                    <div class="d-flex align-items-center justify-content-center flex-column">
+                        <i class="mdi mdi-water mdi-24px text-dark"></i>
+                        <h3 class="text-dark font-weight-bold">Water</h3>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-4 grid-margin stretch-card">
+        <div class="card">
+            <div class="card-body pb-0">
+                <a href="{% url 'bbps_operator' 12 %}" style="text-decoration: none;">
+                    <div class="d-flex align-items-center justify-content-center flex-column">
+                        <i class="mdi mdi-home-variant mdi-24px text-dark"></i>
+                        <h3 class="text-dark font-weight-bold">Housing Society</h3>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-4 grid-margin stretch-card">
+        <div class="card">
+            <div class="card-body pb-0">
+                <a href="{% url 'bbps_operator' 13 %}" style="text-decoration: none;">
+                    <div class="d-flex align-items-center justify-content-center flex-column">
+                        <i class="mdi mdi-briefcase-check mdi-24px text-dark"></i>
+                        <h3 class="text-dark font-weight-bold">Subscription</h3>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-4 grid-margin stretch-card">
+        <div class="card">
+            <div class="card-body pb-0">
+                <a href="{% url 'bbps_operator' 14 %}" style="text-decoration: none;">
+                    <div class="d-flex align-items-center justify-content-center flex-column">
+                        <i class="mdi mdi-book-open-page-variant mdi-24px text-dark"></i>
+                        <h3 class="text-dark font-weight-bold">Education</h3>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-4 grid-margin stretch-card">
+        <div class="card">
+            <div class="card-body pb-0">
+                <a href="{% url 'bbps_operator' 15 %}" style="text-decoration: none;">
+                    <div class="d-flex align-items-center justify-content-center flex-column">
+                        <i class="mdi mdi-tag-outline mdi-24px text-dark"></i>
+                        <h3 class="text-dark font-weight-bold">Municipal Taxes</h3>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-4 grid-margin stretch-card">
+        <div class="card">
+            <div class="card-body pb-0">
+                <a href="{% url 'bbps_operator' 16 %}" style="text-decoration: none;">
+                    <div class="d-flex align-items-center justify-content-center flex-column">
+                        <i class="mdi mdi-table-large mdi-24px text-dark"></i>
+                        <h3 class="text-dark font-weight-bold">Clubs and Associations</h3>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-4 grid-margin stretch-card">
+        <div class="card">
+            <div class="card-body pb-0">
+                <a href="{% url 'bbps_operator' 17 %}" style="text-decoration: none;">
+                    <div class="d-flex align-items-center justify-content-center flex-column">
+                        <i class="mdi mdi-television mdi-24px text-dark"></i>
+                        <h3 class="text-dark font-weight-bold">Cable TV</h3>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-4 grid-margin stretch-card">
+        <div class="card">
+            <div class="card-body pb-0">
+                <a href="{% url 'bbps_operator' 18 %}" style="text-decoration: none;">
+                    <div class="d-flex align-items-center justify-content-center flex-column">
+                        <i class="mdi mdi-gas-cylinder mdi-24px text-dark"></i>
+                        <h3 class="text-dark font-weight-bold">LPG Cylinder</h3>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-4 grid-margin stretch-card">
+        <div class="card">
+            <div class="card-body pb-0">
+                <a href="{% url 'bbps_operator' 19 %}" style="text-decoration: none;">
+                    <div class="d-flex align-items-center justify-content-center flex-column">
+                        <i class="mdi mdi-hospital-building mdi-24px text-dark"></i>
+                        <h3 class="text-dark font-weight-bold">Hospital</h3>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-4 grid-margin stretch-card">
+        <div class="card">
+            <div class="card-body pb-0">
+                <a href="{% url 'bbps_operator' 20 %}" style="text-decoration: none;">
+                    <div class="d-flex align-items-center justify-content-center flex-column">
+                        <i class="mdi mdi-human mdi-24px text-dark"></i>
+                        <h3 class="text-dark font-weight-bold">Insurance</h3>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-4 grid-margin stretch-card">
+        <div class="card">
+            <div class="card-body pb-0">
+                <a href="{% url 'bbps_operator' 21 %}" style="text-decoration: none;">
+                    <div class="d-flex align-items-center justify-content-center flex-column">
+                        <i class="mdi mdi-cash-multiple mdi-24px text-dark"></i>
+                        <h3 class="text-dark font-weight-bold">Loan</h3>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-4 grid-margin stretch-card">
+        <div class="card">
+            <div class="card-body pb-0">
+                <a href="{% url 'bbps_operator' 22 %}" style="text-decoration: none;">
+                    <div class="d-flex align-items-center justify-content-center flex-column">
+                        <i class="mdi mdi-car-connected mdi-24px text-dark"></i>
+                        <h3 class="text-dark font-weight-bold">FASTag</h3>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-4 grid-margin stretch-card">
+        <div class="card">
+            <div class="card-body pb-0">
+                <a href="{% url 'bbps_operator' 23 %}" style="text-decoration: none;">
+                    <div class="d-flex align-items-center justify-content-center flex-column">
+                        <i class="mdi mdi-content-paste mdi-24px text-dark"></i>
+                        <h3 class="text-dark font-weight-bold">Municipal Services</h3>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-4 grid-margin stretch-card">
+        <div class="card">
+            <div class="card-body pb-0">
+                <a href="{% url 'bbps_operator' 24 %}" style="text-decoration: none;">
+                    <div class="d-flex align-items-center justify-content-center flex-column">
+                        <i class="mdi mdi-home mdi-24px text-dark"></i>
+                        <h3 class="text-dark font-weight-bold">Rental Payment</h3>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+    
+</div>    
+
+{% endblock main %}

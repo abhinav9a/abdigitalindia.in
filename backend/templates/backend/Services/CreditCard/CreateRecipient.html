@@ -1,0 +1,67 @@
+{% extends "backend/Shared/AuthBase.html" %}
+
+{% block main %}
+
+<div class="row">
+    <div class="col-md-8 mx-auto grid-margin stretch-card">
+        <div class="card">
+            <div class="card-body">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.extra_tags }}">
+                {{message}}
+            </div>
+            {% endfor %}
+            <h4 class="card-title">Credit Card-Add new Recipient</h4>
+            <p class="card-description">
+                fill the details.
+            </p>
+            <form class="forms-sample" method="post" action="{% url 'create_credit_card_recipient' %}">
+                {% csrf_token %}
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-0">
+                                    <label for="customer_mobile">Customer Mobile</label>
+                                    <input type="text" name="customer_mobile" class="form-control" id="customer_mobile" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="bank_code">Recipient Bank code</label>
+                                    <select name="bank_code" class="form-control form-control-lg" id="bank_code" required>
+                                        {% for bank in bank_list %}
+                                        <option value="{{bank.bank_id}}_{{bank.bank_code}}">{{bank.bank_name}} - {{bank.bank_code}}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-0">
+                                    <label for="account">Recipient Account number</label>
+                                    <input type="text" name="account" class="form-control" id="account" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-0">
+                                    <label for="recipient_name">Recipient Name</label>
+                                    <input type="text" name="recipient_name" class="form-control" id="recipient_name">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="recipient_mobile">Recipient Mobile</label>
+                                    <input type="text" name="recipient_mobile" class="form-control" id="recipient_mobile" required>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <button type="submit" id="submitBtn" class="btn btn-primary">Create</button>
+            </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock main %}

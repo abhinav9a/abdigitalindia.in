@@ -1,0 +1,74 @@
+{% extends "backend/Shared/AuthBase.html" %}
+
+{% block main %}
+
+<div class="row">
+    <div class="col-md-10 mx-auto grid-margin">
+        <div class="card-group">
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="card-title">Bank Account Verification</h4>
+                    <p class="card-description">Please enter a valid account number</p>
+                    <form class="forms-sample" id='form'>
+                        <div class="form-group">
+                            <label for="exampleInputIfsc">IFSC Number</label>
+                            <input type="text" name='ifsc' style="text-transform: uppercase;" class="form-control" id="exampleInputIfsc" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="exampleInputAccountNumber">account number</label>
+                            <input type="text" name='accountNumber' style="text-transform: uppercase;" class="form-control" id="exampleInputAccountNumber" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary me-2 w-100" id='submitBtn'>Submit</button>
+                    </form>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Bank Account Details</h5>
+                    <p class="card-text">The Details are fetched from the Account number you entered.</p>
+                    <div id='container'></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function() {
+  
+      $("#form").submit(function(e) {
+        e.preventDefault();
+        var formData = $(this).serialize();
+        $('#submitBtn').attr("disabled", true);
+        $('#container').empty().append(`<span id="fetchingMsg" class="text-center text-success fw-bold">Fetching Details, Please Wait...</span>`);
+        $.ajax({
+          type: "POST",
+          url: "{% url 'bankVerification' %}",
+          data: formData,
+          headers: {"X-CSRFToken": '{{ csrf_token }}'},
+          success: function(response) {
+            if (response.success) {
+                $('#container').html(`<ul>
+                    <li>Bank : ${response.context.bank}</li>
+                    <li>Recipient Name : ${response.context.recipient_name}</li>
+                    <li>Account : ${response.context.account}</li>
+                    <li>Ifsc : ${response.context.ifsc}</li>
+                </ul>`);
+            } else {
+                $('#container').empty().append(`<span id="fetchingMsg" class="text-center text-danger fw-bold">${response.message}</span>`);
+            }
+          },
+          error: function(e) {
+            $('#container').empty().append(`<span id="fetchingMsg" class="text-center text-danger fw-bold">Some Error Occurred!!!, ${e}</span>`);
+          },
+          complete: function() {
+            $('#submitBtn').attr("disabled", false);
+          }
+        });
+      });
+  
+    });
+</script>
+
+
+{% endblock main %}

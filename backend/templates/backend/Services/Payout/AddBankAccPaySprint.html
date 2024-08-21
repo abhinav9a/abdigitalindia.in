@@ -1,0 +1,68 @@
+{% extends "backend/Shared/AuthBase.html" %}
+
+{% block main %}
+
+<div class="row">
+    {% for message in messages %}
+        <p class="text-{% if message.tags %}{{ message.tags }}{% else %}success{% endif %} text-center fs-3 pb-4">{{message}}</p>
+    {% endfor %}
+    <div class="col-md-8 mx-auto grid-margin stretch-card">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title">Add Bank Account</h4>
+                <p class="card-description">Please fill complete details carefully. For the blood relative, please select Account Type as Relative Account</p>
+                <form class="forms-sample" method='post' action='{% url "add_account" %}' enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="bank_id">Bank</label>
+                                        <select name="bank_id" class="form-control" style="background-color: #ffffff; border: 1px solid #d3d3d3; border-radius: 0.25rem; padding: 16px; color: #000000;" id="bank_id" required>
+                                            <option value="">Select Bank</option>
+                                            {% for bank in bank_list %}
+                                                <option value="{{ bank.bank_id }}">{{ bank.bank_name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                     </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="acc_type">Account Type</label>
+                                        <select name="acc_type" class="form-control form-control-lg" style="background-color: #ffffff; border: 1px solid #d3d3d3; border-radius: 0.25rem; padding: 16px; color: #000000;" id="acc_type" required>
+                                            <option value="PRIMARY">Primary Account</option>
+                                            <option value="RELATIVE">Relative Account</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="acc_name">Beneficiary Name</label>
+                                        <input type="text" name='acc_name' value="{{bank_acc.beneficiary_name}}" class="form-control" id="acc_name" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="acc_no">Account Number</label>
+                                        <input type="text" name='acc_no' value="{{bank_acc.acc_no}}" class="form-control" id="acc_no" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="ifsc">IFSC</label>
+                                        <input type="text" name='ifsc' value="{{bank_acc.ifsc}}" class="form-control" id="ifsc" required>
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-primary me-2 my-2">Add Account</button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{% endblock main %}

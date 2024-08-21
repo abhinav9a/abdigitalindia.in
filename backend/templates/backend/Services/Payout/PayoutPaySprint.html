@@ -1,0 +1,166 @@
+{% extends "backend/Shared/AuthBase.html" %}
+
+{% block main %}
+
+<div class="row">
+    {% for message in messages %}
+        <p class="text-{% if message.tags %}{{ message.tags }}{% else %}success{% endif %} text-center fs-3 pb-4">{{message}}</p>
+    {% endfor %}
+    <div class="col-md-8 mx-auto grid-margin stretch-card">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title">Fund Transfer</h4>
+                <p class="card-description">Minimum Payout 100 Rs | Available fund : {{wallet_balance}}</p>
+                {% if activated_banks %}
+                    {% for bank in activated_banks %}
+                        <button type="button" data-bs-toggle="modal" data-bs-target="#makePayout" class="btn btn-primary me-2 my-2"  data-bene-id="{{bank.beneid}}">Transfer to - {{bank.name}} <br> {{bank.bankname}} <br> {{bank.account}} - {{bank.ifsc}}</button>
+                    {% endfor %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-md-8 mx-auto grid-margin stretch-card">
+        <div class="card">
+            <div class="card-body">
+                <a href='{% url "add_account" %}' class="btn btn-primary me-2 my-2">Add Bank A/c Details</a>
+            </div>
+        </div>
+    </div>
+    {% if document_upload_pending_banks %}
+    <div class="col-md-8 mx-auto grid-margin stretch-card">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title">Document Upload Pending</h4>
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Bank Name</th>
+                            <th>Account</th>
+                            <th>IFSC</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for bank in document_upload_pending_banks %}
+                        <tr>
+                            <td>{{bank.name}}</td>
+                            <td>{{bank.bankname}}</td>
+                            <td>{{bank.account}}</td>
+                            <td>{{bank.ifsc}}</td>
+                            <td>
+                                <a href="{% url 'upload_documents' %}?bene_id={{ bank.beneid }}" class="btn btn-warning btn-sm">Upload Documents</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if document_verification_pending_banks %}
+    <div class="col-md-8 mx-auto grid-margin stretch-card">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title">Document Verification Pending</h4>
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Bank Name</th>
+                            <th>Account</th>
+                            <th>IFSC</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for bank in document_verification_pending_banks %}
+                        <tr>
+                            <td>{{bank.name}}</td>
+                            <td>{{bank.bankname}}</td>
+                            <td>{{bank.account}}</td>
+                            <td>{{bank.ifsc}}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Make Payment Modal Start -->
+    <div class="modal fade" id="makePayout" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+        aria-labelledby="makePayoutLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="makePayoutLabel">Initiate Payout</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form method='post' id="PayoutForm" action='{% url "do_transaction" %}' enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <input type="hidden" id="bene_id" name="bene_id" value="" required>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="form-group">
+                                            <label for="amount">Amount</label>
+                                            <input type="text" class="form-control" style="background-color: #ffffff; border: 1px solid #d3d3d3; border-radius: 0.25rem; padding: 16px; color: #000000;" id="amount" name="amount" placeholder="Min. 100 INR" required>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-12">
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="form-group">
+                                            <label for="mode">Mode</label>
+                                            <select name="mode" class="form-control" style="background-color: #ffffff; border: 1px solid #d3d3d3; border-radius: 0.25rem; padding: 16px; color: #000000;" id="mode" required="">
+                                                <option value="NEFT">NEFT</option>
+                                                <option value="IMPS">IMPS</option>
+                                                <option value="RTGS">RTGS</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="submit" id="submitBtn" class="btn btn-primary">Confirm</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<div class="row">
+
+</div>
+
+<script>
+    document.getElementById('PayoutForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+        document.getElementById('submitBtn').style.display = 'none';
+        this.submit();
+    });
+    // Add event listener to set bene_id when modal is opened
+    document.addEventListener('DOMContentLoaded', function() {
+        var buttons = document.querySelectorAll('[data-bs-toggle="modal"][data-bs-target="#makePayout"]');
+        buttons.forEach(function(button) {
+            button.addEventListener('click', function() {
+                var beneId = this.getAttribute('data-bene-id');
+                document.getElementById('bene_id').value = beneId;
+            });
+        });
+    });
+</script>
+
+
+{% endblock main %}

@@ -1,0 +1,289 @@
+
+/*classes starts for new login page*/
+body {
+    font-family: Arial !important;
+    font-size: 13px;
+    font-weight: normal;
+    text-decoration: none;
+    padding: 0px;
+    margin: 0px;
+    color: #333333;
+}
+
+body, td, th {
+    font-family: Arial !important;
+    font-size: 13px;
+    color: #333333;
+}
+
+.Login-wrapper {
+    width: 1015px;
+    margin: 0px auto;
+    text-align: left;
+    position: relative;
+}
+
+.org-txt {
+    font-family: Arial;
+    font-size: 14px;
+    font-weight: normal;
+    text-decoration: none;
+    color: #4783c0;
+}
+
+.input {
+    width: 310px;
+    height: 22px;
+}
+
+.L-txtbx {
+    font-family: Arial;
+    font-size: 13px;
+    font-weight: normal;
+    text-decoration: none;
+    color: #666666;
+    border: 1px solid #8e8d8c;
+    height: 24px;
+}
+
+a.psw:link, a.psw:active, a.psw:visited {
+    font-family: Arial;
+    font-size: 13px;
+    font-weight: normal;
+    text-decoration: none;
+    color: #007fc4;
+}
+
+a.psw:hover {
+    font-family: Arial;
+    font-size: 13px;
+    font-weight: normal;
+    text-decoration: underline;
+    color: #007fc4;
+}
+
+a.chaPar:link, a.chaPar:active, a.chaPar:visited {
+    font-family: Arial;
+    font-size: 15px;
+    font-weight: bold;
+    text-decoration: none;
+    color: #007fc4;
+}
+
+a.chaPar:hover {
+    font-family: Arial;
+    font-size: 15px;
+    font-weight: bold;
+    text-decoration: underline;
+    color: #007fc4;
+}
+
+a.ftr-lnk:link, a.ftr-lnk:active, a.ftr-lnk:visited {
+    font-family: Arial;
+    font-size: 11px;
+    font-weight: bold;
+    text-decoration: none;
+    color: #ffffff;
+}
+
+a.ftr-lnk:hover {
+    font-family: Arial;
+    font-size: 11px;
+    font-weight: bold;
+    text-decoration: underline;
+    color: #ffffff;
+}
+
+.wht-hdr {
+    font-family: Arial;
+    font-size: 17px;
+    font-weight: bold;
+    text-decoration: none;
+    color: #ffffff;
+    background-color: #009adf;
+    padding-top: 5px;
+    padding-bottom: 5px;
+}
+
+.padT10 {
+    padding-top: 10px;
+}
+
+.padL15 {
+    padding-left: 15px;
+}
+
+.padR15 {
+    padding-right: 15px;
+}
+
+.L-bg-grey {
+    background-color: #e2e2e6;
+    height: 73px;
+}
+
+.padB-30 {
+    padding-bottom: 30px;
+}
+
+.padB-20 {
+    padding-bottom: 20px;
+}
+
+.logo-suvi {
+    background-position: left top;
+    background-repeat: no-repeat;
+    width: 141px;
+    height: 85px;
+    position: relative;
+    float: left;
+}
+
+.logo-neo {
+    background-position: right top;
+    background-repeat: no-repeat;
+    width: 210px;
+    height: 79px;
+    position: relative;
+    float: right;
+}
+
+.L-top-bg {
+    background-position: right top;
+    background-repeat: no-repeat;
+    width: 600px;
+    height: 85px;
+    position: relative;
+    float: left;
+}
+
+.clearboth {
+    clear: both;
+}
+
+.L-row {
+    padding: 10px 5px 25px 25px;
+}
+
+.L-label {
+    float: left;
+    width: 69px;
+    text-align: left;
+    padding-top: 3px;
+    position: relative; /* given position absolute to asterisk class for colons alignment */
+    right: 5px;
+}
+
+.L-value {
+    padding: 0 25px 0 5px;
+    float: left;
+}
+
+.L-btn {
+    height: 22px;
+    border: 1px solid #ff7200;
+    color: #FFF;
+    width: 58px;
+    outline: none;
+    -moz-outline: none;
+    cursor: pointer;
+    font-weight: bold;
+    overflow: visible;
+    *filter: chroma(color=#fff);
+    *border: none;
+}
+
+.L-2col-container {
+    width: 63%;
+    *width: 62%;
+    float: left;
+}
+
+.L-2col-container-right {
+    width: 37%;
+    float: left;
+}
+
+.L-benefits {
+    padding: 15px 0px 0px 12px;
+    width: 325px;
+}
+
+.L-bg-benefits {
+    /*background-image: url(./Store/Admin/Images/LoginPage/L_bg_benefits.png);*/
+    background-color: #EEEEEE;
+    background-position: left top;
+    background-repeat: repeat-y;
+    width: 339px;
+    position: relative;
+}
+
+.icon-arw {
+    background-position: left top;
+    background-image: url(../images/icon_arw.png);
+    background-repeat: no-repeat;
+    width: 13px;
+    height: 19px;
+    position: relative;
+    float: left;
+}
+
+.L-ftr {
+    background-color: #009adf;
+    font-family: Arial;
+    font-size: 12px;
+    font-weight: bold;
+    color: #ffffff;
+    text-decoration: none;
+    height: 30px;
+}
+
+.btn-secondary {
+    background: url(./Store/Admin/Images/LoginPage/btn-bg-secondary.png) repeat-x;
+    height: 22px;
+    padding: 0 10px;
+    margin-right: 5px;
+    border: 1px solid #b5aba1;
+    color: #FFF;
+    width: auto;
+    outline: none;
+    -moz-outline: none;
+    cursor: pointer;
+    font-weight: bold;
+    *filter: chroma(color=#fff);
+    *border: none;
+    overflow: visible; /*font-size:12px;*/
+}
+
+.L-brd {
+    border: 2px solid #ff6600;
+    border-radius: 10px;
+}
+
+.Regi-hdr {
+    color: #902040;
+    padding-left: 25px;
+    height: 40px;
+    font-size: 14px;
+}
+
+#btnLogin {
+    background-color: #009ADF;
+    width: 300PX;
+    height: 30PX;
+    line-height: 25PX;
+    border-radius: 5px;
+    text-align: center;
+    color: white;
+    cursor: pointer;
+}
+
+.btnLogin {
+    background-color: #009ADF;
+    height: 30PX;
+    line-height: 25PX;
+    border-radius: 5px;
+    text-align: center;
+    color: white;
+    cursor: pointer;
+}

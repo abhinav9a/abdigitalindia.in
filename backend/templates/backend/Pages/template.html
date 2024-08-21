@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: "Helvetica", sans-serif;
+        }
+        .logo {
+            width: 100px;
+            height: 100px;
+            padding: 2px;
+        }
+    </style>
+</head>
+
+<body style="width: 80%; height:100vh">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+            <img src="/static/assets/img/logo.jpg" class="logo">
+        </div>
+        <p>Receipt: {{ transactions.timestamp }}</p>
+    </div>
+    <hr>
+    <table style="width: 100%; border: 1px solid black;">
+        <thead>
+            <tr>
+                <th>
+                    Transaction Receipt
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            {% comment %} DMT {% endcomment %}
+            {% if transactions.description %}
+            <tr>
+                <td>Description : </td><td>{{transactions.description}}</td>
+            </tr>
+            {% endif %}
+            {% if transactions.txn_status %}
+            <tr>
+                <td>Txn Status : </td><td>{{transactions.txn_status}}</td>
+            </tr>
+            {% endif %}
+            {% if transactions.sender_name %}
+            <tr>
+                <td>Sender Name : </td><td>{{transactions.sender_name}}</td>
+            </tr>
+            {% endif %}
+            {% if transactions.txnId %}
+            <tr>
+                <td>Txn Id : </td><td>{{transactions.txnId}}</td>
+            </tr>
+            {% endif %}
+            {% if transactions.bank %}
+            <tr>
+                <td>Bank : </td><td>{{transactions.bank}}</td>
+            </tr>
+            {% endif %}
+            {% if transactions.currency %}
+            <tr>
+                <td>Currency : </td><td>{{transactions.currency}}</td>
+            </tr>
+            {% endif %}
+            {% if transactions.bank_ref_num %}
+            <tr>
+                <td>Bank Ref Num : </td><td>{{transactions.bank_ref_num}}</td>
+            </tr>
+            {% endif %}
+            {% if transactions.recipient_id %}
+            <tr>
+                <td>Recipient Id : </td><td>{{transactions.recipient_id}}</td>
+            </tr>
+            {% endif %}
+            {% if transactions.timestamp %}
+            <tr>
+                <td>Timestamp : </td><td>{{transactions.timestamp}}</td>
+            </tr>
+            {% endif %}
+            {% if transactions.amount %}
+            <tr>
+                <td>Amount : </td><td>{{transactions.amount}}</td>
+            </tr>
+            {% endif %}
+            {% if transactions.channel_desc %}
+            <tr>
+                <td>Channel Desc : </td><td>{{transactions.channel_desc}}</td>
+            </tr>
+            {% endif %}
+            {% if transactions.client_ref_id %}
+            <tr>
+                <td>Client Ref Id : </td><td>{{transactions.client_ref_id}}</td>
+            </tr>
+            {% endif %}
+            {% if transactions.recipient_name %}
+            <tr>
+                <td>Recipient Name : </td><td>{{transactions.recipient_name}}</td>
+            </tr>
+            {% endif %}
+            {% if transactions.customer_id %}
+            <tr>
+                <td>Customer Id : </td><td>{{transactions.customer_id}}</td>
+            </tr>
+            {% endif %}
+            {% if transactions.account %}
+            <tr>
+                <td>Account : </td><td>{{transactions.account}}</td>
+            </tr>
+            {% endif %}
+            {% if transactions.commission %}
+            <tr>
+                <td>Commission : </td><td>{{transactions.commission}}</td>
+            </tr>
+            {% endif %}
+
+            {% comment %} {% if transactions.description %}
+            <tr>
+                <td>Service Type:</td>
+                <td>{{ transactions.description }}</td>
+            </tr>
+            {% endif %}
+            {% if transactions.recipient_name %}
+            <tr>
+                <td>Recipient Name:</td>
+                <td>{{ transactions.recipient_name }}</td>
+            </tr>
+            {% endif %}
+            {% if transactions.tid %}
+            <tr>
+                <td>Transaction ID:</td>
+                <td>{{ transactions.tid }}</td>
+            </tr>
+            {% endif %}
+            {% if transactions.txnId %}
+            <tr>
+                <td>Transaction ID:</td>
+                <td>{{ transactions.txnId }}</td>
+            </tr>
+            {% endif %}
+            {% if transactions.amount %}
+            <tr>
+                <td>Amount:</td>
+                <td>{{ transactions.amount }}Rs</td>
+            </tr>
+            {% endif %}
+            {% if transactions.txn_status %}
+            <tr>
+                <td>Txn Status:</td>
+                <td>{{ transactions.txn_status }}</td>
+            </tr>
+            {% endif %}
+            {% if transactions.aadhar_no %}
+            <tr>
+                <td>Aadhar no:</td>
+                <td>{{ transactions.aadhar_no }}</td>
+            </tr>
+            {% endif %} {% endcomment %}
+        </tbody>
+    </table>
+
+    <div>
+        <p>Transaction charges are inclusive of GST.</p>
+        <p>Min Rs. 10, Max 1% or Rs 50. (per Rs 5,000 transactions) whichever is lower. (inclusive of applicable GST)</p>
+    </div>
+    <div>
+        <span style="font-weight: bold;">Note: </span> This is a computer generated receipt and does not require physical signature.
+    </div>
+
+</body>
+</html>

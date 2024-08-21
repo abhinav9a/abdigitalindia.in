@@ -1,0 +1,200 @@
+{% extends "backend/Shared/AuthBase.html" %}
+
+{% block main %}
+
+{% if service_activation.AepsService %}
+
+<div class="row">
+	<div class="col-md-12 mx-auto grid-margin stretch-card">
+		<div class="card">
+			<div class="card-body">
+				{% if messages %}
+				{% for message in messages %}
+				<div class="alert alert-{{message.extra_tags}}">
+					{{message}}
+				</div>
+				{% endfor %}
+				{% endif %}
+				<H2>AePS Gateway</H2>
+				<hr>
+				<button onClick="doAeps()">Open AePS Gateway</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+<script src="/static/@ekoindia/aeps-gateway-lib/aeps-gateway-lib.js"></script>
+<script>
+	const current_user = '{{request.user}}';
+	const aeps = new EkoAEPSGateway;
+	let Config;
+	async function fetchConfig() {
+		try {
+			const e = await fetch('{% url "get_config_info" %}');
+			if (!e.ok) {
+				throw new Error(`HTTP error! Status: ${e.status}`)
+			}
+			Config = await e.json();
+			return Config
+		} catch (e) {
+			console.error("Error fetching Config information:", e)
+		}
+	}
+	function configureAeps() {
+		aeps.config({
+			partner_name: "A.B. Digital India Pvt. Ltd.",
+			initiator_logo_url: "https://abdigitalindia.in/static/assets/img/logo.jpg",
+			initiator_id: Config.initiator_id,
+			developer_key: Config.developer_key,
+			secret_key: Config.secret_key,
+			secret_key_timestamp: Config.secret_key_timestamp,
+			user_code: Config.user_code,
+			environment: "production"
+		});
+		return true
+	}
+	aeps.setCallbackURL('https://abdigitalindia.in/user/aeps_tx_callback/',
+		{
+			parameters: { "platform_user": current_user }
+		});
+	async function doAeps() {
+		await fetchConfig();
+		configureAeps();
+		aeps.open();
+		location.reload()
+	}
+</script>
+
+{% else %}
+
+<div class="row">
+	<div class="col-md-10 mx-auto grid-margin stretch-card">
+		<div class="card">
+			<div class="card-body">
+				{% for message in messages %}
+				<div class="alert alert-{{ message.extra_tags }}">
+					{{message}}
+				</div>
+				{% endfor %}
+				<h4 class="card-title">AePS-Activate</h4>
+				<p class="card-description">
+					fill the details.
+				</p>
+				<form class="forms-sample" method="post" action="{% url 'activate_aeps' %}"
+					enctype="multipart/form-data">
+					{% csrf_token %}
+					<div class="row">
+						<div class="col-md-12">
+							<div class="row">
+								<div class="col-12 fw-bold mb-2">
+									Device details
+								</div>
+								<div class="col-md-6">
+									<div class="form-group">
+										<label for="modelname">Model Name</label>
+										<select name="modelname" class="form-control form-control-lg" id="modelname"
+											required>
+											<option value="Morpho">Morpho</option>
+											<option value="TMF20">TMF20</option>
+											<option value="Mantra">Mantra</option>
+											<option value="Startek">Startek</option>
+										</select>
+									</div>
+								</div>
+								<div class="col-md-6">
+									<div class="form-group">
+										<label for="devicenumber">Device Number</label>
+										<input type="text" name="devicenumber" class="form-control" id="devicenumber"
+											required>
+									</div>
+								</div>
+								<div class="col-12 fw-bold mb-2">
+									Office Address
+								</div>
+								<div class="col-md-6">
+									<div class="form-group mb-0">
+										<label for="line">Line</label>
+										<input type="text" name="line" class="form-control" id="line" required>
+									</div>
+								</div>
+								<div class="col-md-6">
+									<div class="form-group mb-0">
+										<label for="city">City</label>
+										<input type="text" name="city" class="form-control" id="city" required>
+									</div>
+								</div>
+								<div class="col-md-6">
+									<div class="form-group mb-0">
+										<label for="state">State</label>
+										<input type="text" name="state" class="form-control" id="state" required>
+									</div>
+								</div>
+								<div class="col-md-6">
+									<div class="form-group">
+										<label for="pincode">pincode</label>
+										<input type="text" name="pincode" class="form-control" id="pincode" required>
+									</div>
+								</div>
+								<div class="col-12 fw-bold mb-2">
+									Address as per proof
+								</div>
+								<div class="col-md-6">
+									<div class="form-group mb-0">
+										<label for="appline">Line</label>
+										<input type="text" name="appline" class="form-control" id="appline" required>
+									</div>
+								</div>
+								<div class="col-md-6">
+									<div class="form-group mb-0">
+										<label for="appcity">City</label>
+										<input type="text" name="appcity" class="form-control" id="appcity" required>
+									</div>
+								</div>
+								<div class="col-md-6">
+									<div class="form-group mb-0">
+										<label for="appstate">State</label>
+										<input type="text" name="appstate" class="form-control" id="appstate" required>
+									</div>
+								</div>
+								<div class="col-md-6">
+									<div class="form-group">
+										<label for="apppincode">pincode</label>
+										<input type="text" name="apppincode" class="form-control" id="apppincode" required>
+									</div>
+								</div>
+								<div class="col-12 fw-bold mb-2">
+									Documents
+								</div>
+								<div class="col-md-6">
+									<div class="form-group mb-0">
+										<label for="aadhar_front">Aadhar Front</label>
+										<input type="file" name="aadhar_front" class="form-control" id="aadhar_front"
+											required>
+									</div>
+								</div>
+								<div class="col-md-6">
+									<div class="form-group mb-0">
+										<label for="aadhar_back">Aadhar Back</label>
+										<input type="file" name="aadhar_back" class="form-control" id="aadhar_back"
+											required>
+									</div>
+								</div>
+								<div class="col-md-6">
+									<div class="form-group">
+										<label for="pan_card">Pan Card</label>
+										<input type="file" name="pan_card" class="form-control" id="pan_card" required>
+									</div>
+								</div>
+							</div>
+							<button type="submit" class="btn btn-primary w-100">Activate</button>
+						</div>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+</div>
+
+{% endif %}
+
+{% endblock main %}

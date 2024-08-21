@@ -1,0 +1,102 @@
+{% extends "backend/Shared/AuthBase.html" %}
+
+{% block main %}
+
+<div class="row">
+    <div class="col-sm-12 grid-margin d-flex stretch-card">
+        <div class="card">
+            <div class="card-body">
+                <div class="">
+                    <h4 class="card-title mb-2">Adhaar Verification Transaction Report</h4>
+                    <form method="post" class="my-3">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="form-group mb-0">
+                                    <label for="start_date">Start Date:</label>
+                                    <input type="date" name="start_date" id="start_date" class="form-control" required>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group mb-0">
+                                    <label for="end_date">End Date:</label>
+                                    <input type="date" name="end_date" id="end_date" class="form-control" required>
+                                </div>
+                            </div>
+                            <div class="col-md-3 d-flex align-items-end">
+                                <button type="submit" class="btn btn-primary w-100">Search</button>
+                            </div>
+                        </div>
+                    </form>
+
+                    {% if transactions_page %}
+                    <div class="table-responsive">
+                        <table class="table table-bordered border-primary table-primary table-striped">
+                            <thead>
+                                <tr>
+                                    <th scope="col" class='fw-bold'>Amount</th>
+                                    <th scope="col" class='fw-bold'>Description</th>
+                                    <th scope="col" class='fw-bold'>Status</th>
+                                    <th scope="col" class='fw-bold'>Timestamp</th>
+                                    <th scope="col" class='fw-bold'>Print</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for transaction in transactions_page %}
+                                <tr>
+                                    <td>{{transaction.amount}}</td>
+                                    <td>{{transaction.description}}</td>
+                                    <td>{{transaction.txn_status}}</td>
+                                    <td>{{transaction.timestamp}}</td>
+                                    <td><a class="page-link" href="{% url 'generate_slip' 'pan' transaction.id %}">Print</a></td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    
+                    <div class="pagination mt-4 d-flex align-items-center">
+
+                        <nav aria-label="Pagination">
+                            <ul class="pagination">
+                        
+                                <li class="page-item {% if not transactions_page.has_previous %} disabled {% endif %}">
+                                    <a class="page-link" {% if transactions_page.has_previous %} href="?page={{ transactions_page.previous_page_number }}" {% else %} href="#" {% endif %}>Previous</a>
+                                </li>
+                        
+                                {% for i in transactions_page.paginator.page_range %}
+                                    {% if transactions_page.number == i %}
+                                        <li class="page-item active" aria-current="page">
+                                            <span class="page-link">{{ i }}</span>
+                                        </li>
+                                    {% elif i > transactions_page.number|add:'-3' and i < transactions_page.number|add:'3' %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ i }}">{{ i }}</a>
+                                        </li>
+                                    {% elif i == transactions_page.number|add:'-3' or i == transactions_page.number|add:'3' %}
+                                        <li class="page-item disabled">
+                                            <span class="page-link">...</span>
+                                        </li>
+                                    {% endif %}
+                                {% endfor %}
+                        
+                                <li class="page-item {% if not transactions_page.has_next %} disabled {% endif %}">
+                                    <a class="page-link" {% if transactions_page.has_next %} href="?page={{ transactions_page.next_page_number }}" {% else %} href="#" {% endif %}>Next</a>
+                                </li>
+                        
+                            </ul>
+                        </nav>
+
+                    </div>
+                    {% else %}
+                    <p class="mt-4">No transactions found for the selected date range.</p>
+                    {% endif %}               
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock main %}
