@@ -3452,7 +3452,6 @@ def payout_report(request):
     page = request.GET.get('page', 1)
 
     try:
-        update_payout_statuses(user=request.user)
         if start_date_str and end_date_str:
             start_date = timezone.datetime.strptime(start_date_str, '%Y-%m-%d').date()
             end_date = timezone.datetime.strptime(end_date_str, '%Y-%m-%d').date() + timedelta(days=1)

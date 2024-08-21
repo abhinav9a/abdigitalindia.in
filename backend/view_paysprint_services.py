@@ -3,18 +3,20 @@ from http.client import responses
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, reverse
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.contrib import messages
+from django.utils import timezone
 from decimal import Decimal, ROUND_DOWN
 import requests
-from datetime import datetime
+from datetime import datetime, timedelta
 import uuid
 
 from urllib3 import request
 
 from backend.utils import (is_kyc_completed, get_pay_sprint_headers, get_pay_sprint_payload, is_merchant_bank2_registered,
                            is_user_registered_with_paysprint, get_pay_sprint_common_payload, generate_unique_id,
-                           is_bank2_last_authentication_valid, make_post_request)
-from backend.models import (PaySprintMerchantAuth, PaySprintAadharPayTransactionDetails, Wallet, Payout,
+                           is_bank2_last_authentication_valid, make_post_request, update_payout_statuses)
+from backend.models import (PaySprintMerchantAuth, PaySprintAadharPayTransactionDetails, Wallet, PaySprintPayout,
                             PaySprintCashWithdrawlTransactionDetails, PaySprintPayoutBankAccountDetails)
 from backend.config.consts import PaySprintRoutes, DMT_BANK_LIST, PAYOUT_TRANSACTION_STATUS
 from core.models import UserAccount
@@ -357,9 +359,9 @@ def merchant_authenticity_bank_2_api(request, user):
 def do_transaction(request):
     userObj = UserAccount.objects.get(username=request.user)
     bank_list = get_payout_bank_list(merchant_id=userObj.platform_id)
-    activated_banks = [bank for bank in bank_list if bank['status'] == '1']
-    document_upload_pending_banks = [bank for bank in bank_list if bank['status'] == '2']
-    document_verification_pending_banks = [bank for bank in bank_list if bank['status'] == '3']
+    activated_banks = [bank for bank in bank_list if bank['status'] == '1'] if bank_list else None
+    document_upload_pending_banks = [bank for bank in bank_list if bank['status'] == '2'] if bank_list else None
+    document_verification_pending_banks = [bank for bank in bank_list if bank['status'] == '3'] if bank_list else None
 
     if request.method == 'POST':
         amount = 0
@@ -412,16 +414,20 @@ def do_transaction(request):
 
                     if response.status_code == 200 and api_data.get("status"):
                         data = api_data.get("data")
+
                         payout_details = {
                             "userAccount": request.user,
+                            "ref_id": data.get("refid"),
+                            "ack_no": data.get("ackno"),
+                            "bank_name": data.get("bankname"),
+                            "account_no": data.get("acno"),
+                            "beneficiary_name": data.get("benename"),
                             "amount": data.get("amount"),
-                            "txn_status": PAYOUT_TRANSACTION_STATUS.get(data.get("txn_status")),
-                            "tid": data.get("utr") if data.get("utr") else "",
-                            "client_ref_id": data.get("refid"),
-                            "recipient_name": data.get("benename"),
                             "ifsc": data.get("ifsccode"),
-                            "account": data.get("acno"),
-                            "api_type": "pay_sprint"
+                            "mode": data.get("mode"),
+                            "charges": data.get("charges"),
+                            "utr": data.get("utr"),
+                            "txn_status": PAYOUT_TRANSACTION_STATUS.get(data.get("txn_status")),
                         }
 
                         # Charge user for DMT
@@ -429,7 +435,7 @@ def do_transaction(request):
                         wallet.save()
 
                         # Create a transaction entry for wallet
-                        Payout.objects.create(**payout_details)
+                        PaySprintPayout.objects.create(**payout_details)
 
                         return redirect('do_transaction')
 
@@ -525,4 +531,42 @@ def upload_supporting_document(request):
 def get_payout_bank_list(merchant_id):
     data = {"merchantid": merchant_id}
     response = requests.post(PaySprintRoutes.GET_LIST.value, json=data, headers=get_pay_sprint_headers())
+    print(response.json())
     return response.json().get("data")
+
+
+
+@login_required(login_url='user_login')
+@user_passes_test(is_kyc_completed, login_url='unauthorized')
+@user_passes_test(is_user_registered_with_paysprint, login_url='onboarding_user_paysprint')
+def payout_report(request):
+    start_date_str = request.POST.get('start_date', None)
+    end_date_str = request.POST.get('end_date', None)
+    page = request.GET.get('page', 1)
+
+    try:
+        update_payout_statuses(user=request.user)
+        if start_date_str and end_date_str:
+            start_date = timezone.datetime.strptime(start_date_str, '%Y-%m-%d').date()
+            end_date = timezone.datetime.strptime(end_date_str, '%Y-%m-%d').date() + timedelta(days=1)
+            start_date = timezone.make_aware(datetime.combine(start_date, datetime.min.time()))
+            end_date = timezone.make_aware(datetime.combine(end_date, datetime.max.time()))
+            transactions = PaySprintPayout.objects.filter(userAccount=request.user, timestamp__range=[start_date, end_date]).order_by('-id')
+        else:
+            transactions = PaySprintPayout.objects.filter(userAccount=request.user).order_by('-id')
+
+    except ValueError as e:
+        messages.error(request, str(e))
+        transactions = []
+
+    paginator = Paginator(transactions, 50)
+
+    try:
+        transactions_page = paginator.page(page)
+    except PageNotAnInteger:
+        transactions_page = paginator.page(1)
+    except EmptyPage:
+        transactions_page = paginator.page(paginator.num_pages)
+
+    context = {'transactions_page': transactions_page}
+    return render(request, 'backend/Services/Payout/Payout_Report_PaySprint.html', context)

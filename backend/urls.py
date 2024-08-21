@@ -54,6 +54,7 @@ urlpatterns = [
     path('add-account', view_paysprint_services.add_bank, name='add_account'),
     path('do-transaction', view_paysprint_services.do_transaction, name='do_transaction'),
     path('upload-documents', view_paysprint_services.upload_supporting_document, name='upload_documents'),
+    path('payout-report-2', view_paysprint_services.payout_report, name='payout_report_paysprint'),
 
     # Verification service
     path('pan-verification', view_services.pan_verification, name='panVerification'),

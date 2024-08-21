@@ -451,10 +451,6 @@ class Commission(models.Model):
     
 
 class Payout(models.Model):
-    class PayoutApiTypes(models.TextChoices):
-        Ecko = "ecko", _("Primary")
-        PaySprint = "pay_sprint", _("Relative")
-
     userAccount = models.ForeignKey(UserAccount, verbose_name=_("Linked User"), on_delete=models.CASCADE)
     amount = models.CharField(_("Amount"), max_length=500, blank=True)
     txn_status = models.CharField(_("Txn Status"), max_length=50, blank=True)
@@ -464,7 +460,25 @@ class Payout(models.Model):
     ifsc = models.CharField(_("IFSC"), max_length=500, blank=True)
     account = models.CharField(_("Account"), max_length=500, blank=True)
     timestamp = models.DateTimeField(auto_now_add=True)
-    api_type = models.CharField(_("Payout API Type"), max_length=10, choices=PayoutApiTypes.choices, default=PayoutApiTypes.Ecko)
+
+    def __str__(self):
+        return self.userAccount.username
+
+
+class PaySprintPayout(models.Model):
+    userAccount = models.ForeignKey(UserAccount, verbose_name=_("Linked User"), on_delete=models.CASCADE)
+    ref_id = models.CharField(_("Reference ID"), max_length=500, blank=True, null=True)
+    ack_no = models.CharField(_("Acknowledgement Number"), max_length=500, blank=True, null=True)
+    bank_name = models.CharField(_("Bank Name"), max_length=500, blank=True, null=True)
+    account_no = models.CharField(_("Account Number"), max_length=500, blank=True, null=True)
+    beneficiary_name = models.CharField(_("Beneficiary Name"), max_length=500, blank=True, null=True)
+    amount = models.CharField(_("Amount"), max_length=500, blank=True, null=True)
+    ifsc = models.CharField(_("IFSC"), max_length=500, blank=True, null=True)
+    mode = models.CharField(_("Mode"), max_length=500, blank=True, null=True)
+    charges = models.CharField(_("Charges"), max_length=500, blank=True, null=True)
+    utr = models.CharField(_("UTR"), max_length=500, blank=True, null=True)
+    txn_status = models.CharField(_("Txn Status"), max_length=50, blank=True, null=True)
+    timestamp = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.userAccount.username

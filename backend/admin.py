@@ -1,5 +1,8 @@
 from django.contrib import admin
-from .models import UserKYCDocument, OtherServices, Wallet, WalletTransaction, QRTxnCallbackByEko, ServiceActivation, AepsTxnCallbackByEko, DMTBankList, PanVerificationTxn, BankVerificationTxn, DmtTxn, Commission, Payout, BbpsTxn, CommissionTxn, CMSTxnCallbackByEko, CreditCardTxn, AdhaarVerificationTxn, OtherServices2
+from .models import (UserKYCDocument, OtherServices, Wallet, WalletTransaction, QRTxnCallbackByEko, ServiceActivation,
+                     AepsTxnCallbackByEko, DMTBankList, PanVerificationTxn, BankVerificationTxn, DmtTxn, Commission,
+                     Payout, PaySprintPayout, BbpsTxn, CommissionTxn, CMSTxnCallbackByEko, CreditCardTxn,
+                     AdhaarVerificationTxn, OtherServices2)
 from django.utils.translation import gettext_lazy as _
 
 # Register your models here.
@@ -43,6 +46,13 @@ class CreditCardTxnAdmin(admin.ModelAdmin):
 
 class PayoutAdmin(admin.ModelAdmin):
     list_display = ('id', 'userAccount', 'amount', 'tid', 'client_ref_id', 'txn_status', 'recipient_name', 'timestamp')
+
+class PaySprintPayoutAdmin(admin.ModelAdmin):
+    list_display = ('id', 'userAccount', 'amount', 'utr', 'ref_id', 'txn_status', 'beneficiary_name', 'timestamp')
+
+    def get_model_name(self, obj=None):
+        return "Payouts 2"
+
 
 class ServiceStatusAdmin(admin.ModelAdmin):
     list_display = ('id', 'userAccount', 'QrPaymentService', 'AepsService')
@@ -361,6 +371,7 @@ admin.site.register(DmtTxn, DmtTxnAdmin)
 admin.site.register(CreditCardTxn, CreditCardTxnAdmin)
 admin.site.register(Commission, CommissionAdmin)
 admin.site.register(Payout, PayoutAdmin)
+admin.site.register(PaySprintPayout, PaySprintPayoutAdmin)
 admin.site.register(BbpsTxn, BbpsTxnAdmin)
 admin.site.register(CommissionTxn, CommissionTxnAdmin)
 admin.site.register(CMSTxnCallbackByEko, CMSTxnCallbackByEkoAdmin)

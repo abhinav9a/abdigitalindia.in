@@ -1,31 +1,32 @@
 from enum import Enum
 
-# PAYSPRINT_BASE_URL = "https://sit.paysprint.in/"  # Test URL
-PAYSPRINT_BASE_URL = "https://api.paysprint.in/"    # Live URL
+PAYSPRINT_BASE_URL = "https://sit.paysprint.in/service-api/"  # Test URL
+# PAYSPRINT_BASE_URL = "https://api.paysprint.in/"    # Live URL
 
 
 class PaySprintRoutes(Enum):
     CALLBACK_URL = "https://abdigitalindia.in/user/"
-    WEB_ONBOARDING = f"{PAYSPRINT_BASE_URL}service-api/api/v1/service/onboard/onboardnew/getonboardurl"
-    BALANCE_ENQUIRY = f"{PAYSPRINT_BASE_URL}service-api/api/v1/service/aeps/balanceenquiry/index"
-    CASH_WITHDRAWL = f"{PAYSPRINT_BASE_URL}service-api/api/v1/service/aeps/authcashwithdraw/index"
-    MINI_STATEMENT = f"{PAYSPRINT_BASE_URL}service-api/api/v1/service/aeps/ministatement/index"
-    AADHAR_PAY = f"{PAYSPRINT_BASE_URL}service-api/api/v1/service/aadharpay/aadharpay/index"
-    BANK_2_REGISTRATION = f"{PAYSPRINT_BASE_URL}service-api/api/v1/service/aeps/kyc/Twofactorkyc/registration"
-    BANK_2_AUTHENTICATION = f"{PAYSPRINT_BASE_URL}service-api/api/v1/service/aeps/kyc/Twofactorkyc/authentication"
-    BANK_2_MERCHANT_AUTHENTICITY = f"{PAYSPRINT_BASE_URL}service-api/api/v1/service/aeps/kyc/Twofactorkyc/merchant_authencity"
-    BANK_3_REGISTRATION = f"{PAYSPRINT_BASE_URL}service-api/api/v1/service/aeps/kyc/Twofactorkyc/register_agent"
-    BANK_3_AUTHENTICATION = f"{PAYSPRINT_BASE_URL}service-api/api/v1/service/aeps/kyc/Twofactorkyc/auth_login"
-    BANK_3_AGENT_AUTHENTICITY = f"{PAYSPRINT_BASE_URL}service-api/api/v1/service/aeps/kyc/Twofactorkyc/agent_authencity"
-    AEPS_BANK_LIST = f"{PAYSPRINT_BASE_URL}service-api/api/v1/service/aeps/banklist/index"
+    # WEB_ONBOARDING = f"{PAYSPRINT_BASE_URL}api/v1/service/onboard/onboardnew/getonboardurl"   # Test URL
+    WEB_ONBOARDING = "https://api.paysprint.in/api/v1/service/onboard/onboard/getonboardurl"    # Live URL
+    BALANCE_ENQUIRY = f"{PAYSPRINT_BASE_URL}api/v1/service/aeps/balanceenquiry/index"
+    CASH_WITHDRAWL = f"{PAYSPRINT_BASE_URL}api/v1/service/aeps/authcashwithdraw/index"
+    MINI_STATEMENT = f"{PAYSPRINT_BASE_URL}api/v1/service/aeps/ministatement/index"
+    AADHAR_PAY = f"{PAYSPRINT_BASE_URL}api/v1/service/aadharpay/aadharpay/index"
+    BANK_2_REGISTRATION = f"{PAYSPRINT_BASE_URL}api/v1/service/aeps/kyc/Twofactorkyc/registration"
+    BANK_2_AUTHENTICATION = f"{PAYSPRINT_BASE_URL}api/v1/service/aeps/kyc/Twofactorkyc/authentication"
+    BANK_2_MERCHANT_AUTHENTICITY = f"{PAYSPRINT_BASE_URL}api/v1/service/aeps/kyc/Twofactorkyc/merchant_authencity"
+    BANK_3_REGISTRATION = f"{PAYSPRINT_BASE_URL}api/v1/service/aeps/kyc/Twofactorkyc/register_agent"
+    BANK_3_AUTHENTICATION = f"{PAYSPRINT_BASE_URL}api/v1/service/aeps/kyc/Twofactorkyc/auth_login"
+    BANK_3_AGENT_AUTHENTICITY = f"{PAYSPRINT_BASE_URL}api/v1/service/aeps/kyc/Twofactorkyc/agent_authencity"
+    AEPS_BANK_LIST = f"{PAYSPRINT_BASE_URL}api/v1/service/aeps/banklist/index"
 
     # PAYOUT Urls
-    GET_LIST = f"{PAYSPRINT_BASE_URL}service-api/api/v1/service/payout/payout/list"
-    ADD_ACCOUNT = f"{PAYSPRINT_BASE_URL}service-api/api/v1/service/payout/payout/add"
-    UPLOAD_DOCUMENT = f"{PAYSPRINT_BASE_URL}service-api/api/v1/service/payout/payout/uploaddocument"
-    ACCOUNT_STATUS = f"{PAYSPRINT_BASE_URL}service-api/api/v1/service/payout/Payout/accountstatus"
-    DO_TRANSACTION = f"{PAYSPRINT_BASE_URL}service-api/api/v1/service/payout/payout/dotransaction"
-    TRANSACTION_STATUS = f"{PAYSPRINT_BASE_URL}service-api/api/v1/service/payout/payout/status"
+    GET_LIST = f"{PAYSPRINT_BASE_URL}api/v1/service/payout/payout/list"
+    ADD_ACCOUNT = f"{PAYSPRINT_BASE_URL}api/v1/service/payout/payout/add"
+    UPLOAD_DOCUMENT = f"{PAYSPRINT_BASE_URL}api/v1/service/payout/payout/uploaddocument"
+    ACCOUNT_STATUS = f"{PAYSPRINT_BASE_URL}api/v1/service/payout/Payout/accountstatus"
+    DO_TRANSACTION = f"{PAYSPRINT_BASE_URL}api/v1/service/payout/payout/dotransaction"
+    TRANSACTION_STATUS = f"{PAYSPRINT_BASE_URL}api/v1/service/payout/payout/status"
 
 DMT_BANK_LIST = [
     {
@@ -7650,6 +7651,3 @@ PAYOUT_TRANSACTION_STATUS = {
     3:	"Transaction In Process",
     4:	"On Hold"
 }
-
-
-

@@ -1,21 +1,23 @@
 import qrcode
 from io import BytesIO
-from .models import WalletTransaction, ServiceActivation
+from .models import WalletTransaction, ServiceActivation, PaySprintMerchantAuth, PaySprintPayout
 from django.utils import timezone
 import hmac
 import base64
 import hashlib
-import time
-from datetime import datetime
+from django.db import transaction
+from datetime import datetime, timedelta
 from core.models import UserAccount
-import uuid
-import time
 import random
-import socket
-import requests
 import time
 import socket
 import jwt
+from backend.config.secrets import JWT_KEY, AUTHORISED_KEY, PARTNER_ID, AES_ENCRYPTION_IV, AES_ENCRYPTION_KEY
+from backend.config.consts import PaySprintRoutes
+from Crypto.Cipher import AES
+from Crypto.Util.Padding import pad
+import requests
+import json
 
 def generate_unique_id():
     timestamp = int(time.time() * 1000000)  # Microsecond precision
@@ -228,8 +230,8 @@ def generate_pay_sprint_token():
 
 def get_pay_sprint_headers():
     headers = {
-            "Token": generate_pay_sprint_token()
-            # "Authorisedkey": AUTHORISED_KEY
+            "Token": generate_pay_sprint_token(),
+            "Authorisedkey": AUTHORISED_KEY
         }
     return headers
 
@@ -342,7 +344,7 @@ def make_post_request(url, data):
 
 def update_payout_statuses(user):
     try:
-        payouts = Payout.objects.filter(userAccount=user, txn_status__in=['2', '3', '4'], api_type=Payout.PayoutApiTypes.PaySprint)
+        payouts = PaySprintPayout.objects.filter(userAccount=user, txn_status__in=['2', '3', '4'])
         payouts_to_update = []
         for payout in payouts:
             payload = {
@@ -357,27 +359,9 @@ def update_payout_statuses(user):
                 payouts_to_update.append(payout)
         if payouts_to_update:
             with transaction.atomic():
-                Payout.objects.bulk_update(payouts_to_update, ['txn_status'])
+                PaySprintPayout.objects.bulk_update(payouts_to_update, ['txn_status'])
     except Exception as e:
         print(f"Error updating payout statuses: {e}")
-
-
-def encode_file(file):
-    data_uri = None
-    if file:
-        file_extension = file.name.split('.')[-1].lower()
-        mime_type = {
-            'png': 'image/png',
-            'jpg': 'image/jpeg',
-            'jpeg': 'image/jpeg'
-        }.get(file_extension, 'application/octet-stream')
-        
-        file_content = file.read()
-        encoded_file = base64.b64encode(file_content).decode('utf-8')
-
-        data_uri = f"data:{mime_type};name={escape(file.name)};base64,{encoded_file}"
-
-    return data_uri
 
 
 electricity_operator_id = [22, 23, 24, 53, 55, 56, 57, 59, 60, 61, 62, 63, 69, 76, 78, 81, 82, 96, 101, 107, 109, 115, 121, 122, 125, 126, 131, 133, 136, 137, 138, 139, 140, 141, 142, 143, 145, 148, 149, 150, 153, 155, 156, 160, 164, 166, 171, 174, 175, 178, 190, 195, 198, 204, 230, 238, 239, 242, 243, 244, 245, 246, 247, 364, 375, 397, 452, 465, 473, 491, 546, 598, 603, 618, 619, 2706, 2707]
