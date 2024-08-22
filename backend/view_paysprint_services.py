@@ -346,7 +346,7 @@ def aadhar_pay(request):
 
 @login_required(login_url='user_login')
 @user_passes_test(is_kyc_completed, login_url='unauthorized')
-@user_passes_test(is_user_registered_with_paysprint, login_url='onboardingUser')
+@user_passes_test(is_user_registered_with_paysprint, login_url='onboarding_user_paysprint')
 def aeps_report(request):
     start_date_str = request.POST.get('start_date', None)
     end_date_str = request.POST.get('end_date', None)
