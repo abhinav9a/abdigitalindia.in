@@ -14,6 +14,6 @@ urlpatterns = [
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 # customize admin panel
-admin.site.site_header = "A.B. DIGITAL INDIA PVT. LTD."
-admin.site.site_title = "A.B. DIGITAL INDIA PVT. LTD."
+admin.site.site_header = "AIJAD BALRAM DIGITAL INDIA PRIVATE LIMITED"
+admin.site.site_title = "AIJAD BALRAM DIGITAL INDIA PRIVATE LIMITED"
 admin.site.index_title = "Welcome to Admin Area"
