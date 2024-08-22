@@ -58,8 +58,8 @@ def user_onboarding(request):
                 return render(request, 'backend/Services/AEPS/AEPS_PaySprint.html', {'url': redirect_url})
             else:
                 logger.error("paysprint onboarding==> %s", response.text)
-                api_data = response.json()
-                message = api_data.get('message')
+                # api_data = response.json()
+                # message = api_data.get('message')
                 messages.success(request, message=response.text, extra_tags='danger')
         except Exception as e:
             print('Custom Exception from paysprint onboarding==>', e)
