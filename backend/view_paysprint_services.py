@@ -415,12 +415,12 @@ def merchant_authentication_bank_2_api(request, user):
     data = get_pay_sprint_common_payload(request, user)
     response = make_post_request(url=PaySprintRoutes.BANK_2_AUTHENTICATION.value, data=data)
     api_data = response.json()
-    api_data = {
-        "response_code": 1,
-        "status": True,
-        "message": "Two Factor Verification Success",
-        "errorcode": "0"
-    }
+    # api_data = {
+    #     "response_code": 1,
+    #     "status": True,
+    #     "message": "Two Factor Verification Success",
+    #     "errorcode": "0"
+    # }
     if response.status_code == 200:
     # if api_data.get('response_code') == 1:
         merchant_auth = PaySprintMerchantAuth.objects.filter(userAccount=user).first()
