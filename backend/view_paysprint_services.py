@@ -60,7 +60,7 @@ def user_onboarding(request):
                 logger.error("paysprint onboarding==> %s", response.text)
                 api_data = response.json()
                 message = api_data.get('message')
-                messages.success(request, message=message, extra_tags='danger')
+                messages.success(request, message=response.text, extra_tags='danger')
         except Exception as e:
             print('Custom Exception from paysprint onboarding==>', e)
             messages.success(request, message=e, extra_tags='danger')
