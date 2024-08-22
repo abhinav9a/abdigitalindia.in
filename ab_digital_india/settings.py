@@ -199,43 +199,47 @@ CSRF_TRUSTED_ORIGINS = ['https://abdigitalindia.in', "https://www.abdigitalindia
 
 
 # Define the directory for log files
-LOGS_DIR = os.path.join(BASE_DIR, 'logs')
-if not os.path.exists(LOGS_DIR):
-    os.makedirs(LOGS_DIR)
+log_dir = BASE_DIR.joinpath("logs")
+if not log_dir.exists():
+    log_dir.mkdir(parents=True, exist_ok=True)
 
-# LOGGING = {
-#     'version': 1,
-#     'disable_existing_loggers': False,
-#     'formatters': {
-#         'standard': {
-#             'format': '{levelname} {asctime} {module} {filename} {lineno} {name} {message}',
-#             'style': '{',
-#         },
-#     },
-#     'handlers': {
-#         'file': {
-#             'level': 'WARNING',
-#             'class': 'logging.handlers.RotatingFileHandler',
-#             'filename': os.path.join(BASE_DIR, 'logs', 'debug.log'),
-#             'maxBytes': 1024 * 1024 * 10,  # 10 MB
-#             'backupCount': 5,
-#             'formatter': 'standard',
-#         },
-#         'console': {
-#             'level': 'DEBUG',
-#             'class': 'logging.StreamHandler',
-#             'formatter': 'standard',
-#         },
-#     },
-#     'loggers': {
-#         'django': {
-#             'handlers': ['file'],
-#             'level': 'WARNING',
-#             'propagate': True,
-#         },
-#     },
-#     'root': {
-#         'handlers': ['console'],
-#         'level': 'DEBUG',
-#     },
-# }
+log_file = log_dir.joinpath("debug.log")
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '{levelname} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'level': 'ERROR',
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple',
+        },
+        'file': {
+            'level': 'ERROR',
+            'class': 'logging.FileHandler',
+            'filename': log_file,
+            'formatter': 'verbose',
+        },
+    },
+    'loggers': {
+        '': {  # Root logger
+            'handlers': ['console', 'file'],
+            'level': 'ERROR',
+        },
+        'ab-digital-india': {
+            'handlers': ['console', 'file'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
+    },
+}

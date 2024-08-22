@@ -22,6 +22,11 @@ from backend.models import (PaySprintMerchantAuth, PaySprintAEPSTxnDetail, Walle
                             PaySprintPayoutBankAccountDetails)
 from backend.config.consts import PaySprintRoutes, DMT_BANK_LIST, PAYOUT_TRANSACTION_STATUS
 from core.models import UserAccount
+import logging
+
+
+logger = logging.getLogger(__name__)
+
 
 
 @login_required(login_url='user_login')
@@ -52,6 +57,7 @@ def user_onboarding(request):
                 redirect_url = api_data.get('redirecturl', None)
                 return render(request, 'backend/Services/AEPS/AEPS_PaySprint.html', {'url': redirect_url})
             else:
+                logger.error("paysprint onboarding==> %s", response.text)
                 api_data = response.json()
                 message = api_data.get('message')
                 messages.success(request, message=message, extra_tags='danger')
