@@ -106,7 +106,7 @@ def balance_enquiry(request):
             # }
             response_data = {
                 'userAccount': user,
-                'reference_no': data.get('clientrefno'),
+                'reference_no': response.get('clientrefno'),
                 'txn_status': response.get('response_code'),
                 'message':  response.get('message'),
                 'ack_no': response.get('ackno'),
@@ -277,7 +277,7 @@ def mini_statement(request):
             # }
             response_data = {
                 'userAccount': user,
-                'reference_no': data.get('clientrefno'),
+                'reference_no': data.get('referenceno'),
                 'txn_status': response.get('response_code'),
                 'message':  response.get('message'),
                 'ack_no': response.get('ackno'),
