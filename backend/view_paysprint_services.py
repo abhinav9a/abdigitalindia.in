@@ -47,6 +47,7 @@ def user_onboarding(request):
             "firm": shop_name,
             "callback": PaySprintRoutes.CALLBACK_URL.value
         }
+        logger.debug(f"pay sprint onboarding payload: {payload}")
         try:
             response = requests.post(PaySprintRoutes.WEB_ONBOARDING.value, json=payload, headers=get_pay_sprint_headers())
             if response.status_code == 200:
