@@ -28,6 +28,7 @@ urlpatterns = [
     path('mini-statement', view_paysprint_services.mini_statement,  name='mini_statement_paysprint'),
     path('aadhar-pay', view_paysprint_services.aadhar_pay,  name='aadhar_pay_paysprint'),
     path('Twofactorkyc-registraton', view_paysprint_services.merchant_registration_bank_2,  name='bank2_registration_paysprint'),
+    path('aeps-report-2', view_paysprint_services.aeps_report, name='aeps_report_paysprint'),
     # API Callback Views
     path('callback', api_views.pay_sprint_onboarding_callback, name='onboarding_callback'),
 

@@ -38,6 +38,7 @@ def user_onboarding(request):
         mobile_number = request.POST.get('mobile_number')
         email = request.POST.get('email')
         shop_name = request.POST.get('shop_name')
+        message = None
 
         payload = {
             "merchantcode": request.user.platform_id,
@@ -59,9 +60,12 @@ def user_onboarding(request):
                 return render(request, 'backend/Services/AEPS/AEPS_PaySprint.html', {'url': redirect_url})
             else:
                 logger.error("paysprint onboarding==> %s", response.text)
-                # api_data = response.json()
-                # message = api_data.get('message')
-                messages.success(request, message=response.text, extra_tags='danger')
+                try:
+                    api_data = response.json()
+                    message = api_data.get('message')
+                except Exception as e:
+                    message = response.text
+                messages.success(request, message=message, extra_tags='danger')
         except Exception as e:
             print('Custom Exception from paysprint onboarding==>', e)
             messages.success(request, message=e, extra_tags='danger')
@@ -100,6 +104,20 @@ def balance_enquiry(request):
             #   "errorcode": "00",
             #   "clientrefno": "435678232323"
             # }
+            response_data = {
+                'userAccount': user,
+                'reference_no': data.get('clientrefno'),
+                'txn_status': response.get('response_code'),
+                'message':  response.get('message'),
+                'ack_no': response.get('ackno'),
+                'amount': response.get('amount'),
+                'balance_amount': response.get('balanceamount'),
+                'bank_rrn': response.get('bankrrn'),
+                'bank_iin': response.get('bankiin'),
+                'service_type': '3'  # Balance Enquiry
+            }
+
+            merchant_auth = PaySprintAEPSTxnDetail.objects.create(**response_data)
             return render(request, 'backend/Pages/balanceEnquiry.html', {"user": user, "heading": heading, "bank_list": bank_list, "data": response})
         else:
             messages.error(request, message=response.json().get("message"), extra_tags='danger')
@@ -140,11 +158,13 @@ def cash_withdrawal(request):
                 response_data = {
                     'userAccount': user,
                     'reference_no': data.get('referenceno'),
-                    'ack_no': response.get('ackno'),
-                    'amount': response.get('amount'),
-                    'bank_rrn': response.get('bankrrn'),
                     'txn_status': response.get('txnstatus'),
                     'message':  response.get('message'),
+                    'ack_no': response.get('ackno'),
+                    'amount': response.get('amount'),
+                    # 'balance_amount': response.get('balanceamount'),
+                    'bank_rrn': response.get('bankrrn'),
+                    # 'bank_iin': response.get('bankiin'),
                     'service_type': '2'  # Cash Withdrawal
                 }
 
@@ -255,6 +275,20 @@ def mini_statement(request):
             #   ],
             #   "response_code": 1
             # }
+            response_data = {
+                'userAccount': user,
+                'reference_no': data.get('clientrefno'),
+                'txn_status': response.get('response_code'),
+                'message':  response.get('message'),
+                'ack_no': response.get('ackno'),
+                # 'amount': response.get('amount'),
+                'balance_amount': response.get('balanceamount'),
+                'bank_rrn': response.get('bankrrn'),
+                'bank_iin': response.get('bankiin'),
+                'service_type': '4'  # Mini Statement
+            }
+
+            merchant_auth = PaySprintAEPSTxnDetail.objects.create(**response_data)
         else:
             messages.error(request, response.json().get("message"), extra_tags='danger')
 
@@ -309,6 +343,42 @@ def aadhar_pay(request):
     return render(request, 'backend/Pages/aadharPay.html', {"user": user, "heading": heading, "bank_list": bank_list})
 
 
+
+@login_required(login_url='user_login')
+@user_passes_test(is_kyc_completed, login_url='unauthorized')
+@user_passes_test(is_user_registered_with_paysprint, login_url='onboardingUser')
+def aeps_report(request):
+    start_date_str = request.POST.get('start_date', None)
+    end_date_str = request.POST.get('end_date', None)
+    page = request.GET.get('page', 1)
+
+    try:
+        if start_date_str and end_date_str:
+            start_date = timezone.datetime.strptime(start_date_str, '%Y-%m-%d').date()
+            end_date = timezone.datetime.strptime(end_date_str, '%Y-%m-%d').date() + timedelta(days=1)
+            start_date = timezone.make_aware(datetime.combine(start_date, datetime.min.time()))
+            end_date = timezone.make_aware(datetime.combine(end_date, datetime.max.time()))
+            transactions = PaySprintAEPSTxnDetail.objects.filter(userAccount=request.user, timestamp__range=[start_date, end_date]).order_by('-id')
+        else:
+            transactions = PaySprintAEPSTxnDetail.objects.filter(userAccount=request.user).order_by('-id')
+
+    except ValueError as e:
+        messages.error(request, str(e))
+        transactions = []
+
+    paginator = Paginator(transactions, 50)
+
+    try:
+        transactions_page = paginator.page(page)
+    except PageNotAnInteger:
+        transactions_page = paginator.page(1)
+    except EmptyPage:
+        transactions_page = paginator.page(paginator.num_pages)
+
+    context = {'transactions_page': transactions_page}
+    return render(request, 'backend/Services/AEPS/AEPS_Report_PaySprint.html', context)
+
+
 @login_required(login_url='user_login')
 @user_passes_test(is_kyc_completed, login_url='unauthorized')
 @user_passes_test(is_user_registered_with_paysprint, login_url='onboarding_user_paysprint')
@@ -359,8 +429,6 @@ def merchant_authentication_bank_2_api(request, user):
     else:
         messages.error(request, api_data.get('message'), extra_tags='danger')
     return response
-
-
 
 
 def merchant_authenticity_bank_2_api(request, user):
