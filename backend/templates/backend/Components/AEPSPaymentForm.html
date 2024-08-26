@@ -102,29 +102,4 @@
     }
     getLocation();
 
-     const fpNavigator = new FingerprintJS.FingerprintNavigator();
-
-    async function captureFingerprint() {
-        try {
-            const fingerprintData = await getFingerprintData();
-            document.getElementById('data').value = fingerprintData;
-            document.querySelector('button[type="submit"]').disabled = false;
-        } catch (error) {
-            console.error('Error capturing fingerprint:', error);
-            alert('Failed to capture fingerprint. Please try again.');
-        }
-    }
-
-    function getFingerprintData() {
-        return new Promise((resolve, reject) => {
-            fpNavigator.getUserEngineDataAsXML(
-                (fingerprintData) => {
-                    resolve(fingerprintData);
-                },
-                (error) => {
-                    reject(error);
-                }
-            );
-        });
-    }
 </script>

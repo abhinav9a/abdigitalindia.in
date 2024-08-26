@@ -1,0 +1,52 @@
+<script>
+    function Capture() {
+        var url = "http://127.0.0.1:11100/capture";
+        var PIDOPTS = '<PidOptions ver="1.0"><Opts fCount="1" fType="0" iCount="" iType="" pCount="" pType="" format="0" pidVer="2.0" timeout="10000" otp="" wadh="" posh=""/></PidOptions>';
+
+        var xhr;
+        var ua = window.navigator.userAgent;
+        var msie = ua.indexOf("MSIE ");
+
+        if (msie > 0 || !!navigator.userAgent.match(/Trident.*rv\:11\./)) {
+            xhr = new ActiveXObject("Microsoft.XMLHTTP");
+        } else {
+            xhr = new XMLHttpRequest();
+        }
+
+        xhr.open('CAPTURE', url, true);
+        xhr.setRequestHeader("Content-Type", "text/xml");
+        xhr.setRequestHeader("Accept", "text/xml");
+
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState == 4) {
+                var status = xhr.status;
+                if (status == 200) {
+                    var test1 = xhr.responseText;
+                    var test2 = test1.search("errCode");
+                    var test6 = getPosition(test1, '"', 2);
+                    var test4 = test2 + 9;
+                    var test5 = test1.slice(test4, test6);
+                    if (test5 > 0) {
+                        alert(xhr.responseText);
+                    } else {
+                        alert("Captured Successfully");
+                        document.getElementById('data').textContent = "Fingerprint Captured";
+                        document.getElementById('data').disabled = true;
+                    }
+                } else {
+                    console.log(xhr.response);
+                }
+            }
+        };
+
+        xhr.send(PIDOPTS);
+    }
+
+    function getPosition(string, subString, index) {
+        return string.split(subString, index).join(subString).length;
+    }
+
+    function captureFingerprint() {
+        Capture();
+    }
+</script>
