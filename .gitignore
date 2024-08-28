@@ -165,3 +165,8 @@ gunicorn.conf
 logs/
 4911e516e5aa21d327512e0c8b197616_venv/
 staticfiles/
+
+docker-compose.yml
+Dockerfile
+entrypoint.sh
+.vscode/

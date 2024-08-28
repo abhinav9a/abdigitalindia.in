@@ -1,109 +1,97 @@
-{% extends "backend/Shared/AuthBase.html" %}
-{% block main %}
+{% extends "backend/Shared/AuthBase.html" %} {% block main %}
 
 <div class="row">
-    {% if is_registered %}
-    <div class="col-md-8 mx-auto grid-margin stretch-card">
-        <div class="card">
-            <div class="card-body">
-            {% for message in messages %}
-            <div class="alert alert-{{ message.extra_tags }}">
-                {{message}}
-            </div>
-            {% endfor %}
-            <h4 class="card-title">You're already Registered.</h4>
-            </div>
-        </div>
-    </div>
+	{% if is_registered %}
+	<div class="col-md-8 mx-auto grid-margin stretch-card">
+		<div class="card">
+			<div class="card-body">
+				{% for message in messages %}
+				<div class="alert alert-{{ message.extra_tags }}">{{message}}</div>
+				{% endfor %}
+				<h4 class="card-title">You're already Registered.</h4>
+			</div>
+		</div>
+	</div>
 
-    {% else %}
-    <div class="col-md-8 mx-auto grid-margin stretch-card">
-        <div class="card">
-            <div class="card-body">
-            {% for message in messages %}
-            <div class="alert alert-{{ message.extra_tags }}">
-                {{message}}
-            </div>
-            {% endfor %}
-            <h4 class="card-title">{{ title }}</h4>
-            <p class="card-description">
-                This is the one time process. Please check all the details to avoid rejection.
-            </p>
-            <br/>
-            <form class="forms-sample" method="post" action="{% url form_submit_url %}" enctype="multipart/form-data">
-                {% csrf_token %}
-                <div class="row">
-                    <input type="hidden" name="next" value="{{ request.GET.next }}">
-                    <input type="hidden" name="latlong" id="latlong1" required>
-                    <div class="col-md-3">
-                        <div class="form-group">
-                            <label for="aadhar_no">Aadhar Number</label>
-                            <input type="text" name='aadhar_no' value="{{user.aadhar_no}}" style="text-transform: uppercase;" class="form-control" id="aadhar_no" disabled>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="form-group">
-                            <label for="mobile">Mobile Number</label>
-                            <input type="text" name='mobile' value="{{ user.mobile }}" class="form-control" id="mobile" disabled>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="form-group">
-                            <label for="data" class="form-label">Fingerprint Data</label>
-                            <button type="button" class="form-control btn btn-primary me-2 py-3" onclick="captureFingerprint()" id="data">Capture Fingerprint</button>
-                         </div>
-                    </div>
-                </div>
-                <button type="submit" class="btn btn-primary px-5 py-3 my-4">Submit</button>
-            </form>
-            </div>
-        </div>
-    </div>
+	{% else %}
+	<div class="col-md-8 mx-auto grid-margin stretch-card">
+		<div class="card">
+			<div class="card-body">
+				{% for message in messages %}
+				<div class="alert alert-{{ message.extra_tags }}">{{message}}</div>
+				{% endfor %}
+				<h4 class="card-title">{{ title }}</h4>
+				<p class="card-description">This is the one time process. Please check all the details to avoid rejection.</p>
+				<br />
+				<form class="forms-sample" method="post" action="{% url form_submit_url %}" enctype="multipart/form-data">
+					{% csrf_token %}
+					<div class="row">
+						<input type="hidden" name="next" value="{{ request.GET.next }}" />
+						<input type="hidden" name="latlong" id="latlong1" required />
+						<div class="col-md-3">
+							<div class="form-group">
+								<label for="aadhar_no">Aadhar Number</label>
+								<input type="text" name="aadhar_no" value="{{user.aadhar_no}}" class="form-control" id="aadhar_no" />
+							</div>
+						</div>
+						<div class="col-md-3">
+							<div class="form-group">
+								<label for="mobile">Mobile Number</label>
+								<input type="text" name="mobile" value="{{ user.mobile }}" class="form-control" id="mobile" disabled />
+							</div>
+						</div>
+						<div class="col-md-3">
+							<div class="form-group">
+								<label for="data" class="form-label">Fingerprint Data</label>
+								<input type="hidden" id="data" name="data" />
+								<button type="button" class="form-control btn btn-primary me-2 py-3" onclick="captureFingerprint()">Capture Fingerprint</button>
+							</div>
+						</div>
+					</div>
+					<button type="submit" class="btn btn-primary px-5 py-3 my-4">Submit</button>
+				</form>
+			</div>
+		</div>
+	</div>
 
-    {% endif %}
-
+	{% endif %}
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@fingerprintjs/fingerprintjs@3"></script>
 <script>
+	function getLocation() {
+		if (navigator.geolocation) {
+			navigator.geolocation.getCurrentPosition(
+				function (position) {
+					var latitude = position.coords.latitude;
+					var longitude = position.coords.longitude;
+					$("#latlong1").val(latitude + "," + longitude);
+				},
+				function (error) {
+					handleGeolocationError(error);
+				}
+			);
+		} else {
+			alert("Geolocation is not supported by this browser.");
+		}
+	}
 
-    function getLocation() {
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(
-                function (position) {
-                    var latitude = position.coords.latitude;
-                    var longitude = position.coords.longitude;
-                    $('#latlong1').val(latitude + ',' + longitude)
-                },
-                function (error) {
-                    handleGeolocationError(error);
-                }
-            );
-        } else {
-            alert("Geolocation is not supported by this browser.");
-        }
-    }
-
-    function handleGeolocationError(error) {
-        switch (error.code) {
-            case error.PERMISSION_DENIED:
-                alert("User denied the request for Geolocation.");
-                break;
-            case error.POSITION_UNAVAILABLE:
-                alert("Location information is unavailable.");
-                break;
-            case error.TIMEOUT:
-                alert("The request to get user location timed out.");
-                break;
-            case error.UNKNOWN_ERROR:
-                alert("An unknown error occurred.");
-                break;
-        }
-    }
-    getLocation();
-
+	function handleGeolocationError(error) {
+		switch (error.code) {
+			case error.PERMISSION_DENIED:
+				alert("User denied the request for Geolocation.");
+				break;
+			case error.POSITION_UNAVAILABLE:
+				alert("Location information is unavailable.");
+				break;
+			case error.TIMEOUT:
+				alert("The request to get user location timed out.");
+				break;
+			case error.UNKNOWN_ERROR:
+				alert("An unknown error occurred.");
+				break;
+		}
+	}
+	getLocation();
 </script>
 
-{% include "backend/Components/CaptureFingerprintScript.html" %}
-
-{% endblock main %}
+{% include "backend/Components/CaptureFingerprintScript.html" %} {% endblock main %}
