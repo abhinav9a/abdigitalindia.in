@@ -19,7 +19,8 @@
                       <div class="col-md-3">
                           <div class="form-group">
                               <label for="aadhar_no">Aadhar Number</label>
-                              <input type="text" name='aadhar_no' style="text-transform: uppercase;" class="form-control" id="aadhar_no">
+                              <input type="text" name='aadhar_no' style="text-transform: uppercase;" class="form-control" id="aadhar_no" maxlength="12" oninput="validateAadhaar(this)">
+                              <small id="aadhaarError" class="form-text text-danger" style="display: none;">Invalid Aadhaar number</small>
                           </div>
                       </div>
 
@@ -86,5 +87,19 @@
         }
     }
     getLocation();
+
+    function validateAadhaar(input) {
+        const aadhaarNumber = input.value.replace(/\s/g, '');
+        const aadhaarRegex = /^[0-9]{1}[0-9]{11}$/;
+        const errorElement = document.getElementById('aadhaarError');
+        const submitBtn = document.getElementById('submitBtn');
+        if (aadhaarRegex.test(aadhaarNumber)) {
+            errorElement.style.display = 'none';
+            submitBtn.disabled = false;
+        } else {
+            errorElement.style.display = 'block';
+            submitBtn.disabled = true;
+        }
+    }
 
 </script>
