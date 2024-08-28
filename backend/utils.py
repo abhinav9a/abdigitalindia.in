@@ -18,6 +18,11 @@ from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad
 import requests
 import json
+import logging
+
+
+logger = logging.getLogger(__name__)
+
 
 def generate_unique_id():
     timestamp = int(time.time() * 1000000)  # Microsecond precision
@@ -230,9 +235,10 @@ def generate_pay_sprint_token():
 
 def get_pay_sprint_headers():
     headers = {
-            "Token": generate_pay_sprint_token()
-            # "Authorisedkey": AUTHORISED_KEY
-        }
+        "Token": generate_pay_sprint_token()
+        # "Authorisedkey": AUTHORISED_KEY
+    }
+    logger.error(f"Request Headers: {headers}")
     return headers
 
 
@@ -336,9 +342,12 @@ def is_bank3_MerAuthTxnId_present(user):
 
 
 def make_post_request(url, data):
+    logger.error(f"API URL: {url}")
+    logger.error(f"Request Data: {data}")
     payload = {"body": encrypt_aes_128(json.dumps(data))}
+    logger.error(f"Encrypted Request Body: {payload}")
     response = requests.post(url, json=payload, headers=get_pay_sprint_headers())
-    print(f">>>>>>>>>>>>>>>>>>>>>>>>>>>> {response.text}")
+    logger.error(f"Response Body: {response.json()}")
     return response
 
 

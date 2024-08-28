@@ -47,10 +47,14 @@ def user_onboarding(request):
             "email": email,
             "firm": shop_name,
             "callback": PaySprintRoutes.CALLBACK_URL.value
+            # "callback": "http://127.0.0.1/user/"
         }
         logger.error(f"pay sprint onboarding payload: {payload}")
         try:
+            logger.debug(f"API URL: {PaySprintRoutes.WEB_ONBOARDING.value}")
+            logger.debug(f"Request Body: {payload}")
             response = requests.post(PaySprintRoutes.WEB_ONBOARDING.value, json=payload, headers=get_pay_sprint_headers())
+            logger.debug(f"Response Body: {response.json()}")
             if response.status_code == 200:
                 if response.json().get('onboard_pending') == 0:
                     return redirect("dashboard")
@@ -74,7 +78,10 @@ def user_onboarding(request):
 
 
 def get_pay_sprint_aeps_bank_list():
+    logger.debug(f"API URL: {PaySprintRoutes.AEPS_BANK_LIST.value}")
+    logger.debug(f"Request Body: NONE")
     response = requests.post(PaySprintRoutes.AEPS_BANK_LIST.value, headers=get_pay_sprint_headers())
+    logger.debug(f"Response Body: {response.json()}")
     if response.status_code == 200:
         bank_list = response.json().get('banklist').get('data')
         return bank_list
@@ -89,6 +96,7 @@ def balance_enquiry(request):
     if request.method == 'POST':
         data = get_pay_sprint_payload(request, user, "BE")
         response = make_post_request(url=PaySprintRoutes.BALANCE_ENQUIRY.value, data=data)
+        logger.error(f"Response Body: {response.json()}")
         if response.status_code == 200:
         # if True:
             response = response.json()
@@ -142,6 +150,7 @@ def cash_withdrawal(request):
             merchant_auth_txn_id = PaySprintMerchantAuth.objects.get(userAccount=user).bank2_MerAuthTxnId
             data = get_pay_sprint_payload(request, user, "CW", merchant_auth_txn_id)
             response = make_post_request(url=PaySprintRoutes.CASH_WITHDRAWAL.value, data=data)
+            logger.error(f"Response Body: {response.json()}")
 
             if response.status_code == 200:
             # if True:
@@ -170,6 +179,7 @@ def cash_withdrawal(request):
 
                 merchant_auth = PaySprintAEPSTxnDetail.objects.create(**response_data)
                 response = make_post_request(url=PaySprintRoutes.CASH_WITHDRAWAL_TXN_STATUS.value, data={'reference': data.get('referenceno')})
+                logger.error(f"Response Body: {response.json()}")
                 if response.status_code == 200:
                     api_data = response.json()
                     txn_status = None
@@ -205,6 +215,7 @@ def mini_statement(request):
     if request.method == 'POST':
         data = get_pay_sprint_payload(request, user, "MS")
         response = make_post_request(url=PaySprintRoutes.MINI_STATEMENT.value, data=data)
+        logger.error(f"Response Body: {response.json()}")
         if response.status_code == 200:
         # if True:
             response = response.json()
@@ -307,6 +318,7 @@ def aadhar_pay(request):
     if request.method == 'POST':
         data = get_pay_sprint_payload(request, user, "M")  # M OR FM OR IM
         response = make_post_request(url=PaySprintRoutes.AADHAR_PAY.value, data=data)
+        logger.error(f"Response Body: {response.json()}")
         if response.status_code == 200:
         # if True:
             response = response.json()
@@ -387,6 +399,7 @@ def merchant_registration_bank_2(request):
     if request.method == 'POST':
         data = get_pay_sprint_common_payload(request, user)
         response = make_post_request(url=PaySprintRoutes.GET_LIST.value, data=data)
+        logger.error(f"Response Body: {response.json()}")
         api_data = response.json()
         if response.status_code == 200:
         # if True:
@@ -414,6 +427,7 @@ def merchant_registration_bank_2(request):
 def merchant_authentication_bank_2_api(request, user):
     data = get_pay_sprint_common_payload(request, user)
     response = make_post_request(url=PaySprintRoutes.BANK_2_AUTHENTICATION.value, data=data)
+    logger.error(f"Response Body: {response.json()}")
     api_data = response.json()
     # api_data = {
     #     "response_code": 1,
@@ -434,6 +448,7 @@ def merchant_authentication_bank_2_api(request, user):
 def merchant_authenticity_bank_2_api(request, user):
     data = get_pay_sprint_common_payload(request, user)
     response = make_post_request(url=PaySprintRoutes.BANK_2_MERCHANT_AUTHENTICITY.value, data=data)
+    logger.error(f"Response Body: {response.json()}")
     api_data = response.json()
     # api_data = {
     #   "response_code": 1,
@@ -504,8 +519,11 @@ def do_transaction(request):
                     "refid": ref_id,
                     "mode": request.POST.get("mode")
                 }
+                logger.debug(f"API URL: {PaySprintRoutes.DO_TRANSACTION.value}")
+                logger.debug(f"Request Body: {data}")
                 response = requests.post(PaySprintRoutes.DO_TRANSACTION.value, json=data, headers=get_pay_sprint_headers())
                 api_data = response.json()
+                logger.debug(f"Response Body: {api_data}")
 
                 if response.status_code == 200 and api_data.get("status"):
                     messages.success(request, api_data.get('message'))
@@ -513,9 +531,12 @@ def do_transaction(request):
                         "refid":ref_id,
                         "ackno":api_data.get("ackno")
                     }
+                    logger.debug(f"API URL: {PaySprintRoutes.TRANSACTION_STATUS.value}")
+                    logger.debug(f"Request Body: {data}")
                     # Check the Transaction Status
                     response = requests.post(PaySprintRoutes.TRANSACTION_STATUS.value, json=payload, headers=get_pay_sprint_headers())
                     api_data = response.json()
+                    logger.debug(f"Response Body: {api_data}")
 
                     if response.status_code == 200 and api_data.get("status"):
                         data = api_data.get("data")
@@ -536,7 +557,7 @@ def do_transaction(request):
                         }
 
                         # Charge user for DMT
-                        wallet.balance -= float(data.get("charges"))
+                        wallet.balance -= Decimal(data.get("charges"))
                         wallet.save()
 
                         # Create a transaction entry for wallet
@@ -575,9 +596,11 @@ def add_bank(request):
             "name": request.POST.get('acc_name'),
             "account_type": request.POST.get('acc_type'),
         }
+        logger.debug(f"API URL: {PaySprintRoutes.ADD_ACCOUNT.value}")
+        logger.debug(f"Request Body: {data}")
         response = requests.post(PaySprintRoutes.ADD_ACCOUNT.value, json=data, headers=get_pay_sprint_headers())
         api_data = response.json()
-        print(">>>>>>>>>>>>>>>>>>>>>>>> ", api_data)
+        logger.debug(f"Response Body: {api_data}")
         # api_data = {'response_code': 2, 'status': True, 'acc_status': 2, 'bene_id': 1258814, 'message': 'Account Detailed saved successfully. Please upload Supportive Document to activate'}
         if api_data.get("response_code") in (1, 2):
         # if True:
@@ -621,8 +644,10 @@ def upload_supporting_document(request):
             files["front_aadhar"] = ("front_aadhar.jpg", request.FILES.get("front_aadhar").read(), "image/jpeg")
             files["back_aadhar"] = ("back_aadhar.jpg", request.FILES.get("back_aadhar").read(), "image/jpeg")
 
+        logger.debug(f"API URL: {PaySprintRoutes.UPLOAD_DOCUMENT.value}")
+        logger.debug(f"Request Body: {payload} \n Files: {files}")
         response = requests.post(PaySprintRoutes.UPLOAD_DOCUMENT.value, data=payload, files=files, headers=get_pay_sprint_headers())
-        print(">>>>>>>>>>>>>>> ", response.json())
+        logger.debug(f"Response Body: {response.json()}")
         if response.json().get("status"):
             messages.success(request, response.json().get('message'), extra_tags='success')
             return redirect("do_transaction")
@@ -635,8 +660,10 @@ def upload_supporting_document(request):
 
 def get_payout_bank_list(merchant_id):
     data = {"merchantid": merchant_id}
+    logger.debug(f"API URL: {PaySprintRoutes.GET_LIST.value}")
+    logger.debug(f"Request Body: {data}")
     response = requests.post(PaySprintRoutes.GET_LIST.value, json=data, headers=get_pay_sprint_headers())
-    print(response.json())
+    logger.debug(f"Response Body: {response.json()}")
     return response.json().get("data")
 
 
