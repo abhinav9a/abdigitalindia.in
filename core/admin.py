@@ -11,7 +11,7 @@ class UserAccountAdmin(admin.ModelAdmin):
         (None, {"fields": ('username','password', 'userType', 'shopName', 'pancard_no')}),
         (_('Personal info'),{'fields':('profile_img', 'first_name', 'last_name', 'email', 'mobile', 'dob', 'address')}),
         (_('Bank info'),{'fields':('acc_name', 'acc_type', 'acc_no', 'ifsc', 'payment_mode')}),
-        (_('Permissions'),{'fields':('unique_sequence','platform_id', 'eko_user_code', 'userManager', 'kycStatus', 'is_active' , 'is_staff', 'is_superuser', 'groups', 'user_permissions')}),
+        (_('Permissions'),{'fields':('unique_sequence','platform_id', 'eko_user_code', 'pay_sprint_ref_no', 'userManager', 'kycStatus', 'is_active' , 'is_staff', 'is_superuser', 'groups', 'user_permissions')}),
         (_('Important dates'), {'fields': ('last_login', 'date_joined')}),
     )
 
