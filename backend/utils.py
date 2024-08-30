@@ -240,7 +240,7 @@ def get_pay_sprint_headers():
         "Token": generate_pay_sprint_token()
         # "Authorisedkey": AUTHORISED_KEY
     }
-    logger.error(f"Request Headers: {headers}")
+    # logger.error(f"Request Headers: {json.dumps(headers)}")
     return headers
 
 
@@ -344,12 +344,14 @@ def is_bank3_MerAuthTxnId_present(user):
 
 
 def make_post_request(url, data):
-    logger.error(f"API URL: {url}")
-    logger.error(f"Request Data: {data}")
+    # logger.error("#################################")
+    # logger.error(f"API URL: {json.dumps(url)}")
     payload = {"body": encrypt_aes_128(json.dumps(data))}
-    logger.error(f"Encrypted Request Body: {payload}")
     response = requests.post(url, json=payload, headers=get_pay_sprint_headers())
-    logger.error(f"Response Body: {response.json()}")
+    # logger.error(f"Request Data: {json.dumps(data)}")
+    # logger.error(f"Encrypted Request Body: {json.dumps(payload)}")
+    # logger.error(f"Response Body: {json.dumps(response.json())}")
+    # logger.error("#################################")
     return response
 
 
