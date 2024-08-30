@@ -219,7 +219,9 @@ def get_token():
 
 
 def is_user_registered_with_paysprint(user):
-    return user.pay_sprint_ref_no is not None
+    if not user.pay_sprint_ref_no:
+        return False
+    return True
 
 
 def generate_pay_sprint_token():
