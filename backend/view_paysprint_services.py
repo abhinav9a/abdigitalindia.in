@@ -1,28 +1,42 @@
-from http.client import responses
-
-from django.contrib.auth.decorators import user_passes_test
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, redirect, reverse
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from django.contrib import messages
-from django.utils import timezone
-from decimal import Decimal, ROUND_DOWN
-import requests
 from datetime import datetime, timedelta
+from decimal import Decimal, ROUND_DOWN
+import logging
 import uuid
 
-from urllib3 import request
+from django.contrib import messages
+from django.contrib.auth.decorators import user_passes_test
+from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.shortcuts import render, redirect, reverse
+from django.utils import timezone
+import requests
 
-from backend.utils import (is_kyc_completed, get_pay_sprint_headers, get_pay_sprint_payload,
-                           is_merchant_bank2_registered,
-                           is_user_registered_with_paysprint, get_pay_sprint_common_payload, generate_unique_id,
-                           is_bank2_last_authentication_valid, make_post_request, update_payout_statuses,
-                           get_aadhaar_pay_txn_status)
-from backend.models import (PaySprintMerchantAuth, PaySprintAEPSTxnDetail, Wallet, PaySprintPayout,
-                            PaySprintPayoutBankAccountDetails)
-from backend.config.consts import PaySprintRoutes, DMT_BANK_LIST, PAYOUT_TRANSACTION_STATUS
+from backend.utils import (
+    is_kyc_completed,
+    get_pay_sprint_headers,
+    get_pay_sprint_payload,
+    is_merchant_bank2_registered,
+    is_user_registered_with_paysprint,
+    get_pay_sprint_common_payload,
+    generate_unique_id,
+    is_bank2_last_authentication_valid,
+    make_post_request,
+    update_payout_statuses,
+    get_aadhaar_pay_txn_status,
+)
+from backend.models import (
+    PaySprintMerchantAuth,
+    PaySprintAEPSTxnDetail,
+    Wallet,
+    PaySprintPayout,
+    PaySprintPayoutBankAccountDetails,
+)
+from backend.config.consts import (
+    PaySprintRoutes,
+    DMT_BANK_LIST,
+    PAYOUT_TRANSACTION_STATUS,
+)
 from core.models import UserAccount
-import logging
 
 
 logger = logging.getLogger(__name__)
@@ -31,55 +45,58 @@ logger = logging.getLogger(__name__)
 @login_required(login_url="user_login")
 @user_passes_test(is_kyc_completed, login_url="unauthorized")
 def user_onboarding(request):
-    onboarding_details = UserAccount.objects.get(username=request.user)
-    redirect_url = None
-    if request.method == "POST":
-        mobile_number = request.POST.get("mobile_number")
-        email = request.POST.get("email")
-        shop_name = request.POST.get("shop_name")
-        message = None
+    try:
+        onboarding_details = UserAccount.objects.get(username=request.user)
+        redirect_url = None
+        if request.method == "POST":
+            mobile_number = request.POST.get("mobile_number")
+            email = request.POST.get("email")
+            shop_name = request.POST.get("shop_name")
+            message = None
 
-        payload = {
-            "merchantcode": request.user.platform_id,
-            "mobile": mobile_number,
-            "is_new": "1",
-            "email": email,
-            "firm": shop_name,
-            "callback": PaySprintRoutes.CALLBACK_URL.value,
-            # "callback": "http://127.0.0.1/user/"
-        }
-        logger.error(f"pay sprint onboarding payload: {payload}")
-        try:
-            logger.debug(f"API URL: {PaySprintRoutes.WEB_ONBOARDING.value}")
-            logger.debug(f"Request Body: {payload}")
-            response = requests.post(
-                PaySprintRoutes.WEB_ONBOARDING.value,
-                json=payload,
-                headers=get_pay_sprint_headers(),
-            )
-            logger.error(f"Response Body: {response.text}")
-            if response.status_code == 200:
-                if response.json().get("onboard_pending") == 0:
-                    return redirect("dashboard")
-                api_data = response.json()
-                message = api_data.get("message")
-                redirect_url = api_data.get("redirecturl", None)
-                return render(
-                    request,
-                    "backend/Services/AEPS/AEPS_PaySprint.html",
-                    {"url": redirect_url},
+            payload = {
+                "merchantcode": request.user.platform_id,
+                "mobile": mobile_number,
+                "is_new": "1",
+                "email": email,
+                "firm": shop_name,
+                "callback": PaySprintRoutes.CALLBACK_URL.value,
+            }
+            # logger.info("PaySprint onboarding payload", extra={"payload": payload})
+            try:
+                response = requests.post(
+                    PaySprintRoutes.WEB_ONBOARDING.value,
+                    json=payload,
+                    headers=get_pay_sprint_headers(),
                 )
-            else:
-                logger.error("paysprint onboarding==> %s", response.text)
-                try:
+                # logger.info("PaySprint onboarding response", extra={"response": response.text})
+                if response.status_code == 200:
                     api_data = response.json()
-                    message = api_data.get("message")
-                except Exception as e:
-                    message = response.text
-                messages.success(request, message=message, extra_tags="danger")
-        except Exception as e:
-            logger.error("Custom Exception from paysprint onboarding==>", e)
-            messages.success(request, message=e, extra_tags="danger")
+                    if api_data.get("onboard_pending") == 0:
+                        messages.success(request, api_data.get("message"))
+                        return redirect("dashboard")
+                    redirect_url = api_data.get("redirecturl")
+                    return render(
+                        request,
+                        "backend/Services/AEPS/AEPS_PaySprint.html",
+                        {"url": redirect_url},
+                    )
+                else:
+                    # logger.error("PaySprint onboarding failed", extra={"response": response.text})
+                    try:
+                        message = response.json().get("message", response.text)
+                    except Exception as e:
+                        logger.error(e)
+                        message = response.text
+                    messages.error(request, message=message, extra_tags="danger")
+            except Exception as e:
+                logger.exception(f"Unexpected error during PaySprint onboarding. {e}")
+                messages.error(
+                    request, "An unexpected error occurred. Please try again later."
+                )
+    except Exception as e:
+        logger.exception(f"Unexpected error in user_onboarding view. {e}")
+        messages.error(request, "An unexpected error occurred. Please try again later.")
 
     return render(
         request,
@@ -89,15 +106,21 @@ def user_onboarding(request):
 
 
 def get_pay_sprint_aeps_bank_list():
-    logger.debug(f"API URL: {PaySprintRoutes.AEPS_BANK_LIST.value}")
-    logger.debug(f"Request Body: NONE")
+    # logger.debug(f"API URL: {PaySprintRoutes.AEPS_BANK_LIST.value}")
+    # logger.debug(f"Request Body: NONE")
     response = requests.post(
         PaySprintRoutes.AEPS_BANK_LIST.value, headers=get_pay_sprint_headers()
     )
-    logger.debug(f"Response Body: {response.json()}")
+    # logger.debug(f"Response Body: {response.json()}")
     if response.status_code == 200:
-        bank_list = response.json().get("banklist").get("data")
+        bank_list = response.json().get("banklist", {}).get("data", [])
         return bank_list
+    else:
+        logger.error(
+            "Failed to fetch AEPS bank list",
+            extra={"status_code": response.status_code, "response": response.text},
+        )
+        return []
 
 
 @login_required(login_url="user_login")
@@ -659,21 +682,21 @@ def do_transaction(request):
                     "refid": ref_id,
                     "mode": request.POST.get("mode"),
                 }
-                logger.debug(f"API URL: {PaySprintRoutes.DO_TRANSACTION.value}")
-                logger.debug(f"Request Body: {data}")
+                # logger.debug(f"API URL: {PaySprintRoutes.DO_TRANSACTION.value}")
+                # logger.debug(f"Request Body: {data}")
                 response = requests.post(
                     PaySprintRoutes.DO_TRANSACTION.value,
                     json=data,
                     headers=get_pay_sprint_headers(),
                 )
                 api_data = response.json()
-                logger.debug(f"Response Body: {api_data}")
+                # logger.debug(f"Response Body: {api_data}")
 
                 if response.status_code == 200 and api_data.get("status"):
                     messages.success(request, api_data.get("message"))
                     payload = {"refid": ref_id, "ackno": api_data.get("ackno")}
-                    logger.debug(f"API URL: {PaySprintRoutes.TRANSACTION_STATUS.value}")
-                    logger.debug(f"Request Body: {data}")
+                    # logger.debug(f"API URL: {PaySprintRoutes.TRANSACTION_STATUS.value}")
+                    # logger.debug(f"Request Body: {data}")
                     # Check the Transaction Status
                     response = requests.post(
                         PaySprintRoutes.TRANSACTION_STATUS.value,
@@ -681,7 +704,7 @@ def do_transaction(request):
                         headers=get_pay_sprint_headers(),
                     )
                     api_data = response.json()
-                    logger.debug(f"Response Body: {api_data}")
+                    # logger.debug(f"Response Body: {api_data}")
 
                     if response.status_code == 200 and api_data.get("status"):
                         data = api_data.get("data")
@@ -749,15 +772,15 @@ def add_bank(request):
             "name": request.POST.get("acc_name"),
             "account_type": request.POST.get("acc_type"),
         }
-        logger.debug(f"API URL: {PaySprintRoutes.ADD_ACCOUNT.value}")
-        logger.debug(f"Request Body: {data}")
+        # logger.debug(f"API URL: {PaySprintRoutes.ADD_ACCOUNT.value}")
+        # logger.debug(f"Request Body: {data}")
         response = requests.post(
             PaySprintRoutes.ADD_ACCOUNT.value,
             json=data,
             headers=get_pay_sprint_headers(),
         )
         api_data = response.json()
-        logger.debug(f"Response Body: {api_data}")
+        # logger.debug(f"Response Body: {api_data}")
         # api_data = {'response_code': 2, 'status': True, 'acc_status': 2, 'bene_id': 1258814, 'message': 'Account Detailed saved successfully. Please upload Supportive Document to activate'}
         if api_data.get("response_code") in (1, 2):
             # if True:
@@ -835,15 +858,15 @@ def upload_supporting_document(request):
                 "image/jpeg",
             )
 
-        logger.debug(f"API URL: {PaySprintRoutes.UPLOAD_DOCUMENT.value}")
-        logger.debug(f"Request Body: {payload} \n Files: {files}")
+        # logger.debug(f"API URL: {PaySprintRoutes.UPLOAD_DOCUMENT.value}")
+        # logger.debug(f"Request Body: {payload} \n Files: {files}")
         response = requests.post(
             PaySprintRoutes.UPLOAD_DOCUMENT.value,
             data=payload,
             files=files,
             headers=get_pay_sprint_headers(),
         )
-        logger.debug(f"Response Body: {response.json()}")
+        # logger.debug(f"Response Body: {response.json()}")
         if response.json().get("status"):
             messages.success(
                 request, response.json().get("message"), extra_tags="success"
@@ -862,12 +885,12 @@ def upload_supporting_document(request):
 
 def get_payout_bank_list(merchant_id):
     data = {"merchantid": merchant_id}
-    logger.debug(f"API URL: {PaySprintRoutes.GET_LIST.value}")
-    logger.debug(f"Request Body: {data}")
+    # logger.debug(f"API URL: {PaySprintRoutes.GET_LIST.value}")
+    # logger.debug(f"Request Body: {data}")
     response = requests.post(
         PaySprintRoutes.GET_LIST.value, json=data, headers=get_pay_sprint_headers()
     )
-    logger.debug(f"Response Body: {response.json()}")
+    # logger.debug(f"Response Body: {response.json()}")
     return response.json().get("data")
 
 
