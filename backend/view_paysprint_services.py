@@ -57,7 +57,7 @@ def user_onboarding(request):
                 json=payload,
                 headers=get_pay_sprint_headers(),
             )
-            logger.debug(f"Response Body: {response.json()}")
+            logger.error(f"Response Body: {response.text}")
             if response.status_code == 200:
                 if response.json().get("onboard_pending") == 0:
                     return redirect("dashboard")
@@ -78,7 +78,7 @@ def user_onboarding(request):
                     message = response.text
                 messages.success(request, message=message, extra_tags="danger")
         except Exception as e:
-            print("Custom Exception from paysprint onboarding==>", e)
+            logger.error("Custom Exception from paysprint onboarding==>", e)
             messages.success(request, message=e, extra_tags="danger")
 
     return render(
