@@ -45,8 +45,8 @@ logger = logging.getLogger(__name__)
 @login_required(login_url="user_login")
 @user_passes_test(is_kyc_completed, login_url="unauthorized")
 def user_onboarding(request):
+    onboarding_details = UserAccount.objects.get(username=request.user)
     try:
-        onboarding_details = UserAccount.objects.get(username=request.user)
         redirect_url = None
         if request.method == "POST":
             mobile_number = request.POST.get("mobile_number")
@@ -86,7 +86,7 @@ def user_onboarding(request):
                     try:
                         message = response.json().get("message", response.text)
                     except Exception as e:
-                        logger.error(e)
+                        logger.error(f"Error in {__name__}: {e}", exc_info=True)
                         message = response.text
                     messages.error(request, message=message, extra_tags="danger")
             except Exception as e:
