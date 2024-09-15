@@ -6,7 +6,7 @@ PAYSPRINT_BASE_URL = "https://api.paysprint.in/"    # Live URL
 
 class PaySprintRoutes(Enum):
     CALLBACK_URL = "https://abdigitalindia.in/user/"
-    WEB_ONBOARDING = f"{PAYSPRINT_BASE_URL}api/v1/service/onboard/onboardnew/getonboardurl"
+    WEB_ONBOARDING = f"{PAYSPRINT_BASE_URL}api/v1/service/onboard/onboard/getonboardurl"
     BALANCE_ENQUIRY = f"{PAYSPRINT_BASE_URL}api/v1/service/aeps/balanceenquiry/index"
     CASH_WITHDRAWAL = f"{PAYSPRINT_BASE_URL}api/v1/service/aeps/authcashwithdraw/index"
     CASH_WITHDRAWAL_TXN_STATUS = f"{PAYSPRINT_BASE_URL}api/v1/service/aeps/aepsquery/query"
