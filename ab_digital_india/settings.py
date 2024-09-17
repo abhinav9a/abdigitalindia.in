@@ -35,7 +35,7 @@ SECRET_KEY = 'django-insecure-1fm$u#+63eg=y#((pb)d6=5n=7=+roo3-o^kyr8y$6cj0fx07&
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["abdigitalindia.in", "127.0.0.1", "localhost", "198.24.129.62", "www.abdigitalindia.in", "65.254.80.150"]
+ALLOWED_HOSTS = ["abdigitalindia.in", "127.0.0.1", "localhost", "198.24.129.62", "www.abdigitalindia.in", "65.254.80.150", "0.0.0.0"]
 
 
 # Application definition
