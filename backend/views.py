@@ -10,16 +10,16 @@ from backend.models import UserAccount
 
 @login_required(login_url='user_login')
 def dashboard(request):
-    # if 'data' in request.GET:
-    #     jwt_encrypted_data = request.GET['data']
-    #     data = decrypt_pay_sprint_token_token(jwt_encrypted_data)
-    #     if data is not None:
-    #         onboarding_details = UserAccount.objects.get(username=request.user)
-    #         ref_no = data['refno']
-    #         onboarding_details.pay_sprint_ref_no = ref_no
-    #         onboarding_details.save()
-    #         messages.success(request, message="Merchant Onboarded.", extra_tags='success')
-    #     return redirect("dashboard")
+    if 'data' in request.GET:
+        jwt_encrypted_data = request.GET['data']
+        data = decrypt_pay_sprint_token_token(jwt_encrypted_data)
+        if data is not None and data['status'] == "1":
+            onboarding_details = UserAccount.objects.get(username=request.user)
+            ref_no = data['refno']
+            onboarding_details.pay_sprint_ref_no = ref_no
+            onboarding_details.save()
+            messages.success(request, message="Merchant Onboarded.", extra_tags='success')
+        return redirect("dashboard")
 
     return render(request, 'backend/Pages/dashboard.html')
 
