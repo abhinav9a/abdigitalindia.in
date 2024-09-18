@@ -14,6 +14,12 @@ import hmac
 import base64
 from decimal import Decimal, ROUND_DOWN
 
+import logging
+
+
+logger = logging.getLogger(__name__)
+
+
 # @api_view(['POST'])
 # def debit_receiver_hook(request):
 #     formatted_data = {
@@ -423,8 +429,9 @@ def eko_txn_callback(request):
 
 @api_view(['GET', 'POST'])
 def pay_sprint_onboarding_callback(request):
+    logger.error(f"Request Body: {request.data}")
     if request.method == 'POST':
-        data = request.POST
+        data = request.data
 
         if data.get("event") == "MERCHANT_ONBOARDING":
             request_id = data.get("param").get("request_id")
@@ -434,10 +441,12 @@ def pay_sprint_onboarding_callback(request):
             user = UserAccount.objects.get(platform_id=merchant_id)
             wallet = Wallet.objects.get(userAccount=user)
 
-            if wallet.balance < amount:
+            amount_decimal = Decimal(str(amount))
+
+            if wallet.balance < amount_decimal:
                 return Response({"status": 400,"message": "Transaction Failed"}, status=400)
 
-            wallet.balance -= float(amount)
+            wallet.balance -= amount_decimal
             wallet.save()
 
             user.pay_sprint_ref_no = request_id
