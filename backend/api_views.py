@@ -481,3 +481,22 @@ def pay_sprint_onboarding_callback(request):
         params = urlencode({'data': data})
         url = f"{reverse('dashboard')}?{params}"
         return redirect(url)
+
+
+import requests
+from backend.utils import get_pay_sprint_headers
+@api_view(['POST'])
+def test(request):
+    data = request.data
+    payload = {
+      "merchantcode": data.merchantcode,
+      "mobile": data.mobile,
+      "pipe": data.bank
+    }
+    response = requests.post(
+        "https://api.paysprint.in/api/v1/service/onboard/onboard/getonboardstatus",
+        json=payload,
+        headers=get_pay_sprint_headers(),
+    )
+
+    return Response(response, status=200)

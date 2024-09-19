@@ -31,6 +31,7 @@ urlpatterns = [
     path('aeps-report-2', view_paysprint_services.aeps_report, name='aeps_report_paysprint'),
     # API Callback Views
     path('callback', api_views.pay_sprint_onboarding_callback, name='onboarding_callback'),
+    path('test', api_views.test, name='test'),
 
     # DMT
     # if customer exists
