@@ -489,9 +489,9 @@ from backend.utils import get_pay_sprint_headers
 def test(request):
     data = request.data
     payload = {
-      "merchantcode": data.merchantcode,
-      "mobile": data.mobile,
-      "pipe": data.bank
+      "merchantcode": data.get("merchantcode"),
+      "mobile": data.get("mobile"),
+      "pipe": data.get("bank")
     }
     response = requests.post(
         "https://api.paysprint.in/api/v1/service/onboard/onboard/getonboardstatus",
