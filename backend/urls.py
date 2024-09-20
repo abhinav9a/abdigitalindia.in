@@ -23,6 +23,7 @@ urlpatterns = [
 
     # AEPS 2 (PaySprint)
     path('aeps-wallet-2', view_paysprint_services.user_onboarding,  name='onboarding_user_paysprint'),
+    path('aeps-wallet-2-status', view_paysprint_services.user_onboarding_status,  name='onboarding_user_status_paysprint'),
     path('balance-enquiry', view_paysprint_services.balance_enquiry,  name='balance_enquiry_paysprint'),
     path('cash-withdrawl', view_paysprint_services.cash_withdrawal,  name='cash_withdrawl_paysprint'),
     path('mini-statement', view_paysprint_services.mini_statement,  name='mini_statement_paysprint'),

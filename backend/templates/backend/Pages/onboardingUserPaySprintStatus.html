@@ -1,0 +1,38 @@
+{% extends "backend/Shared/AuthBase.html" %}
+
+{% block main %}
+
+<div class="row">
+    <div class="col-md-10 mt-5 mx-auto grid-margin stretch-card">
+        <div class="card">
+            <div class="card-body">
+                {% if data|length == 0 %}
+                    <h1 class="text-danger text-center">Please Try after sometime.</h1>
+                {% else %}
+                    <h1 class="mb-4">AEPS 2 Onboarding Status</h1>
+                    <table class="table table-responsive table-bordered table-striped" style="width: 100%;">
+                        <thead class="thead-dark">
+                            <tr>
+                                <th class="table-dark" style="font-weight: bold; font-size: 1.2em;">Bank Name</th>
+                                <th class="table-dark" style="font-weight: bold; font-size: 1.2em;">Status</th>
+                                <th class="table-dark" style="font-weight: bold; font-size: 1.2em;">Message</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for status in data %}
+                                <tr>
+                                    <td style="font-size: 1.2em;">{{ status.bank }}</td>
+                                    <td style="font-size: 1.2em;">{{ status.is_approved }}</td>
+                                    <td style="font-size: 1.2em;">{{ status.message }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{% endblock main %}

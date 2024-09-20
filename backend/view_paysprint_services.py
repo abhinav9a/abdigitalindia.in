@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from decimal import Decimal, ROUND_DOWN
 import logging
-import uuid
+import json
 
 from django.contrib import messages
 from django.contrib.auth.decorators import user_passes_test
@@ -104,6 +104,53 @@ def user_onboarding(request):
         {"onboarding_details": onboarding_details},
     )
 
+
+@login_required(login_url="user_login")
+@user_passes_test(is_kyc_completed, login_url="unauthorized")
+def user_onboarding_status(request):
+    bank_status = []
+
+    try:
+        user = UserAccount.objects.get(username=request.user)
+        common_payload = {
+          "merchantcode": user.platform_id,
+          "mobile": user.mobile
+        }
+        bank_2 = {"pipe": "bank2"}
+        bank_3 = {"pipe": "bank3"}
+
+        bank_2_response = requests.post(
+            PaySprintRoutes.ONBOARD_STATUS_CHECK.value, json=common_payload.update(bank_2), headers=get_pay_sprint_headers()
+        )
+        bank_3_response = requests.post(
+            PaySprintRoutes.ONBOARD_STATUS_CHECK.value, json=common_payload.update(bank_3), headers=get_pay_sprint_headers()
+        )
+
+        bank_2_data = bank_2_response.json()
+        bank_3_data = bank_3_response.json()
+
+        bank_status.append({
+            "bank": "Bank 2 (FINO)",
+            "status": bank_2_data.get("status"),
+            "is_approved": bank_2_data.get("is_approved"),
+            "message": bank_2_data.get("message")
+        })
+        bank_status.append({
+            "bank": "Bank 3 (NSDL)",
+            "status": bank_3_data.get("status"),
+            "is_approved": bank_3_data.get("is_approved"),
+            "message": bank_3_data.get("message")
+        })
+
+    except Exception as e:
+        logger.error(f"Unexpected error in user_onboarding_status view. {e}", exc_info=True)
+
+    print(f"bank status: {json.dumps(bank_status)}")
+    return render(
+        request,
+        "backend/Pages/onboardingUserPaySprintStatus.html",
+        {"data": bank_status}
+    )
 
 def get_pay_sprint_aeps_bank_list():
     # logger.debug(f"API URL: {PaySprintRoutes.AEPS_BANK_LIST.value}")
