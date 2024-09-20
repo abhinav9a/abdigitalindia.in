@@ -289,7 +289,7 @@ def get_pay_sprint_payload(request, user, transaction_type, merchant_auth_txn_id
     data.update({
         "nationalbankidentification": request.POST.get("bank_identifier"),
         "requestremarks": request.POST.get("remarks"),
-        "pipe": "bank2",  # "bank2 OR bank3// bank1 work for UAT only",
+        "pipe": request.POST.get("aeps_bank"),  # "bank2 OR bank3// bank1 work for UAT only",
         "transactiontype": transaction_type,
         "is_iris": "No"
     })
@@ -298,6 +298,13 @@ def get_pay_sprint_payload(request, user, transaction_type, merchant_auth_txn_id
     if transaction_type == "CW":
         data["MerAuthTxnId"] = merchant_auth_txn_id
     return data
+
+
+def is_merchant_bank_registered(user):
+    obj = PaySprintMerchantAuth.objects.filter(userAccount=user).first()
+    if obj:
+        return obj.is_bank2_registered or obj.is_bank3_registered
+    return False
 
 
 def is_merchant_bank2_registered(user):
