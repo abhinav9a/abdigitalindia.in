@@ -62,14 +62,14 @@ def user_onboarding(request):
                 "firm": shop_name,
                 "callback": PaySprintRoutes.CALLBACK_URL.value,
             }
-            # logger.info("PaySprint onboarding payload", extra={"payload": payload})
+            logger.error(f"PaySprint onboarding payload: {payload}")
             try:
                 response = requests.post(
                     PaySprintRoutes.WEB_ONBOARDING.value,
                     json=payload,
                     headers=get_pay_sprint_headers(),
                 )
-                # logger.info("PaySprint onboarding response", extra={"response": response.text})
+                logger.error(f"PaySprint onboarding response {response.text}")
                 if response.status_code == 200:
                     api_data = response.json()
                     if api_data.get("onboard_pending") == 0:
