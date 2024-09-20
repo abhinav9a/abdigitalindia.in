@@ -117,14 +117,14 @@ def user_onboarding_status(request):
           "merchantcode": user.platform_id,
           "mobile": user.mobile
         }
-        bank_2 = {"pipe": "bank2"}
-        bank_3 = {"pipe": "bank3"}
+        bank_2_payload = {**common_payload, "pipe": "bank2"}
+        bank_3_payload = {**common_payload, "pipe": "bank3"}
 
         bank_2_response = requests.post(
-            PaySprintRoutes.ONBOARD_STATUS_CHECK.value, json=common_payload.update(bank_2), headers=get_pay_sprint_headers()
+            PaySprintRoutes.ONBOARD_STATUS_CHECK.value, json=bank_2_payload, headers=get_pay_sprint_headers()
         )
         bank_3_response = requests.post(
-            PaySprintRoutes.ONBOARD_STATUS_CHECK.value, json=common_payload.update(bank_3), headers=get_pay_sprint_headers()
+            PaySprintRoutes.ONBOARD_STATUS_CHECK.value, json=bank_3_payload, headers=get_pay_sprint_headers()
         )
 
         bank_2_data = bank_2_response.json()
