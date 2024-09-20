@@ -431,31 +431,35 @@ def eko_txn_callback(request):
 def pay_sprint_onboarding_callback(request):
     logger.error(f"Request Body: {request.data}")
     if request.method == 'POST':
-        data = request.data
+        try:
+            data = request.data
 
-        if data.get("event") == "MERCHANT_ONBOARDING":
-            request_id = data.get("param").get("request_id")
-            amount = data.get("param").get("amount")
-            merchant_id = data.get("param").get("merchant_id")
+            if data.get("event") == "MERCHANT_ONBOARDING":
+                request_id = data.get("param").get("request_id")
+                amount = data.get("param").get("amount")
+                merchant_id = data.get("param").get("merchant_id")
 
-            user = UserAccount.objects.get(platform_id=merchant_id)
-            wallet = Wallet.objects.get(userAccount=user)
+                user = UserAccount.objects.get(platform_id=merchant_id)
+                wallet = Wallet.objects.get(userAccount=user)
 
-            amount_decimal = Decimal(str(amount))
+                amount_decimal = Decimal(str(amount))
 
-            if wallet.balance < amount_decimal:
-                return Response({"status": 400,"message": "Transaction Failed"}, status=400)
+                if wallet.balance < amount_decimal:
+                    return Response({"status": 400,"message": "Transaction Failed"}, status=400)
 
-            wallet.balance -= amount_decimal
-            wallet.save()
+                wallet.balance -= amount_decimal
+                wallet.save()
 
-            user.pay_sprint_ref_no = request_id
-            user.save()
+                user.pay_sprint_ref_no = request_id
+                user.save()
 
-            return Response({"status":200,"message":"Transaction completed successfully"}, status=200)
+                return Response({"status":200,"message":"Transaction completed successfully"}, status=200)
 
-        elif data.get("event") == "MERCHANT_STATUS_ONBOARD":
-            return Response({"status":200,"message":"Transaction completed successfully"}, status=200)
+            elif data.get("event") == "MERCHANT_STATUS_ONBOARD":
+                return Response({"status":200,"message":"Transaction completed successfully"}, status=200)
+        except Exception as e:
+            logger.error(f"Error in {__name__}: {e}")
+            return Response({"status": 400,"message": "Transaction Failed"}, status=400)
 
         # elif  data.get("event") == "PAYOUT_SETTLEMENT":
         #     request_id = data.get("param").get("request_id")
