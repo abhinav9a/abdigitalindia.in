@@ -1,3 +1,5 @@
+import json
+
 from django.shortcuts import render, redirect
 from .forms import UserKYCDocumentForm
 from django.contrib import messages
@@ -7,12 +9,18 @@ from .models import UserKYCDocument
 from django.db import IntegrityError
 from backend.utils import decrypt_pay_sprint_token_token
 from backend.models import UserAccount
+import logging
+
+
+logger = logging.getLogger(__name__)
+
 
 @login_required(login_url='user_login')
 def dashboard(request):
     if 'data' in request.GET:
         jwt_encrypted_data = request.GET['data']
         data = decrypt_pay_sprint_token_token(jwt_encrypted_data)
+        logger.error(f"PaySprint Data: {json.dumps(data)}")
         if data is not None and data['status'] == "1":
             onboarding_details = UserAccount.objects.get(username=request.user)
             ref_no = data['refno']
