@@ -1,7 +1,7 @@
 from enum import Enum
 
-# PAYSPRINT_BASE_URL = "https://sit.paysprint.in/service-api/"  # Test URL
-PAYSPRINT_BASE_URL = "https://api.paysprint.in/"    # Live URL
+PAYSPRINT_BASE_URL = "https://sit.paysprint.in/service-api/"  # Test URL
+# PAYSPRINT_BASE_URL = "https://api.paysprint.in/"    # Live URL
 
 
 class PaySprintRoutes(Enum):
