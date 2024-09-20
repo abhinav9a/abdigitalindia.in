@@ -107,6 +107,7 @@ def user_onboarding(request):
 
 @login_required(login_url="user_login")
 @user_passes_test(is_kyc_completed, login_url="unauthorized")
+@user_passes_test(is_user_registered_with_paysprint, login_url="onboarding_user_paysprint")
 def user_onboarding_status(request):
     bank_status = []
 
