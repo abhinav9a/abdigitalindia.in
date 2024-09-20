@@ -336,7 +336,7 @@ def is_bank3_last_authentication_valid(user):
         return timezone.now() <= last_auth_date + timedelta(hours=24)
     else:
         merchant_auth = PaySprintMerchantAuth.objects.filter(userAccount=user).first()
-        merchant_auth.bank2_MerAuthTxnId = None
+        merchant_auth.bank3_MerAuthTxnId = None
         return False
 
 

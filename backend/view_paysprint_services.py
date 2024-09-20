@@ -264,6 +264,8 @@ def cash_withdrawal(request):
             return process_bank2_withdrawal(request, user)
         elif aeps_bank == 'bank3':
             return process_bank3_withdrawal(request, user)
+        else:
+            messages.error(request, message="Please select AEPS Bank Provider", extra_tags="danger")
 
     return render(
         request,
@@ -284,7 +286,7 @@ def process_bank2_withdrawal(request, user):
         merchant_auth_txn_id = PaySprintMerchantAuth.objects.get(userAccount=user).bank2_MerAuthTxnId
         return perform_withdrawal(request, user, merchant_auth_txn_id)
 
-    return redirect("cash_withdrawal")
+    return redirect("cash_withdrawl_paysprint")
 
 def process_bank3_withdrawal(request, user):
     if not is_merchant_bank3_registered(user):
@@ -299,7 +301,7 @@ def process_bank3_withdrawal(request, user):
         merchant_auth_txn_id = PaySprintMerchantAuth.objects.get(userAccount=user).bank3_MerAuthTxnId
         return perform_withdrawal(request, user, merchant_auth_txn_id)
 
-    return redirect("cash_withdrawal")
+    return redirect("cash_withdrawl_paysprint")
 
 def perform_withdrawal(request, user, merchant_auth_txn_id):
     data = get_pay_sprint_payload(request, user, "CW", merchant_auth_txn_id)
@@ -333,7 +335,7 @@ def perform_withdrawal(request, user, merchant_auth_txn_id):
         )
     else:
         messages.error(request, response.json().get("message"), extra_tags="danger")
-        return redirect("cash_withdrawal")
+        return redirect("cash_withdrawl_paysprint")
 
 
 def check_transaction_status(reference_no):
@@ -357,7 +359,7 @@ def check_transaction_status(reference_no):
 
 @login_required(login_url="user_login")
 @user_passes_test(is_kyc_completed, login_url="unauthorized")
-@user_passes_test(is_user_registered_with_paysprint, login_url="bank2_registration_paysprint")
+@user_passes_test(is_user_registered_with_paysprint, login_url="merchant_registration_with_bank_paysprint")
 def mini_statement(request):
     user = UserAccount.objects.get(username=request.user)
     bank_list = get_pay_sprint_aeps_bank_list()
@@ -518,7 +520,7 @@ def merchant_registration_with_bank(request):
         "is_bank2_registered": bank2_registered,
         "is_bank3_registered": bank3_registered,
         "title": "Merchant Registration",
-        "form_submit_url": "bank2_registration_paysprint",
+        "form_submit_url": "merchant_registration_with_bank_paysprint",
     }
     return render(
         request, "backend/Pages/merchantRegistrationPaySprint.html", context=context
@@ -625,7 +627,7 @@ def merchant_registration_bank_3(request):
 def merchant_authentication_bank_3_api(request, user):
     data = get_pay_sprint_common_payload(request, user)
     response = make_post_request(
-        url=PaySprintRoutes.BANK_2_AUTHENTICATION.value, data=data
+        url=PaySprintRoutes.BANK_3_AUTHENTICATION.value, data=data
     )
     logger.error(f"Response Body: {response.json()}")
     api_data = response.json()
@@ -638,7 +640,7 @@ def merchant_authentication_bank_3_api(request, user):
     if response.status_code == 200:
         # if api_data.get('response_code') == 1:
         merchant_auth = PaySprintMerchantAuth.objects.filter(userAccount=user).first()
-        merchant_auth.bank2_last_authentication_date = datetime.now()
+        merchant_auth.bank3_last_authentication_date = datetime.now()
         merchant_auth.save()
     else:
         messages.error(request, api_data.get("message"), extra_tags="danger")
@@ -663,7 +665,7 @@ def merchant_authenticity_bank_3_api(request, user):
     if response.status_code == 200:
         # if api_data.get("response_code") == 1:
         merchant_auth = PaySprintMerchantAuth.objects.filter(userAccount=user).first()
-        merchant_auth.bank2_MerAuthTxnId = api_data.get("MerAuthTxnId")
+        merchant_auth.bank3_MerAuthTxnId = api_data.get("MerAuthTxnId")
         merchant_auth.save()
     else:
         messages.error(request, api_data.get("message"), extra_tags="danger")
