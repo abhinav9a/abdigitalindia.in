@@ -368,76 +368,8 @@ def mini_statement(request):
             url=PaySprintRoutes.MINI_STATEMENT.value, data=data
         )
         logger.error(f"Response Body: {response.json()}")
-        if response.status_code == 200:
-            # if True:
+        if response.status_code == 200 and response.json().get("status"):
             response = response.json()
-            # response = {
-            #   "status": True,
-            #   "ackno": 40301468,
-            #   "datetime": "2022-21-03 04:54:55",
-            #   "balanceamount": "24287.44",
-            #   "bankrrn": "2080****0104",
-            #   "bankiin": "HDFC Bank",
-            #   "message": "Request Completed",
-            #   "errorcode": "00",
-            #   "ministatement": [
-            #     {
-            #       "date": "30/06",
-            #       "txnType": "Cr",
-            #       "amount": "105.0",
-            #       "narration": " APD "
-            #     },
-            #     {
-            #       "date": "30/06",
-            #       "txnType": "Dr",
-            #       "amount": "105.0",
-            #       "narration": " APD "
-            #     },
-            #     {
-            #       "date": "31/05",
-            #       "txnType": "Cr",
-            #       "amount": "105.0",
-            #       "narration": " APD "
-            #     },
-            #     {
-            #       "date": "31/05",
-            #       "txnType": "Dr",
-            #       "amount": "105.0",
-            #       "narration": " APD "
-            #     },
-            #     {
-            #       "date": "30/04",
-            #       "txnType": "Cr",
-            #       "amount": "100.0",
-            #       "narration": " APD "
-            #     },
-            #     {
-            #       "date": "30/04",
-            #       "txnType": "Dr",
-            #       "amount": "100.0",
-            #       "narration": " APD "
-            #     },
-            #     {
-            #       "date": "31/03",
-            #       "txnType": "Cr",
-            #       "amount": "101.0",
-            #       "narration": " APD "
-            #     },
-            #     {
-            #       "date": "31/03",
-            #       "txnType": "Dr",
-            #       "amount": "101.0",
-            #       "narration": " APD "
-            #     },
-            #     {
-            #       "date": "01/03",
-            #       "txnType": "Cr",
-            #       "amount": "150.0",
-            #       "narration": " APD "
-            #     }
-            #   ],
-            #   "response_code": 1
-            # }
             response_data = {
                 "userAccount": user,
                 "reference_no": data.get("referenceno"),
@@ -487,17 +419,6 @@ def aadhar_pay(request):
         if response.status_code == 200:
             # if True:
             response = response.json()
-            # response = {
-            #   "status": True,
-            #   "message": "Request Completed",
-            #   "ackno": 75,
-            #   "amount": 100,
-            #   "balanceamount": "1.00",
-            #   "bankrrn": "120*****2463",
-            #   "bankiin": "60**26",
-            #   "response": 200,
-            #   "response_code": 1
-            # }
             response_data = {
                 "userAccount": user,
                 "reference_no": data.get("referenceno"),
