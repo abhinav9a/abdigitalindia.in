@@ -3286,7 +3286,6 @@ def wallet_report(request):
 
 @login_required(login_url='user_login')
 @user_passes_test(is_kyc_completed, login_url='unauthorized')
-@user_passes_test(is_user_onboard, login_url='onboardingUser')
 def wallet2_report(request):
     start_date_str = request.POST.get('start_date', None)
     end_date_str = request.POST.get('end_date', None)
@@ -3298,9 +3297,9 @@ def wallet2_report(request):
             end_date = timezone.datetime.strptime(end_date_str, '%Y-%m-%d').date() + timedelta(days=1)
             start_date = timezone.make_aware(datetime.combine(start_date, datetime.min.time()))
             end_date = timezone.make_aware(datetime.combine(end_date, datetime.max.time()))
-            transactions = Wallet2Transaction.objects.filter(wallet__userAccount=request.user, timestamp__range=[start_date, end_date]).order_by('-id')
+            transactions = Wallet2Transaction.objects.filter(wallet2__userAccount=request.user, timestamp__range=[start_date, end_date]).order_by('-id')
         else:
-            transactions = Wallet2Transaction.objects.filter(wallet__userAccount=request.user).order_by('-id')
+            transactions = Wallet2Transaction.objects.filter(wallet2__userAccount=request.user).order_by('-id')
 
     except ValueError as e:
         messages.error(request, str(e))

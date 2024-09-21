@@ -12,6 +12,7 @@ from django.utils import timezone
 from backend.utils import (is_admin_user, generate_unique_id, is_kyc_completed, is_user_onboard,
                            is_master_distributor_access, is_distributor_access, generate_platform_id, generate_key,
                            update_wallet)
+from core.decorators import transaction_required
 from django.http import JsonResponse
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from backend.forms import CreateCustomUserForm
@@ -78,6 +79,7 @@ def AdminExplorePendingKyc(request, id):
 
 @login_required(login_url='user_login')
 @user_passes_test(is_admin_user, login_url='unauthorized')
+@transaction_required
 def AdminWalletAction(request):
     if request.method == 'POST':
         actionType = request.POST.get('actionType')

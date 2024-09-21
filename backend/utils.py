@@ -431,7 +431,7 @@ def update_wallet(wallet, amount, txnid, description, action_type):
         )
     else:
         Wallet2Transaction.objects.create(
-            wallet=wallet,
+            wallet2=wallet,
             txnId=txnid,
             amount=amount,
             txn_status='Success',
