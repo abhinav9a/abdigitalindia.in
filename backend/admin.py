@@ -2,7 +2,7 @@ from django.contrib import admin
 from .models import (UserKYCDocument, OtherServices, Wallet, WalletTransaction, QRTxnCallbackByEko, ServiceActivation,
                      AepsTxnCallbackByEko, DMTBankList, PanVerificationTxn, BankVerificationTxn, DmtTxn, Commission,
                      Payout, PaySprintPayout, BbpsTxn, CommissionTxn, CMSTxnCallbackByEko, CreditCardTxn,
-                     AdhaarVerificationTxn, OtherServices2, PaySprintAEPSTxnDetail)
+                     AdhaarVerificationTxn, OtherServices2, PaySprintAEPSTxnDetail, Wallet2, Wallet2Transaction)
 from django.utils.translation import gettext_lazy as _
 
 # Register your models here.
@@ -22,6 +22,9 @@ class WalletAdmin(admin.ModelAdmin):
 
 class WalletTransactionAdmin(admin.ModelAdmin):
     list_display = ('id', 'wallet', 'amount', 'transaction_type', 'client_ref_id', 'txnId', 'txn_status', 'description', 'timestamp')
+
+class Wallet2TransactionAdmin(admin.ModelAdmin):
+    list_display = ('id', 'wallet2', 'amount', 'transaction_type', 'client_ref_id', 'txnId', 'txn_status', 'description', 'timestamp')
 
 class QRTxnCallbackByEkoAdmin(admin.ModelAdmin):
     list_display = ('id', 'txn_detail', 'timestamp')
@@ -363,6 +366,8 @@ admin.site.register(OtherServices, OtherServicesAdmin)
 admin.site.register(OtherServices2, OtherServices2Admin)
 admin.site.register(Wallet, WalletAdmin)
 admin.site.register(WalletTransaction, WalletTransactionAdmin)
+admin.site.register(Wallet2, WalletAdmin)
+admin.site.register(Wallet2Transaction, Wallet2TransactionAdmin)
 admin.site.register(QRTxnCallbackByEko, QRTxnCallbackByEkoAdmin)
 admin.site.register(AepsTxnCallbackByEko, AepsTxnCallbackByEkoAdmin)
 admin.site.register(ServiceActivation, ServiceStatusAdmin)

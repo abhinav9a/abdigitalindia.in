@@ -25,6 +25,29 @@
         left: 0;
         z-index: 1;
     }
+
+    #walletType, #userType {
+        background-color: #ffffff;
+        padding: 16px;
+        color: #000000;
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+    }
+
+    .select-wrapper {
+        position: relative;
+    }
+
+    .select-wrapper::after {
+        content: "\25BC";
+        font-size: 14px;
+        top: 50%;
+        right: 15px;
+        transform: translateY(-50%);
+        position: absolute;
+        pointer-events: none;
+    }
 </style>
 
 <div class="row">
@@ -58,14 +81,28 @@
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-group">
+                                        <label for="walletType">Wallet</label>
+                                        <div class="select-wrapper">
+                                            <select name="walletType" class="form-control form-control-lg custom-select" id="walletType" required>
+                                                <option value="">Select Wallet ...</option>
+                                                <option value="wallet1">Wallet 1</option>
+                                                <option value="wallet2">Wallet 2</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
                                         <label for="userType">User Type</label>
-                                        <select name="userType" class="form-control form-control-lg" id="userType"
-                                            required>
-                                            <option value="Admin">Admin</option>
-                                            <option value="Retailer">Retailer</option>
-                                            <option value="Distributor">Distributor</option>
-                                            <option value="Master Distributor">Master Distributor</option>
-                                        </select>
+                                        <div class="select-wrapper">
+                                            <select name="userType" class="form-control form-control-lg" id="userType" required>
+                                                <option value="">Select User Type ...</option>
+                                                <option value="Admin">Admin</option>
+                                                <option value="Retailer">Retailer</option>
+                                                <option value="Distributor">Distributor</option>
+                                                <option value="Master Distributor">Master Distributor</option>
+                                            </select>
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="col-md-6">

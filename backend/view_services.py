@@ -11,12 +11,12 @@ from decimal import Decimal, ROUND_DOWN
 from backend.utils import (is_kyc_completed, generate_qr_code, is_user_onboard, generate_key, generate_unique_id,
                            get_client_ip, electricity_operator_id, recharge_prepaid_operator_id, update_payout_statuses,
                            recharge_postpaid_operator_id, dth_operator_id, loan_operator_id, water_gas_lpg_operator_id)
-from .models import (CommissionTxn, Wallet, WalletTransaction, ServiceActivation, DMTBankList, AepsTxnCallbackByEko,
+from .models import (CommissionTxn, Wallet, WalletTransaction, Wallet2Transaction, ServiceActivation, DMTBankList, AepsTxnCallbackByEko,
                      PanVerificationTxn, BankVerificationTxn, DmtTxn, Commission, Payout, BbpsTxn, CreditCardTxn,
                      AdhaarVerificationTxn, OtherServices)
 from django.http import JsonResponse, HttpResponse
 from requests.exceptions import ConnectionError
-from .context_processors import wallet_balance
+from .context_processors import wallet_balance, wallet2_balance
 import os
 from datetime import datetime, timedelta
 from django.utils import timezone
@@ -31,6 +31,11 @@ from weasyprint import HTML
 
 import jwt
 import random
+import logging
+
+
+logger = logging.getLogger(__name__)
+
 
 '''**********************
 * ONBOARD USER API VIEW *
@@ -159,6 +164,15 @@ def recharge_wallet(request):
 def reload_wallet(request):
     try:
         balance = wallet_balance(request)
+        return JsonResponse({'success': True ,'balance':balance})
+    except:
+        return JsonResponse({'success': False ,'message':'Error'})
+
+@login_required(login_url='user_login')
+@user_passes_test(is_kyc_completed, login_url='unauthorized')
+def reload_wallet2(request):
+    try:
+        balance = wallet2_balance(request)
         return JsonResponse({'success': True ,'balance':balance})
     except:
         return JsonResponse({'success': False ,'message':'Error'})
@@ -3252,6 +3266,41 @@ def wallet_report(request):
             transactions = WalletTransaction.objects.filter(wallet__userAccount=request.user, timestamp__range=[start_date, end_date]).order_by('-id')
         else:
             transactions = WalletTransaction.objects.filter(wallet__userAccount=request.user).order_by('-id')
+
+    except ValueError as e:
+        messages.error(request, str(e))
+        transactions = []
+
+    paginator = Paginator(transactions, 50)
+
+    try:
+        transactions_page = paginator.page(page)
+    except PageNotAnInteger:
+        transactions_page = paginator.page(1)
+    except EmptyPage:
+        transactions_page = paginator.page(paginator.num_pages)
+
+    context = {'transactions_page': transactions_page}
+    return render(request, 'backend/Services/Wallet/Wallet_Report.html', context)
+
+
+@login_required(login_url='user_login')
+@user_passes_test(is_kyc_completed, login_url='unauthorized')
+@user_passes_test(is_user_onboard, login_url='onboardingUser')
+def wallet2_report(request):
+    start_date_str = request.POST.get('start_date', None)
+    end_date_str = request.POST.get('end_date', None)
+    page = request.GET.get('page', 1)
+
+    try:
+        if start_date_str and end_date_str:
+            start_date = timezone.datetime.strptime(start_date_str, '%Y-%m-%d').date()
+            end_date = timezone.datetime.strptime(end_date_str, '%Y-%m-%d').date() + timedelta(days=1)
+            start_date = timezone.make_aware(datetime.combine(start_date, datetime.min.time()))
+            end_date = timezone.make_aware(datetime.combine(end_date, datetime.max.time()))
+            transactions = Wallet2Transaction.objects.filter(wallet__userAccount=request.user, timestamp__range=[start_date, end_date]).order_by('-id')
+        else:
+            transactions = Wallet2Transaction.objects.filter(wallet__userAccount=request.user).order_by('-id')
 
     except ValueError as e:
         messages.error(request, str(e))

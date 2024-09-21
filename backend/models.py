@@ -112,9 +112,30 @@ class Wallet(models.Model):
     def __str__(self):
         return self.userAccount.username
 
+class Wallet2(models.Model):
+    userAccount = models.OneToOneField(UserAccount, on_delete=models.CASCADE)
+    balance = models.DecimalField(max_digits=10, decimal_places=2, default=0.0)
+
+    def __str__(self):
+        return self.userAccount.username
+
 
 class WalletTransaction(models.Model):
     wallet = models.ForeignKey(Wallet, on_delete=models.CASCADE)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    txnId = models.CharField(_("Bank Transaction Id"), max_length=500, blank=True)
+    client_ref_id = models.CharField(_("Client Ref Id"), max_length=500, blank=True)
+    description = models.CharField(max_length=255)
+    timestamp = models.DateTimeField(auto_now_add=True)
+    transaction_type = models.CharField(_("Transaction Type"), max_length=500, null=True, blank=True)
+    txn_status = models.CharField(_("Transaction Status"), max_length=500, blank=True)
+
+    def __str__(self):
+        return str(self.amount)
+
+
+class Wallet2Transaction(models.Model):
+    wallet2 = models.ForeignKey(Wallet2, on_delete=models.CASCADE)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     txnId = models.CharField(_("Bank Transaction Id"), max_length=500, blank=True)
     client_ref_id = models.CharField(_("Client Ref Id"), max_length=500, blank=True)

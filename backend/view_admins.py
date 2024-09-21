@@ -2,13 +2,16 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
-from .models import UserKYCDocument, Wallet, WalletTransaction, ServiceActivation, AepsTxnCallbackByEko, DmtTxn, PanVerificationTxn, BankVerificationTxn, Payout, BbpsTxn, CreditCardTxn
+from .models import (UserKYCDocument, Wallet, WalletTransaction, ServiceActivation, AepsTxnCallbackByEko, DmtTxn,
+                     PanVerificationTxn, BankVerificationTxn, Payout, BbpsTxn, CreditCardTxn, Wallet2, Wallet2Transaction)
 from core.models import UserAccount
 from django.db.models import Q
 from django.contrib.auth.decorators import user_passes_test
 from decimal import Decimal
 from django.utils import timezone
-from backend.utils import is_admin_user, generate_unique_id, is_kyc_completed, is_user_onboard, is_master_distributor_access, is_distributor_access, generate_platform_id, generate_key
+from backend.utils import (is_admin_user, generate_unique_id, is_kyc_completed, is_user_onboard,
+                           is_master_distributor_access, is_distributor_access, generate_platform_id, generate_key,
+                           update_wallet)
 from django.http import JsonResponse
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from backend.forms import CreateCustomUserForm
@@ -78,38 +81,39 @@ def AdminExplorePendingKyc(request, id):
 def AdminWalletAction(request):
     if request.method == 'POST':
         actionType = request.POST.get('actionType')
+        walletType = request.POST.get('walletType')
         userType = request.POST.get('userType')
         username = request.POST.get('username').lower()
         txnid = request.POST.get('txnid')
         amount = Decimal(request.POST.get('amount'))
         description = request.POST.get('description')
 
+        # Check if any required fields are None
+        if None in {actionType, walletType, userType, username, txnid, amount, description}:
+            messages.error(request, 'All fields are required.', extra_tags='danger')
+            return redirect('AdminWalletAction')
+
         try:
             # Check if the user exists
             user_account = UserAccount.objects.get(userType=userType, username=username)
-            # Get the user's wallet
-            wallet = Wallet.objects.get(userAccount=user_account)
-            if actionType == 'addWallet':
-                # Add amount to the wallet
-                wallet.balance += amount
-                wallet.save()
-                # Create a transaction entry for wallet
-                WalletTransaction.objects.create(wallet=wallet, txnId=txnid, amount=amount, txn_status='Success', client_ref_id=generate_unique_id(), description=description, transaction_type='Admin Deposit')
-            else:
-                wallet.balance -= amount
-                wallet.save()
-                # Create a transaction entry for wallet
-                WalletTransaction.objects.create(wallet=wallet, txnId=txnid, amount=amount, txn_status='Success', client_ref_id=generate_unique_id(), description=description, transaction_type='Admin Deduct')
-            
+            wallet = None
+
+            if walletType == "wallet1":
+                wallet = Wallet.objects.get(userAccount=user_account)
+            elif walletType == "wallet2":
+                wallet = Wallet2.objects.get(userAccount=user_account)
+
+            # Update wallet and create transaction
+            update_wallet(wallet, amount, txnid, description, actionType)
+
             messages.success(request, message=f'{actionType} Action for {username} Successful.', extra_tags='success')
-            return redirect('AdminWalletAction')
+
         except UserAccount.DoesNotExist:
             messages.error(request, message='User Not Found, Please Check Details', extra_tags='danger')
-            return redirect('AdminWalletAction')
-        
         except Wallet.DoesNotExist:
             messages.error(request, message='User Wallet Not Found', extra_tags='danger')
-            return redirect('AdminWalletAction')
+
+        return redirect('AdminWalletAction')
 
     return render(request, 'backend/Admin/AdminWalletAction.html')
 
@@ -357,6 +361,47 @@ def AdminExploreWalletReport(request, id):
                 transactions = WalletTransaction.objects.filter(wallet__userAccount=id, timestamp__range=[start_date, end_date]).order_by('-id')
             else:
                 transactions = WalletTransaction.objects.filter(wallet__userAccount=id).order_by('-id')
+
+        except ValueError as e:
+            messages.error(request, str(e))
+            transactions = []
+
+        paginator = Paginator(transactions, 20)
+
+        try:
+            transactions_page = paginator.page(page)
+        except PageNotAnInteger:
+            transactions_page = paginator.page(1)
+        except EmptyPage:
+            transactions_page = paginator.page(paginator.num_pages)
+
+        context = {'transactions_page': transactions_page}
+        return render(request, 'backend/Admin/Reports/AdminExploreWalletReport.html', context)
+    else:
+        return redirect('unauthorized')
+
+
+@login_required(login_url='user_login')
+@user_passes_test(is_distributor_access, login_url='unauthorized')
+@user_passes_test(is_kyc_completed, login_url='unauthorized')
+def AdminExploreWallet2Report(request, id):
+    current_user = UserAccount.objects.get(username=request.user)
+    sub_current_user = UserAccount.objects.get(id=id)
+
+    if sub_current_user.userManager == str(current_user.id) or current_user.groups.filter(name='Admin').exists():
+        start_date_str = request.POST.get('start_date', None)
+        end_date_str = request.POST.get('end_date', None)
+        page = request.GET.get('page', 1)
+
+        try:
+            if start_date_str and end_date_str:
+                start_date = timezone.datetime.strptime(start_date_str, '%Y-%m-%d').date()
+                end_date = timezone.datetime.strptime(end_date_str, '%Y-%m-%d').date() + timedelta(days=1)
+                start_date = timezone.make_aware(datetime.combine(start_date, datetime.min.time()))
+                end_date = timezone.make_aware(datetime.combine(end_date, datetime.max.time()))
+                transactions = Wallet2Transaction.objects.filter(wallet__userAccount=id, timestamp__range=[start_date, end_date]).order_by('-id')
+            else:
+                transactions = Wallet2Transaction.objects.filter(wallet__userAccount=id).order_by('-id')
 
         except ValueError as e:
             messages.error(request, str(e))

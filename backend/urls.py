@@ -12,8 +12,9 @@ urlpatterns = [
 
     # QR Payment Service Urls
     path('activate-qr-payment', view_services.activate_qr_payment, name='activate_qr_payment'),
-    path('recharge-wallet', view_services.recharge_wallet, name='recharge_wallet'),
+    path('recharge-wallet', view_services.recharge_wallet, name='recharge_wallet'),  # Eko
     path('wallet-report', view_services.wallet_report, name='wallet_report'),
+    path('wallet-2-report', view_services.wallet2_report, name='wallet2_report'),
     path('get_config_info', view_services.get_config_info, name='get_config_info'),
 
     # AEPS Service Urls
@@ -81,6 +82,7 @@ urlpatterns = [
     path('get-services', view_services.get_services, name='getServices'),
     path('get-user-services', view_services.get_user_services, name='userServiceInquiry'),
     path('reload-wallet', view_services.reload_wallet, name='reload_wallet'),
+    path('reload-wallet2', view_services.reload_wallet2, name='reload_wallet2'),
     path('import_banks_from_excel', view_services.import_banks_from_excel, name='import_banks_from_excel'),
 
     # BBPS Urls
@@ -113,6 +115,7 @@ urlpatterns = [
     path('explore-aeps-report/<int:id>', view_admins.AdminExploreAepsReport, name='AdminExploreAepsReport'), #admin, md, d only to view user's AEPS report
     path('explore-dmt-report/<int:id>', view_admins.AdminExploreDmtReport, name='AdminExploreDmtReport'), #admin, md, d only to view user's DMT report
     path('explore-wallet-report/<int:id>', view_admins.AdminExploreWalletReport, name='AdminExploreWalletReport'), #admin, md, d only to view user's Wallet report
+    path('explore-wallet-2-report/<int:id>', view_admins.AdminExploreWallet2Report, name='AdminExploreWallet2Report'), #admin, md, d only to view user's Wallet 2 report
     path('explore-pan-verification-report/<int:id>', view_admins.AdminExplorePanVerificationReport, name='AdminExplorePanVerificationReport'), #admin, md, d only to view user's Pan Verification report
     path('explore-bank-verification-report/<int:id>', view_admins.AdminExploreBankVerificationReport, name='AdminExploreBankVerificationReport'), #admin, md, d only to view user's Bank Verification report
     path('explore-payout-report/<int:id>', view_admins.AdminExplorePayoutReport, name='AdminExplorePayoutReport'), #admin, md, d only to view user's Payout report
