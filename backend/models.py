@@ -589,6 +589,13 @@ class PaySprintAEPSTxnDetail(models.Model):
         return dict(PaySprintAEPSTxnDetail.Service_Type.choices).get(self.service_type, '')
 
 
+class PaySprintCommissionCharge(models.Model):
+    service_name = models.CharField(max_length=100, unique=True)
+    charge = models.DecimalField(max_digits=10, decimal_places=2)
+
+    def __str__(self):
+        return f"{self.service_name}: {self.charge}"
+
 
 # signals
 @receiver(models.signals.pre_delete, sender=UserKYCDocument)

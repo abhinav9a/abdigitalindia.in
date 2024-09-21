@@ -23,6 +23,7 @@ urlpatterns = [
     path('aeps-report', view_services.aeps_report, name='aeps_report'),
 
     # AEPS 2 (PaySprint)
+    path('add-commission-charges', view_admins.add_commission_charges,  name='add_commission_charges_paysprint'),
     path('aeps-wallet-2', view_paysprint_services.user_onboarding,  name='onboarding_user_paysprint'),
     path('aeps-wallet-2-status', view_paysprint_services.user_onboarding_status,  name='onboarding_user_status_paysprint'),
     path('balance-enquiry', view_paysprint_services.balance_enquiry,  name='balance_enquiry_paysprint'),

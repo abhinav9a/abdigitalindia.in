@@ -3,7 +3,8 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from .models import (UserKYCDocument, Wallet, WalletTransaction, ServiceActivation, AepsTxnCallbackByEko, DmtTxn,
-                     PanVerificationTxn, BankVerificationTxn, Payout, BbpsTxn, CreditCardTxn, Wallet2, Wallet2Transaction)
+                     PanVerificationTxn, BankVerificationTxn, Payout, BbpsTxn, CreditCardTxn, Wallet2,
+                     Wallet2Transaction, PaySprintCommissionCharge)
 from core.models import UserAccount
 from django.db.models import Q
 from django.contrib.auth.decorators import user_passes_test
@@ -708,3 +709,28 @@ def AdminChangeUserPassword(request):
             messages.error(request, 'Password do not match.', extra_tags='danger')
 
     return render(request, 'backend/Admin/AdminUserPasswordChange.html')
+
+
+@login_required(login_url='user_login')
+@user_passes_test(is_admin_user, login_url='unauthorized')
+def add_commission_charges(request):
+    if request.method == 'POST':
+        services = [
+            'aadhaar_pay', 'balance_enquiry', 'cash_withdrawal', 'mini_statement',
+            'payout', 'merchant_onboarding', 'bank2_onboarding', 'bank3_onboarding'
+        ]
+
+        for service in services:
+            charge = request.POST.get(service)
+            if charge:
+                PaySprintCommissionCharge.objects.update_or_create(
+                    service_name=service,
+                    defaults={'charge': charge}
+                )
+
+        messages.success(request, 'Commission charges updated successfully.', extra_tags='success')
+        return redirect('add_commission_charges_paysprint')
+
+    else:  # GET request
+        charges = PaySprintCommissionCharge.objects.all()
+        return render(request, 'backend/Admin/addCommissionChargesPaySprint.html', {'charges': charges})

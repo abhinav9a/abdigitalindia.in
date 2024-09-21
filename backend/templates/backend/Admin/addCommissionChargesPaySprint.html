@@ -1,0 +1,68 @@
+{% extends "backend/Shared/AuthBase.html" %}
+{% block main %}
+{% load custom_filters %}
+
+
+<style>
+    .form-group {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 1rem;
+    }
+    .form-group label {
+        width: 40%;
+        margin-bottom: 0;
+        padding-right: 10px;
+        color: #000000;
+    }
+    .form-group input {
+        width: 40%;
+        background-color: #ffffff;
+        border: 1px solid #d3d3d3;
+        border-radius: 0.25rem;
+        padding: 16px;
+        color: #000000
+    }
+    .form-container {
+        text-align: center;
+    }
+</style>
+
+<div class="row">
+    <div class="col-md-8 mx-auto grid-margin stretch-card">
+        <div class="card">
+            <div class="card-body">
+                {% for message in messages %}
+				<div class="alert alert-{{ message.extra_tags }}">{{message}}</div>
+				{% endfor %}
+                <h4 class="card-title" style="font-size:2rem;">Set Commission Charges for Wallet 2 Transactions</h4>
+
+                <form class="forms-sample pt-5" method="post" action="{% url 'add_commission_charges_paysprint' %}">
+                    {% csrf_token %}
+                    <div class="row mx-auto">
+                        <div class="col-md-8">
+                            {% for charge in charges %}
+                            <div class="form-group">
+                                <label for="{{ charge.service_name }}">
+                                    {% if charge.service_name == 'bank2_onboarding' %}
+                                        Bank2 (FINO) Onboarding
+                                    {% elif charge.service_name == 'bank3_onboarding' %}
+                                        Bank3 (NSDL) Onboarding
+                                    {% else %}
+                                        {{ charge.service_name|title|replace_underscore }}
+                                    {% endif %}
+                                </label>
+                                <input type="number" name="{{ charge.service_name }}" class="form-control" id="{{ charge.service_name }}" step="0.01" value="{{ charge.charge }}" required>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary px-5 py-3 my-4">Set Commission Charges</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock main %}
