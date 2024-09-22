@@ -17,7 +17,7 @@ def get_commission_charge(service_type, amount=None):
     return query.first()
 
 
-def calculate_commission(base_amount, commission_rate, is_percentage):
+def calculate_commission(base_amount=0, commission_rate=0, is_percentage=0):
     if is_percentage:
         return Decimal(base_amount) * (Decimal(commission_rate) / 100)
     return Decimal(commission_rate)
@@ -93,7 +93,7 @@ def credit_aeps_commission(request, user_id, amount):
         return False
 
 
-def credit_mini_statement_commission(request, merchant_id, amount):
+def credit_mini_statement_commission(request, merchant_id):
     try:
         merchant = UserAccount.objects.select_for_update().get(id=merchant_id)
         merchant_wallet = Wallet2.objects.get(userAccount=merchant)
@@ -105,7 +105,7 @@ def credit_mini_statement_commission(request, merchant_id, amount):
             return False
 
         # Add commission to merchant's wallet only
-        commission = calculate_commission(amount, commission_charge.retailer_commission, commission_charge.is_percentage)
+        commission = calculate_commission(0, commission_charge.retailer_commission, commission_charge.is_percentage)
         Wallet2.objects.filter(userAccount=merchant).update(balance=F('balance') + commission)
         # Log Commission Transaction
         PaySprintCommissionTxn.objects.create(userAccount=merchant, amount=commission, txn_status="Success", desc="Mini Statement Commission", agent_name="Self")
