@@ -21,7 +21,7 @@ def dashboard(request):
         jwt_encrypted_data = request.GET['data']
         data = decrypt_pay_sprint_token_token(jwt_encrypted_data)
         logger.error(f"PaySprint Data: {json.dumps(data)}")
-        if data is not None and data['status'] == "1":
+        if data is not None and data.get('txnid') :
             onboarding_details = UserAccount.objects.get(username=request.user)
             ref_no = data['refno']
             onboarding_details.pay_sprint_ref_no = ref_no

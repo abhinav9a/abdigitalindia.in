@@ -443,60 +443,6 @@ def update_wallet(wallet, amount, txnid, description, action_type):
         )
 
 
-def check_wallet_and_balance(request, user, transaction_amount):
-    """Check if wallet 2 exists and if balance covers the commission charge."""
-    wallet = Wallet2.objects.filter(userAccount=user).first()
-
-    if not wallet:
-        messages.error(request, "Wallet not found. Please register.", extra_tags="danger")
-        return False
-
-    commission_charge = get_commission_charge(user, transaction_amount)
-
-    if wallet.balance < commission_charge:
-        messages.error(request, "Insufficient balance for the transaction.", extra_tags="danger")
-        return False
-
-    return True
-
-def get_commission_charge(user, transaction_amount):
-    """Retrieve the commission charge based on the user's account."""
-    commission_record = CommissionTxn.objects.filter(userAccount=user).first()
-
-    if commission_record:
-        # Assuming the commission amount is stored in 'amount' as a string
-        return Decimal(commission_record.amount)  # Convert to Decimal
-
-    return Decimal(0.0)  # Default if no commission record found
-
-def debit_wallet_and_log_transaction(request, user, amount, reference_no):
-    """Deduct amount from wallet 2 and log the transaction."""
-    wallet = Wallet2.objects.get(userAccount=user)
-
-    if wallet.balance >= amount:
-        wallet.balance -= amount
-        wallet.save()
-
-        Wallet2Transaction.objects.create(
-            wallet2=wallet,
-            amount=amount,
-            txnId=reference_no,
-            description="Cash Withdrawal",
-            transaction_type="Withdrawal",
-            txn_status="Success"
-        )
-        Wallet2Transaction.objects.create(
-            wallet2=wallet,
-            txnId=txnid,
-            amount=amount,
-            txn_status='Success',
-            client_ref_id=generate_unique_id(),
-            description=description,
-            transaction_type=transaction_type
-        )
-    else:
-        messages.error(request, "Insufficient funds to complete the transaction.", extra_tags="danger")
-
 
 
 electricity_operator_id = [22, 23, 24, 53, 55, 56, 57, 59, 60, 61, 62, 63, 69, 76, 78, 81, 82, 96, 101, 107, 109, 115, 121, 122, 125, 126, 131, 133, 136, 137, 138, 139, 140, 141, 142, 143, 145, 148, 149, 150, 153, 155, 156, 160, 164, 166, 171, 174, 175, 178, 190, 195, 198, 204, 230, 238, 239, 242, 243, 244, 245, 246, 247, 364, 375, 397, 452, 465, 473, 491, 546, 598, 603, 618, 619, 2706, 2707]

@@ -94,8 +94,28 @@
                         <div class="col-md-12">
                             <h5 class="section-title">Mini Statement Commission (Flat Charges)</h5>
                             <div class="form-group">
-                                <label>Retailer</label>
-                                <input type="number" name="mini_statement_retailer" step="0.01" value="{{ mini_statement_commission.retailer_commission }}" required>
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Retailer</th>
+                                            <th>Distributor</th>
+                                            <th>Master Distributor</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>
+                                                <input type="number" name="mini_statement_retailer" step="0.01" value="{{ mini_statement_commission.retailer_commission }}" required>
+                                            </td>
+                                            <td>
+                                                <input type="number" name="mini_statement_distributor" step="0.01" value="{{ mini_statement_commission.distributor_commission }}" required>
+                                            </td>
+                                            <td>
+                                                <input type="number" name="mini_statement_master_distributor" step="0.01" value="{{ mini_statement_commission.master_distributor_commission }}" required>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
 

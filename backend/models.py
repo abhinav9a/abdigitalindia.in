@@ -619,6 +619,16 @@ class PaySprintCommissionCharge(models.Model):
         return f"{self.service_type} Slab {self.slab_min}-{self.slab_max}"
 
 
+class PaySprintCommissionTxn(models.Model):
+    userAccount = models.ForeignKey(UserAccount, verbose_name=_("Linked User"), on_delete=models.CASCADE)
+    amount = models.CharField(_("Amount"), max_length=500, blank=True)
+    txn_status = models.CharField(_("Txn Status"), max_length=50, blank=True)
+    desc = models.CharField(_("Commission Description"), max_length=50)
+    agent_name = models.CharField(_("Agent Name"), max_length=500, blank=True)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.userAccount.username
 
 
 # signals

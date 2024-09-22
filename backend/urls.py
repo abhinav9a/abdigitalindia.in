@@ -34,6 +34,7 @@ urlpatterns = [
     path('aeps-report-2', view_paysprint_services.aeps_report, name='aeps_report_paysprint'),
     # API Callback Views
     path('callback', api_views.pay_sprint_onboarding_callback, name='onboarding_callback'),
+    path('test', view_paysprint_services.test, name='test'),
 
     # DMT
     # if customer exists
@@ -71,6 +72,7 @@ urlpatterns = [
     path('adhaar-verification-report', view_services.adhaar_verification_report, name='adhaar_verification_report'),
 
     path('commission-report', view_services.commission_report, name='commission_report'),
+    path('commission-report-2', view_paysprint_services.wallet2_commission_report, name='commission_report_paysprint'),
 
 
     # Auth Pages
