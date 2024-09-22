@@ -74,7 +74,7 @@
                                 <tbody>
                                     {% for slab in aeps_commissions %}
                                     <tr>
-                                        <td>{{ slab.slab_min }} - {{ slab.slab_max }}</td>
+                                        <td>₹{{ slab.slab_min|floatformat:0 }} - ₹{{ slab.slab_max|floatformat:0 }}</td>
                                         <td>
                                             <input type="number" name="aeps_{{ slab.id }}_retailer" step="0.01" value="{{ slab.retailer_commission }}" required>
                                         </td>
@@ -139,7 +139,7 @@
                                 <tbody>
                                     {% for payout_slab in payout_slabs %}
                                     <tr>
-                                        <td>{{ payout_slab.slab_min }} - {{ payout_slab.slab_max }}</td>
+                                        <td>₹{{ payout_slab.slab_min|floatformat:0 }} - ₹{{ payout_slab.slab_max|floatformat:0 }}</td>
                                         <td>
                                             <input type="number" name="payout_{{ payout_slab.id }}" step="0.01" value="{{ payout_slab.flat_charge }}" required>
                                         </td>
