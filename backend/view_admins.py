@@ -713,24 +713,55 @@ def AdminChangeUserPassword(request):
 
 @login_required(login_url='user_login')
 @user_passes_test(is_admin_user, login_url='unauthorized')
-def add_commission_charges(request):
+def update_charges(request):
     if request.method == 'POST':
-        services = [
-            'aadhaar_pay', 'balance_enquiry', 'cash_withdrawal', 'mini_statement',
-            'payout', 'merchant_onboarding', 'bank2_onboarding', 'bank3_onboarding'
-        ]
+        # Process AEPS commission slabs
+        aeps_slabs = PaySprintCommissionCharge.objects.filter(service_type='AEPS')
+        for slab in aeps_slabs:
+            retailer_field = f"aeps_{slab.id}_retailer"
+            distributor_field = f"aeps_{slab.id}_distributor"
+            master_distributor_field = f"aeps_{slab.id}_master_distributor"
 
-        for service in services:
-            charge = request.POST.get(service)
-            if charge:
-                PaySprintCommissionCharge.objects.update_or_create(
-                    service_name=service,
-                    defaults={'charge': charge}
-                )
+            slab.retailer_commission = request.POST.get(retailer_field)
+            slab.distributor_commission = request.POST.get(distributor_field)
+            slab.master_distributor_commission = request.POST.get(master_distributor_field)
+            slab.save()
 
-        messages.success(request, 'Commission charges updated successfully.', extra_tags='success')
-        return redirect('add_commission_charges_paysprint')
+        # Process Mini Statement commission
+        mini_statement = PaySprintCommissionCharge.objects.get(service_type='Mini Statement')
+        mini_statement.retailer_commission = request.POST.get('mini_statement_retailer')
+        mini_statement.save()
 
-    else:  # GET request
-        charges = PaySprintCommissionCharge.objects.all()
-        return render(request, 'backend/Admin/addCommissionChargesPaySprint.html', {'charges': charges})
+        # Process Aadhaar Pay commission
+        aadhaar_pay = PaySprintCommissionCharge.objects.get(service_type='Aadhaar Pay')
+        aadhaar_pay.retailer_commission = request.POST.get('aadhaar_pay_retailer')
+        aadhaar_pay.distributor_commission = request.POST.get('aadhaar_pay_distributor')
+        aadhaar_pay.master_distributor_commission = request.POST.get('aadhaar_pay_master_distributor')
+        aadhaar_pay.save()
+
+        # Process Payout charges
+        payout_slabs = PaySprintCommissionCharge.objects.filter(service_type='Payout')
+        for payout_slab in payout_slabs:
+            payout_field = f"payout_{payout_slab.id}"
+            payout_slab.flat_charge = request.POST.get(payout_field)
+            payout_slab.save()
+
+        messages.success(request, "Charges updated successfully!", extra_tags="success")
+        return redirect('update_charges_paysprint')
+
+    else:
+        # Load existing data for the form
+        aeps_commissions = PaySprintCommissionCharge.objects.filter(service_type='AEPS')
+        mini_statement_commission = PaySprintCommissionCharge.objects.get(service_type='Mini Statement')
+        aadhaar_pay_commission = PaySprintCommissionCharge.objects.get(service_type='Aadhaar Pay')
+        payout_slabs = PaySprintCommissionCharge.objects.filter(service_type='Payout')
+
+        context = {
+            'aeps_commissions': aeps_commissions,
+            'mini_statement_commission': mini_statement_commission,
+            'aadhaar_pay_commission': aadhaar_pay_commission,
+            'payout_slabs': payout_slabs
+        }
+
+        return render(request, 'backend/Admin/AdminUpdateChargesPaySprint.html', context)
+

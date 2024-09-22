@@ -5,6 +5,8 @@ from django.utils.text import slugify
 from django.utils import timezone
 from core.models import UserAccount
 from django.dispatch import receiver
+from django.core.validators import MinValueValidator, MaxValueValidator
+
 
 class DMTBankList(models.Model):
     bank_name = models.CharField(max_length=255)
@@ -590,11 +592,33 @@ class PaySprintAEPSTxnDetail(models.Model):
 
 
 class PaySprintCommissionCharge(models.Model):
-    service_name = models.CharField(max_length=100, unique=True)
-    charge = models.DecimalField(max_digits=10, decimal_places=2)
+    # Commission Types
+    SERVICE_TYPES = [
+        ('AEPS', 'AEPS'),
+        ('Mini Statement', 'Mini Statement'),
+        ('Aadhaar Pay', 'Aadhaar Pay'),
+        ('Payout', 'Payout')
+    ]
+
+    service_type = models.CharField(max_length=20, choices=SERVICE_TYPES)  # AEPS, Mini Statement, Aadhaar Pay, Payout
+    slab_min = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)  # Minimum amount for this slab
+    slab_max = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)  # Maximum amount for this slab
+
+    # Commission fields (for AEPS, Mini Statement, Aadhaar Pay)
+    retailer_commission = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
+    distributor_commission = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
+    master_distributor_commission = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
+
+    # Flag for percentage-based commissions (e.g., Aadhaar Pay)
+    is_percentage = models.BooleanField(default=False)  # True for percentage-based (like Aadhaar Pay)
+
+    # For Payout (flat charges)
+    flat_charge = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
 
     def __str__(self):
-        return f"{self.service_name}: {self.charge}"
+        return f"{self.service_type} Slab {self.slab_min}-{self.slab_max}"
+
+
 
 
 # signals

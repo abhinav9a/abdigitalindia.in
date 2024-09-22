@@ -1,7 +1,7 @@
 from django.contrib import admin
 from .models import (UserKYCDocument, OtherServices, Wallet, WalletTransaction, QRTxnCallbackByEko, ServiceActivation,
                      AepsTxnCallbackByEko, DMTBankList, PanVerificationTxn, BankVerificationTxn, DmtTxn, Commission,
-                     Payout, PaySprintPayout, BbpsTxn, CommissionTxn, CMSTxnCallbackByEko, CreditCardTxn,
+                     Payout, PaySprintPayout, BbpsTxn, CommissionTxn, CMSTxnCallbackByEko, CreditCardTxn, PaySprintCommissionCharge,
                      AdhaarVerificationTxn, OtherServices2, PaySprintAEPSTxnDetail, Wallet2, Wallet2Transaction)
 from django.utils.translation import gettext_lazy as _
 
@@ -359,7 +359,10 @@ class CommissionAdmin(admin.ModelAdmin):
         ),
     ]
 
-    
+
+class PaySprintCommissionChargeAdmin(admin.ModelAdmin):
+    list_display = ('id', 'service_type', 'slab_min', 'slab_max', 'retailer_commission', 'distributor_commission', 'master_distributor_commission', 'flat_charge', 'is_percentage')
+    ordering = ('service_type', 'slab_min')
 
 admin.site.register(UserKYCDocument, UserKYCDocumentAdmin)
 admin.site.register(OtherServices, OtherServicesAdmin)
@@ -384,3 +387,4 @@ admin.site.register(BbpsTxn, BbpsTxnAdmin)
 admin.site.register(CommissionTxn, CommissionTxnAdmin)
 admin.site.register(CMSTxnCallbackByEko, CMSTxnCallbackByEkoAdmin)
 admin.site.register(PaySprintAEPSTxnDetail, PaySprintAEPSTxnDetailsAdmin)
+admin.site.register(PaySprintCommissionCharge, PaySprintCommissionChargeAdmin)
