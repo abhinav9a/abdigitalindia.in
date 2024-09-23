@@ -1013,21 +1013,3 @@ def wallet2_commission_report(request):
     return render(request, 'backend/Services/Commission/Commission_Report.html', context)
 
 
-@login_required(login_url="user_login")
-@transaction_required
-def test(request):
-    userObj = UserAccount.objects.get(username=request.user)
-    if request.method == "POST":
-        from backend.utils_paysprint import process_transaction
-        amount = request.POST.get("amount", "0")
-        service_type = request.POST.get("service_type")
-        is_credit = request.POST.get("is_credit")
-
-        x = process_transaction(request, userObj.id, amount, service_type)
-        if x:
-            messages.success(request, "Transaction Successful", extra_tags="success")
-        else:
-            messages.error(request, "Transaction Failed", extra_tags="danger")
-        return redirect("test")
-
-    return render(request, "backend/Pages/test.html")

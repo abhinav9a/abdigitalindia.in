@@ -1,0 +1,212 @@
+[
+{
+    "model": "backend.paysprintcommissioncharge",
+    "pk": 1,
+    "fields": {
+        "service_type": "AEPS",
+        "slab_min": "100.00",
+        "slab_max": "499.00",
+        "retailer_commission": "0.10",
+        "distributor_commission": "0.01",
+        "master_distributor_commission": "0.01",
+        "is_percentage": false,
+        "flat_charge": null
+    }
+},
+{
+    "model": "backend.paysprintcommissioncharge",
+    "pk": 2,
+    "fields": {
+        "service_type": "AEPS",
+        "slab_min": "500.00",
+        "slab_max": "999.00",
+        "retailer_commission": "0.30",
+        "distributor_commission": "0.05",
+        "master_distributor_commission": "0.05",
+        "is_percentage": false,
+        "flat_charge": null
+    }
+},
+{
+    "model": "backend.paysprintcommissioncharge",
+    "pk": 3,
+    "fields": {
+        "service_type": "Payout",
+        "slab_min": "1.00",
+        "slab_max": "25000.00",
+        "retailer_commission": null,
+        "distributor_commission": null,
+        "master_distributor_commission": null,
+        "is_percentage": false,
+        "flat_charge": "7.00"
+    }
+},
+{
+    "model": "backend.paysprintcommissioncharge",
+    "pk": 4,
+    "fields": {
+        "service_type": "Payout",
+        "slab_min": "25001.00",
+        "slab_max": "100000.00",
+        "retailer_commission": null,
+        "distributor_commission": null,
+        "master_distributor_commission": null,
+        "is_percentage": false,
+        "flat_charge": "11.00"
+    }
+},
+{
+    "model": "backend.paysprintcommissioncharge",
+    "pk": 5,
+    "fields": {
+        "service_type": "Payout",
+        "slab_min": "100001.00",
+        "slab_max": "200000.00",
+        "retailer_commission": null,
+        "distributor_commission": null,
+        "master_distributor_commission": null,
+        "is_percentage": false,
+        "flat_charge": "16.00"
+    }
+},
+{
+    "model": "backend.paysprintcommissioncharge",
+    "pk": 6,
+    "fields": {
+        "service_type": "Mini Statement",
+        "slab_min": null,
+        "slab_max": null,
+        "retailer_commission": "0.40",
+        "distributor_commission": "0.00",
+        "master_distributor_commission": "0.00",
+        "is_percentage": false,
+        "flat_charge": null
+    }
+},
+{
+    "model": "backend.paysprintcommissioncharge",
+    "pk": 7,
+    "fields": {
+        "service_type": "Aadhaar Pay",
+        "slab_min": null,
+        "slab_max": null,
+        "retailer_commission": "0.20",
+        "distributor_commission": "0.02",
+        "master_distributor_commission": "0.02",
+        "is_percentage": true,
+        "flat_charge": null
+    }
+},
+{
+    "model": "backend.paysprintcommissioncharge",
+    "pk": 8,
+    "fields": {
+        "service_type": "AEPS",
+        "slab_min": "1000.00",
+        "slab_max": "1999.00",
+        "retailer_commission": "2.00",
+        "distributor_commission": "0.10",
+        "master_distributor_commission": "0.10",
+        "is_percentage": false,
+        "flat_charge": null
+    }
+},
+{
+    "model": "backend.paysprintcommissioncharge",
+    "pk": 9,
+    "fields": {
+        "service_type": "AEPS",
+        "slab_min": "2000.00",
+        "slab_max": "2999.00",
+        "retailer_commission": "0.00",
+        "distributor_commission": "0.00",
+        "master_distributor_commission": "0.00",
+        "is_percentage": false,
+        "flat_charge": null
+    }
+},
+{
+    "model": "backend.paysprintcommissioncharge",
+    "pk": 10,
+    "fields": {
+        "service_type": "AEPS",
+        "slab_min": "3000.00",
+        "slab_max": "3999.00",
+        "retailer_commission": "0.00",
+        "distributor_commission": "0.00",
+        "master_distributor_commission": "0.00",
+        "is_percentage": false,
+        "flat_charge": null
+    }
+},
+{
+    "model": "backend.paysprintcommissioncharge",
+    "pk": 11,
+    "fields": {
+        "service_type": "AEPS",
+        "slab_min": "4000.00",
+        "slab_max": "4999.00",
+        "retailer_commission": "0.00",
+        "distributor_commission": "0.00",
+        "master_distributor_commission": "0.00",
+        "is_percentage": false,
+        "flat_charge": null
+    }
+},
+{
+    "model": "backend.paysprintcommissioncharge",
+    "pk": 12,
+    "fields": {
+        "service_type": "AEPS",
+        "slab_min": "5000.00",
+        "slab_max": "5999.00",
+        "retailer_commission": "0.00",
+        "distributor_commission": "0.00",
+        "master_distributor_commission": "0.00",
+        "is_percentage": false,
+        "flat_charge": null
+    }
+},
+{
+    "model": "backend.paysprintcommissioncharge",
+    "pk": 13,
+    "fields": {
+        "service_type": "AEPS",
+        "slab_min": "6000.00",
+        "slab_max": "7999.00",
+        "retailer_commission": "0.00",
+        "distributor_commission": "0.00",
+        "master_distributor_commission": "0.00",
+        "is_percentage": false,
+        "flat_charge": null
+    }
+},
+{
+    "model": "backend.paysprintcommissioncharge",
+    "pk": 14,
+    "fields": {
+        "service_type": "AEPS",
+        "slab_min": "8000.00",
+        "slab_max": "8999.00",
+        "retailer_commission": "0.00",
+        "distributor_commission": "0.00",
+        "master_distributor_commission": "0.00",
+        "is_percentage": false,
+        "flat_charge": null
+    }
+},
+{
+    "model": "backend.paysprintcommissioncharge",
+    "pk": 15,
+    "fields": {
+        "service_type": "AEPS",
+        "slab_min": "9000.00",
+        "slab_max": "10000.00",
+        "retailer_commission": "0.00",
+        "distributor_commission": "0.00",
+        "master_distributor_commission": "0.00",
+        "is_percentage": false,
+        "flat_charge": null
+    }
+}
+]
