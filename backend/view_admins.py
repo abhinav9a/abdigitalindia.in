@@ -2,13 +2,18 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
-from .models import UserKYCDocument, Wallet, WalletTransaction, ServiceActivation, AepsTxnCallbackByEko, DmtTxn, PanVerificationTxn, BankVerificationTxn, Payout, BbpsTxn, CreditCardTxn
+from .models import (UserKYCDocument, Wallet, WalletTransaction, ServiceActivation, AepsTxnCallbackByEko, DmtTxn,
+                     PanVerificationTxn, BankVerificationTxn, Payout, BbpsTxn, CreditCardTxn, Wallet2,
+                     Wallet2Transaction, PaySprintCommissionCharge)
 from core.models import UserAccount
 from django.db.models import Q
 from django.contrib.auth.decorators import user_passes_test
 from decimal import Decimal
 from django.utils import timezone
-from backend.utils import is_admin_user, generate_unique_id, is_kyc_completed, is_user_onboard, is_master_distributor_access, is_distributor_access, generate_platform_id, generate_key
+from backend.utils import (is_admin_user, generate_unique_id, is_kyc_completed, is_user_onboard,
+                           is_master_distributor_access, is_distributor_access, generate_platform_id, generate_key,
+                           update_wallet)
+from core.decorators import transaction_required
 from django.http import JsonResponse
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from backend.forms import CreateCustomUserForm
@@ -75,41 +80,43 @@ def AdminExplorePendingKyc(request, id):
 
 @login_required(login_url='user_login')
 @user_passes_test(is_admin_user, login_url='unauthorized')
+@transaction_required
 def AdminWalletAction(request):
     if request.method == 'POST':
         actionType = request.POST.get('actionType')
+        walletType = request.POST.get('walletType')
         userType = request.POST.get('userType')
         username = request.POST.get('username').lower()
         txnid = request.POST.get('txnid')
         amount = Decimal(request.POST.get('amount'))
         description = request.POST.get('description')
 
+        # Check if any required fields are None
+        if None in {actionType, walletType, userType, username, txnid, amount, description}:
+            messages.error(request, 'All fields are required.', extra_tags='danger')
+            return redirect('AdminWalletAction')
+
         try:
             # Check if the user exists
             user_account = UserAccount.objects.get(userType=userType, username=username)
-            # Get the user's wallet
-            wallet = Wallet.objects.get(userAccount=user_account)
-            if actionType == 'addWallet':
-                # Add amount to the wallet
-                wallet.balance += amount
-                wallet.save()
-                # Create a transaction entry for wallet
-                WalletTransaction.objects.create(wallet=wallet, txnId=txnid, amount=amount, txn_status='Success', client_ref_id=generate_unique_id(), description=description, transaction_type='Admin Deposit')
-            else:
-                wallet.balance -= amount
-                wallet.save()
-                # Create a transaction entry for wallet
-                WalletTransaction.objects.create(wallet=wallet, txnId=txnid, amount=amount, txn_status='Success', client_ref_id=generate_unique_id(), description=description, transaction_type='Admin Deduct')
-            
+            wallet = None
+
+            if walletType == "wallet1":
+                wallet = Wallet.objects.get(userAccount=user_account)
+            elif walletType == "wallet2":
+                wallet = Wallet2.objects.get(userAccount=user_account)
+
+            # Update wallet and create transaction
+            update_wallet(wallet, amount, txnid, description, actionType)
+
             messages.success(request, message=f'{actionType} Action for {username} Successful.', extra_tags='success')
-            return redirect('AdminWalletAction')
+
         except UserAccount.DoesNotExist:
             messages.error(request, message='User Not Found, Please Check Details', extra_tags='danger')
-            return redirect('AdminWalletAction')
-        
         except Wallet.DoesNotExist:
             messages.error(request, message='User Wallet Not Found', extra_tags='danger')
-            return redirect('AdminWalletAction')
+
+        return redirect('AdminWalletAction')
 
     return render(request, 'backend/Admin/AdminWalletAction.html')
 
@@ -357,6 +364,47 @@ def AdminExploreWalletReport(request, id):
                 transactions = WalletTransaction.objects.filter(wallet__userAccount=id, timestamp__range=[start_date, end_date]).order_by('-id')
             else:
                 transactions = WalletTransaction.objects.filter(wallet__userAccount=id).order_by('-id')
+
+        except ValueError as e:
+            messages.error(request, str(e))
+            transactions = []
+
+        paginator = Paginator(transactions, 20)
+
+        try:
+            transactions_page = paginator.page(page)
+        except PageNotAnInteger:
+            transactions_page = paginator.page(1)
+        except EmptyPage:
+            transactions_page = paginator.page(paginator.num_pages)
+
+        context = {'transactions_page': transactions_page}
+        return render(request, 'backend/Admin/Reports/AdminExploreWalletReport.html', context)
+    else:
+        return redirect('unauthorized')
+
+
+@login_required(login_url='user_login')
+@user_passes_test(is_distributor_access, login_url='unauthorized')
+@user_passes_test(is_kyc_completed, login_url='unauthorized')
+def AdminExploreWallet2Report(request, id):
+    current_user = UserAccount.objects.get(username=request.user)
+    sub_current_user = UserAccount.objects.get(id=id)
+
+    if sub_current_user.userManager == str(current_user.id) or current_user.groups.filter(name='Admin').exists():
+        start_date_str = request.POST.get('start_date', None)
+        end_date_str = request.POST.get('end_date', None)
+        page = request.GET.get('page', 1)
+
+        try:
+            if start_date_str and end_date_str:
+                start_date = timezone.datetime.strptime(start_date_str, '%Y-%m-%d').date()
+                end_date = timezone.datetime.strptime(end_date_str, '%Y-%m-%d').date() + timedelta(days=1)
+                start_date = timezone.make_aware(datetime.combine(start_date, datetime.min.time()))
+                end_date = timezone.make_aware(datetime.combine(end_date, datetime.max.time()))
+                transactions = Wallet2Transaction.objects.filter(wallet__userAccount=id, timestamp__range=[start_date, end_date]).order_by('-id')
+            else:
+                transactions = Wallet2Transaction.objects.filter(wallet__userAccount=id).order_by('-id')
 
         except ValueError as e:
             messages.error(request, str(e))
@@ -661,3 +709,59 @@ def AdminChangeUserPassword(request):
             messages.error(request, 'Password do not match.', extra_tags='danger')
 
     return render(request, 'backend/Admin/AdminUserPasswordChange.html')
+
+
+@login_required(login_url='user_login')
+@user_passes_test(is_admin_user, login_url='unauthorized')
+def update_charges(request):
+    if request.method == 'POST':
+        # Process AEPS commission slabs
+        aeps_slabs = PaySprintCommissionCharge.objects.filter(service_type='AEPS')
+        for slab in aeps_slabs:
+            retailer_field = f"aeps_{slab.id}_retailer"
+            distributor_field = f"aeps_{slab.id}_distributor"
+            master_distributor_field = f"aeps_{slab.id}_master_distributor"
+
+            slab.retailer_commission = request.POST.get(retailer_field)
+            slab.distributor_commission = request.POST.get(distributor_field)
+            slab.master_distributor_commission = request.POST.get(master_distributor_field)
+            slab.save()
+
+        # Process Mini Statement commission
+        mini_statement = PaySprintCommissionCharge.objects.get(service_type='Mini Statement')
+        mini_statement.retailer_commission = request.POST.get('mini_statement_retailer')
+        mini_statement.save()
+
+        # Process Aadhaar Pay commission
+        aadhaar_pay = PaySprintCommissionCharge.objects.get(service_type='Aadhaar Pay')
+        aadhaar_pay.retailer_commission = request.POST.get('aadhaar_pay_retailer')
+        aadhaar_pay.distributor_commission = request.POST.get('aadhaar_pay_distributor')
+        aadhaar_pay.master_distributor_commission = request.POST.get('aadhaar_pay_master_distributor')
+        aadhaar_pay.save()
+
+        # Process Payout charges
+        payout_slabs = PaySprintCommissionCharge.objects.filter(service_type='Payout')
+        for payout_slab in payout_slabs:
+            payout_field = f"payout_{payout_slab.id}"
+            payout_slab.flat_charge = request.POST.get(payout_field)
+            payout_slab.save()
+
+        messages.success(request, "Charges updated successfully!", extra_tags="success")
+        return redirect('update_charges_paysprint')
+
+    else:
+        # Load existing data for the form
+        aeps_commissions = PaySprintCommissionCharge.objects.filter(service_type='AEPS')
+        mini_statement_commission = PaySprintCommissionCharge.objects.get(service_type='Mini Statement')
+        aadhaar_pay_commission = PaySprintCommissionCharge.objects.get(service_type='Aadhaar Pay')
+        payout_slabs = PaySprintCommissionCharge.objects.filter(service_type='Payout')
+
+        context = {
+            'aeps_commissions': aeps_commissions,
+            'mini_statement_commission': mini_statement_commission,
+            'aadhaar_pay_commission': aadhaar_pay_commission,
+            'payout_slabs': payout_slabs
+        }
+
+        return render(request, 'backend/Admin/AdminUpdateChargesPaySprint.html', context)
+

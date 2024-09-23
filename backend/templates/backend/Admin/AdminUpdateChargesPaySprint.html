@@ -1,0 +1,181 @@
+{% extends "backend/Shared/AuthBase.html" %}
+{% block main %}
+<style>
+    .form-group {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 1rem;
+    }
+    .form-group label {
+        width: 25%;
+        margin-bottom: 0;
+        padding-right: 10px;
+        color: #000000;
+        text-align: left;
+    }
+    input {
+        width: 60%;
+        background-color: #ffffff;
+        border: 1px solid #d3d3d3;
+        border-radius: 0.25rem;
+        padding: 10px;
+        color: #000000;
+    }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 1.5rem;
+    }
+    table th, table td {
+        border: 1px solid #d3d3d3;
+        padding: 8px;
+        text-align: center;
+    }
+    table th {
+        background-color: #f8f9fa;
+        color: #000;
+    }
+    table td input {
+        width: 100%;
+        text-align: center;
+    }
+    .section-title {
+        font-size: 1.5rem;
+        margin-top: 2rem;
+        margin-bottom: 1rem;
+        text-align: left;
+    }
+</style>
+
+<div class="row">
+    <div class="col-md-10 mx-auto grid-margin stretch-card">
+        <div class="card">
+            <div class="card-body">
+                {% for message in messages %}
+				    <div class="alert alert-{{ message.extra_tags }}">{{message}}</div>
+				{% endfor %}
+                <h4 class="card-title" style="font-size:2rem;">Update Charges for Wallet 2 Transactions</h4>
+
+                <form class="forms-sample pt-5" method="post" action="{% url 'update_charges_paysprint' %}">
+                    {% csrf_token %}
+                    <div class="row mx-auto">
+                        <!-- AEPS Commission Section -->
+                        <div class="col-md-12">
+                            <h5 class="section-title">AEPS Commission (Flat Charges)</h5>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Slab</th>
+                                        <th>Retailer</th>
+                                        <th>Distributor</th>
+                                        <th>Master Distributor</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for slab in aeps_commissions %}
+                                    <tr>
+                                        <td>₹{{ slab.slab_min|floatformat:0 }} - ₹{{ slab.slab_max|floatformat:0 }}</td>
+                                        <td>
+                                            <input type="number" name="aeps_{{ slab.id }}_retailer" step="0.01" value="{{ slab.retailer_commission }}" required>
+                                        </td>
+                                        <td>
+                                            <input type="number" name="aeps_{{ slab.id }}_distributor" step="0.01" value="{{ slab.distributor_commission }}" required>
+                                        </td>
+                                        <td>
+                                            <input type="number" name="aeps_{{ slab.id }}_master_distributor" step="0.01" value="{{ slab.master_distributor_commission }}" required>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Mini Statement Commission Section -->
+                        <div class="col-md-12">
+                            <h5 class="section-title">Mini Statement Commission (Flat Charges)</h5>
+                            <div class="form-group">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Retailer</th>
+                                            <th>Distributor</th>
+                                            <th>Master Distributor</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>
+                                                <input type="number" name="mini_statement_retailer" step="0.01" value="{{ mini_statement_commission.retailer_commission }}" required>
+                                            </td>
+                                            <td>
+                                                <input type="number" name="mini_statement_distributor" step="0.01" value="{{ mini_statement_commission.distributor_commission }}" required>
+                                            </td>
+                                            <td>
+                                                <input type="number" name="mini_statement_master_distributor" step="0.01" value="{{ mini_statement_commission.master_distributor_commission }}" required>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Aadhaar Pay Commission Section -->
+                        <div class="col-md-12">
+                            <h5 class="section-title">Aadhaar Pay Commission (Percentage)</h5>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Retailer</th>
+                                        <th>Distributor</th>
+                                        <th>Master Distributor</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            <input type="number" name="aadhaar_pay_retailer" step="0.01" value="{{ aadhaar_pay_commission.retailer_commission }}" required>
+                                        </td>
+                                        <td>
+                                            <input type="number" name="aadhaar_pay_distributor" step="0.01" value="{{ aadhaar_pay_commission.distributor_commission }}" required>
+                                        </td>
+                                        <td>
+                                            <input type="number" name="aadhaar_pay_master_distributor" step="0.01" value="{{ aadhaar_pay_commission.master_distributor_commission }}" required>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Payout Charges Section -->
+                        <div class="col-md-12">
+                            <h5 class="section-title">Payout Charges (Flat Charges)</h5>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Slab</th>
+                                        <th>Charge</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for payout_slab in payout_slabs %}
+                                    <tr>
+                                        <td>₹{{ payout_slab.slab_min|floatformat:0 }} - ₹{{ payout_slab.slab_max|floatformat:0 }}</td>
+                                        <td>
+                                            <input type="number" name="payout_{{ payout_slab.id }}" step="0.01" value="{{ payout_slab.flat_charge }}" required>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="text-center">
+                        <button type="submit" class="btn btn-primary px-5 py-3 my-4">Update Charges</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

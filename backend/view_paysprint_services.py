@@ -3,6 +3,7 @@ from decimal import Decimal, ROUND_DOWN
 import logging
 import json
 
+from django.db import transaction
 from django.contrib import messages
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth.decorators import login_required
@@ -27,12 +28,13 @@ from backend.utils import (
     update_payout_statuses,
     get_aadhaar_pay_txn_status,
 )
+from backend.utils_paysprint import credit_aeps_commission, credit_mini_statement_commission, debit_aadhaar_pay_charges,debit_payout_charges
 from backend.models import (
     PaySprintMerchantAuth,
     PaySprintAEPSTxnDetail,
     Wallet,
     PaySprintPayout,
-    PaySprintPayoutBankAccountDetails,
+    PaySprintPayoutBankAccountDetails, PaySprintCommissionTxn
 )
 from backend.config.consts import (
     PaySprintRoutes,
@@ -40,6 +42,7 @@ from backend.config.consts import (
     PAYOUT_TRANSACTION_STATUS,
 )
 from core.models import UserAccount
+from core.decorators import transaction_required
 
 
 logger = logging.getLogger(__name__)
@@ -258,14 +261,24 @@ def cash_withdrawal(request):
     heading = "Cash Withdrawal"
 
     if request.method == "POST":
-        aeps_bank = request.POST.get('aeps_bank')
+        try:
+            aeps_bank = request.POST.get('aeps_bank')
+            # Credit AEPS commission before making the request
+            if not credit_mini_statement_commission(request, user.id):
+                transaction.set_rollback(True)
+                return redirect("cash_withdrawl_paysprint")
 
-        if aeps_bank == 'bank2':
-            return process_bank2_withdrawal(request, user)
-        elif aeps_bank == 'bank3':
-            return process_bank3_withdrawal(request, user)
-        else:
-            messages.error(request, message="Please select AEPS Bank Provider", extra_tags="danger")
+            if aeps_bank == 'bank2':
+                return process_bank2_withdrawal(request, user)
+            elif aeps_bank == 'bank3':
+                return process_bank3_withdrawal(request, user)
+            else:
+                transaction.set_rollback(True)
+                messages.error(request, message="Please select AEPS Bank Provider", extra_tags="danger")
+        except Exception as e:
+            transaction.set_rollback(True)
+            logger.exception(f"Unexpected error in cash_withdrawal view. {e}",  exc_info=True)
+
 
     return render(
         request,
@@ -324,9 +337,9 @@ def perform_withdrawal(request, user, merchant_auth_txn_id):
         PaySprintAEPSTxnDetail.objects.create(**transaction_data)
 
         txn_status = check_transaction_status(data.get("referenceno"))
-        transaction = PaySprintAEPSTxnDetail.objects.get(reference_no=transaction_data['reference_no'])
-        transaction.txn_status = txn_status
-        transaction.save()
+        txn_details = PaySprintAEPSTxnDetail.objects.get(reference_no=transaction_data['reference_no'])
+        txn_details.txn_status = txn_status
+        txn_details.save()
 
         return render(
             request,
@@ -334,6 +347,7 @@ def perform_withdrawal(request, user, merchant_auth_txn_id):
             {"cash_withdrawl_response": transaction_data},
         )
     else:
+        transaction.set_rollback(True)
         messages.error(request, response.json().get("message"), extra_tags="danger")
         return redirect("cash_withdrawl_paysprint")
 
@@ -360,15 +374,18 @@ def check_transaction_status(reference_no):
 @login_required(login_url="user_login")
 @user_passes_test(is_kyc_completed, login_url="unauthorized")
 @user_passes_test(is_user_registered_with_paysprint, login_url="merchant_registration_with_bank_paysprint")
+@transaction_required
 def mini_statement(request):
     user = UserAccount.objects.get(username=request.user)
     bank_list = get_pay_sprint_aeps_bank_list()
     heading = "Mini Statement"
     if request.method == "POST":
+        # Credit mini statement commission before making the request
+        if not credit_mini_statement_commission(request, user.id):
+            transaction.set_rollback(True)
+            return redirect("mini_statement_paysprint")
         data = get_pay_sprint_payload(request, user, "MS")
-        response = make_post_request(
-            url=PaySprintRoutes.MINI_STATEMENT.value, data=data
-        )
+        response = make_post_request(url=PaySprintRoutes.MINI_STATEMENT.value, data=data)
         logger.error(f"Response Body: {response.json()}")
         if response.status_code == 200 and response.json().get("status"):
             response = response.json()
@@ -388,6 +405,7 @@ def mini_statement(request):
             merchant_auth = PaySprintAEPSTxnDetail.objects.create(**response_data)
         else:
             messages.error(request, response.json().get("message"), extra_tags="danger")
+            transaction.set_rollback(True)
 
         return render(
             request,
@@ -415,6 +433,10 @@ def aadhar_pay(request):
     bank_list = get_pay_sprint_aeps_bank_list()
     heading = "Aadhar Pay"
     if request.method == "POST":
+        # Debit Aadhaar Pay charges before making the request
+        if not debit_aadhaar_pay_charges(request, user.id, request.POST.get("amount")):
+            transaction.set_rollback(True)
+            return redirect('aadhar_pay_paysprint')
         data = get_pay_sprint_payload(request, user, "M")  # M OR FM OR IM
         response = make_post_request(url=PaySprintRoutes.AADHAR_PAY.value, data=data)
         logger.error(f"Response Body: {response.json()}")
@@ -445,6 +467,7 @@ def aadhar_pay(request):
             )
         else:
             messages.error(request, response.json().get("message"), extra_tags="danger")
+            transaction.set_rollback(True)
 
     return render(
         request,
@@ -698,102 +721,71 @@ def do_transaction(request):
         amount = 0
         ref_id = generate_unique_id()
         try:
-            amount = Decimal(request.POST.get("amount"))
-        except ValueError:
-            messages.error(request, "Invalid amount")
-            return redirect("transfer_fund")
+            # Debit Payout charges before making the request
+            if not debit_aadhaar_pay_charges(request, userObj.id, request.POST.get("amount")):
+                transaction.set_rollback(True)
+                return redirect("do_transaction")
+            data = {
+                "bene_id": request.POST.get("bene_id"),
+                "amount": float(request.POST.get("amount")),
+                "refid": ref_id,
+                "mode": request.POST.get("mode"),
+            }
+            # logger.debug(f"API URL: {PaySprintRoutes.DO_TRANSACTION.value}")
+            # logger.debug(f"Request Body: {data}")
+            response = requests.post(
+                PaySprintRoutes.DO_TRANSACTION.value,
+                json=data,
+                headers=get_pay_sprint_headers(),
+            )
+            api_data = response.json()
+            # logger.debug(f"Response Body: {api_data}")
 
-        if amount <= 25000:
-            x = 6
-        else:
-            x = 12
-
-        payout_charge = amount + Decimal(x)
-        payout_charge = payout_charge.quantize(Decimal("0.00"), rounding=ROUND_DOWN)
-
-        # Getting user's wallet
-        try:
-            wallet = Wallet.objects.get(userAccount=request.user)
-        except Wallet.DoesNotExist:
-            messages.error(request, "Wallet not found")
-            return redirect("transfer_fund")
-        except Exception as e:
-            messages.error(request, f"Internal server error: {e}")
-            return redirect("transfer_fund")
-
-        # check the balance for service
-        if wallet.balance >= payout_charge:
-            try:
-                data = {
-                    "bene_id": request.POST.get("bene_id"),
-                    "amount": float(amount),
-                    "refid": ref_id,
-                    "mode": request.POST.get("mode"),
-                }
-                # logger.debug(f"API URL: {PaySprintRoutes.DO_TRANSACTION.value}")
+            if response.status_code == 200 and api_data.get("status"):
+                messages.success(request, api_data.get("message"))
+                payload = {"refid": ref_id, "ackno": api_data.get("ackno")}
+                # logger.debug(f"API URL: {PaySprintRoutes.TRANSACTION_STATUS.value}")
                 # logger.debug(f"Request Body: {data}")
+                # Check the Transaction Status
                 response = requests.post(
-                    PaySprintRoutes.DO_TRANSACTION.value,
-                    json=data,
+                    PaySprintRoutes.TRANSACTION_STATUS.value,
+                    json=payload,
                     headers=get_pay_sprint_headers(),
                 )
                 api_data = response.json()
                 # logger.debug(f"Response Body: {api_data}")
 
                 if response.status_code == 200 and api_data.get("status"):
-                    messages.success(request, api_data.get("message"))
-                    payload = {"refid": ref_id, "ackno": api_data.get("ackno")}
-                    # logger.debug(f"API URL: {PaySprintRoutes.TRANSACTION_STATUS.value}")
-                    # logger.debug(f"Request Body: {data}")
-                    # Check the Transaction Status
-                    response = requests.post(
-                        PaySprintRoutes.TRANSACTION_STATUS.value,
-                        json=payload,
-                        headers=get_pay_sprint_headers(),
-                    )
-                    api_data = response.json()
-                    # logger.debug(f"Response Body: {api_data}")
+                    data = api_data.get("data")
 
-                    if response.status_code == 200 and api_data.get("status"):
-                        data = api_data.get("data")
+                    payout_details = {
+                        "userAccount": request.user,
+                        "ref_id": data.get("refid"),
+                        "ack_no": data.get("ackno"),
+                        "bank_name": data.get("bankname"),
+                        "account_no": data.get("acno"),
+                        "beneficiary_name": data.get("benename"),
+                        "amount": data.get("amount"),
+                        "ifsc": data.get("ifsccode"),
+                        "mode": data.get("mode"),
+                        "charges": data.get("charges"),
+                        "utr": data.get("utr"),
+                        "txn_status": PAYOUT_TRANSACTION_STATUS.get(
+                            data.get("txn_status")
+                        ),
+                    }
 
-                        payout_details = {
-                            "userAccount": request.user,
-                            "ref_id": data.get("refid"),
-                            "ack_no": data.get("ackno"),
-                            "bank_name": data.get("bankname"),
-                            "account_no": data.get("acno"),
-                            "beneficiary_name": data.get("benename"),
-                            "amount": data.get("amount"),
-                            "ifsc": data.get("ifsccode"),
-                            "mode": data.get("mode"),
-                            "charges": data.get("charges"),
-                            "utr": data.get("utr"),
-                            "txn_status": PAYOUT_TRANSACTION_STATUS.get(
-                                data.get("txn_status")
-                            ),
-                        }
+                    # Create a transaction entry for wallet
+                    PaySprintPayout.objects.create(**payout_details)
 
-                        # Charge user for DMT
-                        wallet.balance -= Decimal(data.get("charges"))
-                        wallet.save()
+                    return redirect("do_transaction")
 
-                        # Create a transaction entry for wallet
-                        PaySprintPayout.objects.create(**payout_details)
-
-                        return redirect("do_transaction")
-
-                messages.error(request, api_data.get("message"), extra_tags="danger")
-                return redirect("do_transaction")
-            except Exception as e:
-                messages.error(request, f"Internal server error: {e}")
-                return redirect("do_transaction")
-        else:
-            messages.error(
-                request,
-                "Insufficient Balance, Please Recharge Wallet.",
-                extra_tags="danger",
-            )
+            messages.error(request, api_data.get("message"), extra_tags="danger")
+            transaction.set_rollback(True)
+            return redirect("do_transaction")
+        except Exception as e:
+            messages.error(request, f"Internal server error: {e}")
+            transaction.set_rollback(True)
             return redirect("do_transaction")
 
     context = {
@@ -984,3 +976,58 @@ def payout_report(request):
     return render(
         request, "backend/Services/Payout/Payout_Report_PaySprint.html", context
     )
+
+
+@login_required(login_url='user_login')
+@user_passes_test(is_kyc_completed, login_url='unauthorized')
+@user_passes_test(is_user_registered_with_paysprint, login_url="onboarding_user_paysprint")
+def wallet2_commission_report(request):
+    start_date_str = request.POST.get('start_date', None)
+    end_date_str = request.POST.get('end_date', None)
+    page = request.GET.get('page', 1)
+
+    try:
+        if start_date_str and end_date_str:
+            start_date = timezone.datetime.strptime(start_date_str, '%Y-%m-%d').date()
+            end_date = timezone.datetime.strptime(end_date_str, '%Y-%m-%d').date() + timedelta(days=1)
+            start_date = timezone.make_aware(datetime.combine(start_date, datetime.min.time()))
+            end_date = timezone.make_aware(datetime.combine(end_date, datetime.max.time()))
+            transactions = PaySprintCommissionTxn.objects.filter(userAccount=request.user, timestamp__range=[start_date, end_date]).order_by('-id')
+        else:
+            transactions = PaySprintCommissionTxn.objects.filter(userAccount=request.user).order_by('-id')
+
+    except ValueError as e:
+        messages.error(request, str(e))
+        transactions = []
+
+    paginator = Paginator(transactions, 50)
+
+    try:
+        transactions_page = paginator.page(page)
+    except PageNotAnInteger:
+        transactions_page = paginator.page(1)
+    except EmptyPage:
+        transactions_page = paginator.page(paginator.num_pages)
+
+    context = {'transactions_page': transactions_page}
+    return render(request, 'backend/Services/Commission/Commission_Report.html', context)
+
+
+@login_required(login_url="user_login")
+@transaction_required
+def test(request):
+    userObj = UserAccount.objects.get(username=request.user)
+    if request.method == "POST":
+        from backend.utils_paysprint import process_transaction
+        amount = request.POST.get("amount", "0")
+        service_type = request.POST.get("service_type")
+        is_credit = request.POST.get("is_credit")
+
+        x = process_transaction(request, userObj.id, amount, service_type)
+        if x:
+            messages.success(request, "Transaction Successful", extra_tags="success")
+        else:
+            messages.error(request, "Transaction Failed", extra_tags="danger")
+        return redirect("test")
+
+    return render(request, "backend/Pages/test.html")

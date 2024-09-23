@@ -98,6 +98,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'backend.context_processors.wallet_balance',
+                'backend.context_processors.wallet2_balance',
                 'backend.context_processors.external_service_nav',
             ],
         },

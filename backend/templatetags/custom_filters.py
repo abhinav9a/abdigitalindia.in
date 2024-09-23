@@ -28,3 +28,7 @@ def format_date(date_str):
         return date_obj.strftime('%d-%b').title()
     except ValueError:
         return date_str
+
+@register.filter
+def replace_underscore(value):
+   return value.replace('_', ' ')

@@ -5,6 +5,8 @@ from django.utils.text import slugify
 from django.utils import timezone
 from core.models import UserAccount
 from django.dispatch import receiver
+from django.core.validators import MinValueValidator, MaxValueValidator
+
 
 class DMTBankList(models.Model):
     bank_name = models.CharField(max_length=255)
@@ -112,9 +114,30 @@ class Wallet(models.Model):
     def __str__(self):
         return self.userAccount.username
 
+class Wallet2(models.Model):
+    userAccount = models.OneToOneField(UserAccount, on_delete=models.CASCADE)
+    balance = models.DecimalField(max_digits=10, decimal_places=2, default=0.0)
+
+    def __str__(self):
+        return self.userAccount.username
+
 
 class WalletTransaction(models.Model):
     wallet = models.ForeignKey(Wallet, on_delete=models.CASCADE)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    txnId = models.CharField(_("Bank Transaction Id"), max_length=500, blank=True)
+    client_ref_id = models.CharField(_("Client Ref Id"), max_length=500, blank=True)
+    description = models.CharField(max_length=255)
+    timestamp = models.DateTimeField(auto_now_add=True)
+    transaction_type = models.CharField(_("Transaction Type"), max_length=500, null=True, blank=True)
+    txn_status = models.CharField(_("Transaction Status"), max_length=500, blank=True)
+
+    def __str__(self):
+        return str(self.amount)
+
+
+class Wallet2Transaction(models.Model):
+    wallet2 = models.ForeignKey(Wallet2, on_delete=models.CASCADE)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     txnId = models.CharField(_("Bank Transaction Id"), max_length=500, blank=True)
     client_ref_id = models.CharField(_("Client Ref Id"), max_length=500, blank=True)
@@ -567,6 +590,45 @@ class PaySprintAEPSTxnDetail(models.Model):
     def get_service_display(self):
         return dict(PaySprintAEPSTxnDetail.Service_Type.choices).get(self.service_type, '')
 
+
+class PaySprintCommissionCharge(models.Model):
+    # Commission Types
+    SERVICE_TYPES = [
+        ('AEPS', 'AEPS'),
+        ('Mini Statement', 'Mini Statement'),
+        ('Aadhaar Pay', 'Aadhaar Pay'),
+        ('Payout', 'Payout')
+    ]
+
+    service_type = models.CharField(max_length=20, choices=SERVICE_TYPES)  # AEPS, Mini Statement, Aadhaar Pay, Payout
+    slab_min = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)  # Minimum amount for this slab
+    slab_max = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)  # Maximum amount for this slab
+
+    # Commission fields (for AEPS, Mini Statement, Aadhaar Pay)
+    retailer_commission = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
+    distributor_commission = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
+    master_distributor_commission = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
+
+    # Flag for percentage-based commissions (e.g., Aadhaar Pay)
+    is_percentage = models.BooleanField(default=False)  # True for percentage-based (like Aadhaar Pay)
+
+    # For Payout (flat charges)
+    flat_charge = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.service_type} Slab {self.slab_min}-{self.slab_max}"
+
+
+class PaySprintCommissionTxn(models.Model):
+    userAccount = models.ForeignKey(UserAccount, verbose_name=_("Linked User"), on_delete=models.CASCADE)
+    amount = models.CharField(_("Amount"), max_length=500, blank=True)
+    txn_status = models.CharField(_("Txn Status"), max_length=50, blank=True)
+    desc = models.CharField(_("Commission Description"), max_length=50)
+    agent_name = models.CharField(_("Agent Name"), max_length=500, blank=True)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.userAccount.username
 
 
 # signals

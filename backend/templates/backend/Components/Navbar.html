@@ -45,6 +45,14 @@
                             </span> 
                         </span>
                     </li>
+                    <li class="nav-item dropdown d-md-flex d-none">
+                        <span class="text-white btn btn-danger btn-sm" id="refreshBtn2">
+                            <i class="mdi mdi-refresh mb-0 text-white"></i>
+                            <span id="wallet2Balance">
+                                Wallet 2 : {{ wallet2_balance }}
+                            </span>
+                        </span>
+                    </li>
                     {% endif %}
                     
                     <li class="nav-item nav-profile dropdown">
@@ -130,6 +138,7 @@
                             <li class="nav-item"><a class="nav-link fw-bold" href="{% url "AdminTxnStatus" %}">Txn Status</a></li>
                             <li class="nav-item"><a class="nav-link fw-bold" href="{% url "AdminChangeUserPassword" %}">User Password</a></li>
                             {% comment %} <li class="nav-item"><a class="nav-link fw-bold" href="{% url "vpa_verification" %}">VPA</a></li> {% endcomment %}
+                            <li class="nav-item"><a class="nav-link fw-bold" href="{% url "update_charges_paysprint" %}">Update Commission Charges</a></li>
                         </ul>
                     </div>
                 </li>
@@ -357,11 +366,13 @@
                             <li class="nav-item"><a class="nav-link fw-bold" href="{% url "pan_verification_report" %}">Pan Verification Report</a></li>
                             <li class="nav-item"><a class="nav-link fw-bold" href="{% url "bank_verification_report" %}">Bank Verification Report</a></li>
                             <li class="nav-item"><a class="nav-link fw-bold" href="{% url "adhaar_verification_report" %}">Adhaar Verification Report</a></li>
-                            <li class="nav-item"><a class="nav-link fw-bold" href="{% url "wallet_report" %}">Wallet Report</a></li>
+                            <li class="nav-item"><a class="nav-link fw-bold" href="{% url "wallet_report" %}">Wallet 1 Report</a></li>
+                            <li class="nav-item"><a class="nav-link fw-bold" href="{% url "wallet2_report" %}">Wallet 2 Report</a></li>
                             <li class="nav-item"><a class="nav-link fw-bold" href="{% url "payout_report" %}">Payout Report</a></li>
                             <li class="nav-item"><a class="nav-link fw-bold" href="{% url "payout_report_paysprint" %}">Payout Report 2</a></li>
                             <li class="nav-item"><a class="nav-link fw-bold" href="{% url "bbps_report" %}">BBPS Report</a></li>
                             <li class="nav-item"><a class="nav-link fw-bold" href="{% url "commission_report" %}">Commission Report</a></li>
+                            <li class="nav-item"><a class="nav-link fw-bold" href="{% url "commission_report_paysprint" %}">Commission Report (Wallet 2)</a></li>
                             <li class="nav-item"><a class="nav-link fw-bold" href="{% url "credit_card_report" %}">Credit Card Report</a></li>
                         </ul>
                     </div>

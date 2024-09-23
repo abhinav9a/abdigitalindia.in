@@ -12,8 +12,9 @@ urlpatterns = [
 
     # QR Payment Service Urls
     path('activate-qr-payment', view_services.activate_qr_payment, name='activate_qr_payment'),
-    path('recharge-wallet', view_services.recharge_wallet, name='recharge_wallet'),
+    path('recharge-wallet', view_services.recharge_wallet, name='recharge_wallet'),  # Eko
     path('wallet-report', view_services.wallet_report, name='wallet_report'),
+    path('wallet-2-report', view_services.wallet2_report, name='wallet2_report'),
     path('get_config_info', view_services.get_config_info, name='get_config_info'),
 
     # AEPS Service Urls
@@ -22,6 +23,7 @@ urlpatterns = [
     path('aeps-report', view_services.aeps_report, name='aeps_report'),
 
     # AEPS 2 (PaySprint)
+    path('update-charges/', view_admins.update_charges, name='update_charges_paysprint'),
     path('aeps-wallet-2', view_paysprint_services.user_onboarding,  name='onboarding_user_paysprint'),
     path('aeps-wallet-2-status', view_paysprint_services.user_onboarding_status,  name='onboarding_user_status_paysprint'),
     path('balance-enquiry', view_paysprint_services.balance_enquiry,  name='balance_enquiry_paysprint'),
@@ -32,6 +34,7 @@ urlpatterns = [
     path('aeps-report-2', view_paysprint_services.aeps_report, name='aeps_report_paysprint'),
     # API Callback Views
     path('callback', api_views.pay_sprint_onboarding_callback, name='onboarding_callback'),
+    path('test', view_paysprint_services.test, name='test'),
 
     # DMT
     # if customer exists
@@ -69,6 +72,7 @@ urlpatterns = [
     path('adhaar-verification-report', view_services.adhaar_verification_report, name='adhaar_verification_report'),
 
     path('commission-report', view_services.commission_report, name='commission_report'),
+    path('commission-report-2', view_paysprint_services.wallet2_commission_report, name='commission_report_paysprint'),
 
 
     # Auth Pages
@@ -81,6 +85,7 @@ urlpatterns = [
     path('get-services', view_services.get_services, name='getServices'),
     path('get-user-services', view_services.get_user_services, name='userServiceInquiry'),
     path('reload-wallet', view_services.reload_wallet, name='reload_wallet'),
+    path('reload-wallet2', view_services.reload_wallet2, name='reload_wallet2'),
     path('import_banks_from_excel', view_services.import_banks_from_excel, name='import_banks_from_excel'),
 
     # BBPS Urls
@@ -113,6 +118,7 @@ urlpatterns = [
     path('explore-aeps-report/<int:id>', view_admins.AdminExploreAepsReport, name='AdminExploreAepsReport'), #admin, md, d only to view user's AEPS report
     path('explore-dmt-report/<int:id>', view_admins.AdminExploreDmtReport, name='AdminExploreDmtReport'), #admin, md, d only to view user's DMT report
     path('explore-wallet-report/<int:id>', view_admins.AdminExploreWalletReport, name='AdminExploreWalletReport'), #admin, md, d only to view user's Wallet report
+    path('explore-wallet-2-report/<int:id>', view_admins.AdminExploreWallet2Report, name='AdminExploreWallet2Report'), #admin, md, d only to view user's Wallet 2 report
     path('explore-pan-verification-report/<int:id>', view_admins.AdminExplorePanVerificationReport, name='AdminExplorePanVerificationReport'), #admin, md, d only to view user's Pan Verification report
     path('explore-bank-verification-report/<int:id>', view_admins.AdminExploreBankVerificationReport, name='AdminExploreBankVerificationReport'), #admin, md, d only to view user's Bank Verification report
     path('explore-payout-report/<int:id>', view_admins.AdminExplorePayoutReport, name='AdminExplorePayoutReport'), #admin, md, d only to view user's Payout report

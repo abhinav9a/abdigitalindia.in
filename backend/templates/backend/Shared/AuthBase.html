@@ -99,7 +99,25 @@
 				error: function(e) {console.log(e)}
 				});
 		  	});
+
+		  	$("#refreshBtn2").click(function() {
+				$('#wallet2Balance').text('Refreshing...')
+				$.ajax({
+					type: "POST",
+					url: '{% url "reload_wallet2" %}',
+					headers: {"X-CSRFToken": '{{ csrf_token }}'},
+					success: function(response) {
+						if (response.success) {
+							$('#wallet2Balance').text(`Wallet 2: ${response.balance.wallet2_balance}`)
+						} else {
+							$('#wallet2Balance').text(response.message)
+						}
+				},
+				error: function(e) {console.log(e)}
+				});
+		  	});
 		});
+
 	</script>
 
 	<script src="/static/backendAssets/vendors/base/vendor.bundle.base.js"></script>
