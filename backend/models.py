@@ -117,6 +117,8 @@ class Wallet(models.Model):
 class Wallet2(models.Model):
     userAccount = models.OneToOneField(UserAccount, on_delete=models.CASCADE)
     balance = models.DecimalField(max_digits=10, decimal_places=2, default=0.0)
+    is_hold = models.BooleanField(default=False)
+    hold_reason = models.TextField(null=True, blank=True)
 
     def __str__(self):
         return self.userAccount.username

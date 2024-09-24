@@ -12,7 +12,7 @@ from decimal import Decimal
 from django.utils import timezone
 from backend.utils import (is_admin_user, generate_unique_id, is_kyc_completed, is_user_onboard,
                            is_master_distributor_access, is_distributor_access, generate_platform_id, generate_key,
-                           update_wallet)
+                           update_wallet, update_wallet2_hold_status)
 from core.decorators import transaction_required
 from django.http import JsonResponse
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
@@ -83,40 +83,65 @@ def AdminExplorePendingKyc(request, id):
 @transaction_required
 def AdminWalletAction(request):
     if request.method == 'POST':
+        actionSelected = request.POST.get('actionSelected')
         actionType = request.POST.get('actionType')
         walletType = request.POST.get('walletType')
         userType = request.POST.get('userType')
         username = request.POST.get('username').lower()
-        txnid = request.POST.get('txnid')
-        amount = Decimal(request.POST.get('amount'))
-        description = request.POST.get('description')
 
-        # Check if any required fields are None
-        if None in {actionType, walletType, userType, username, txnid, amount, description}:
-            messages.error(request, 'All fields are required.', extra_tags='danger')
+        if actionSelected == 'add_deduct':
+            txnid = request.POST.get('txnid')
+            amount = Decimal(request.POST.get('amount'))
+            description = request.POST.get('description')
+
+            # Check if any required fields are None
+            if None in {actionType, walletType, userType, username, txnid, amount, description}:
+                messages.error(request, 'All fields are required.', extra_tags='danger')
+                return redirect('AdminWalletAction')
+
+            try:
+                # Check if the user exists
+                user_account = UserAccount.objects.get(userType=userType, username=username)
+                wallet = None
+
+                if walletType == "wallet1":
+                    wallet = Wallet.objects.get(userAccount=user_account)
+                elif walletType == "wallet2":
+                    wallet = Wallet2.objects.get(userAccount=user_account)
+
+                # Update wallet and create transaction
+                update_wallet(wallet, amount, txnid, description, actionType)
+
+                messages.success(request, message=f'{actionType} Action for {username} Successful.', extra_tags='success')
+
+            except UserAccount.DoesNotExist:
+                messages.error(request, message='User Not Found, Please Check Details', extra_tags='danger')
+            except Wallet.DoesNotExist:
+                messages.error(request, message='User Wallet Not Found', extra_tags='danger')
             return redirect('AdminWalletAction')
 
-        try:
-            # Check if the user exists
-            user_account = UserAccount.objects.get(userType=userType, username=username)
-            wallet = None
-
-            if walletType == "wallet1":
-                wallet = Wallet.objects.get(userAccount=user_account)
-            elif walletType == "wallet2":
+        elif actionSelected == 'hold_unhold':
+            reason = request.POST.get('holdReason')
+            try:
+                # Check if the user exists
+                user_account = UserAccount.objects.get(userType=userType, username=username)
                 wallet = Wallet2.objects.get(userAccount=user_account)
 
-            # Update wallet and create transaction
-            update_wallet(wallet, amount, txnid, description, actionType)
+                # Update wallet 2 Hold status
+                if actionType == 'Hold':
+                    update_wallet2_hold_status(wallet, True, reason)
+                elif actionType == 'UnHold':
+                    update_wallet2_hold_status(wallet, False, reason)
 
-            messages.success(request, message=f'{actionType} Action for {username} Successful.', extra_tags='success')
+                messages.success(request, message=f'{actionType} Action for {username} Successful.', extra_tags='success')
 
-        except UserAccount.DoesNotExist:
-            messages.error(request, message='User Not Found, Please Check Details', extra_tags='danger')
-        except Wallet.DoesNotExist:
-            messages.error(request, message='User Wallet Not Found', extra_tags='danger')
+            except UserAccount.DoesNotExist:
+                messages.error(request, message='User Not Found, Please Check Details', extra_tags='danger')
+            except Wallet.DoesNotExist:
+                messages.error(request, message='User Wallet Not Found', extra_tags='danger')
 
-        return redirect('AdminWalletAction')
+            return redirect('AdminWalletAction')
+
 
     return render(request, 'backend/Admin/AdminWalletAction.html')
 

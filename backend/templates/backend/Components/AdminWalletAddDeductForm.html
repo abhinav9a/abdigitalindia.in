@@ -1,0 +1,69 @@
+<form id="add-deduct-form" action="{% url 'AdminWalletAction' %}" method="post">
+    {% csrf_token %}
+    <input type="hidden" name="actionSelected" value="add_deduct">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-group">
+                <label for="addWallet">Add to wallet</label>
+                <input type="radio" name="actionType" value="addWallet" id="addWallet" checked>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-group">
+                <label for="deductWallet">Deduct from wallet</label>
+                <input type="radio" name="actionType" value="deductWallet" id="deductWallet">
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-group">
+                <label for="walletType">Wallet</label>
+                <div class="select-wrapper">
+                    <select name="walletType" class="form-control form-control-lg custom-select" id="walletType" required>
+                        <option value="">Select Wallet ...</option>
+                        <option value="wallet1">Wallet 1</option>
+                        <option value="wallet2">Wallet 2</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-group">
+                <label for="userType">User Type</label>
+                <div class="select-wrapper">
+                    <select name="userType" class="form-control form-control-lg" id="userType" required>
+                        <option value="Admin">Admin</option>
+                        <option value="Retailer">Retailer</option>
+                        <option value="Distributor">Distributor</option>
+                        <option value="Master Distributor">Master Distributor</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" class="form-control" name="username" id="username" onkeyup="fetchUser(event)" required>
+                <span id="user_status"></span>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-group">
+                <label for="txnid">Transaction ID</label>
+                <input type="text" class="form-control" name="txnid" id="txnid" required>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-group">
+                <label for="amount">Amount in Rs.</label>
+                <input type="text" class="form-control" name="amount" id="amount" required>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-group">
+                <label for="description">Description</label>
+                <input type="text" class="form-control" name="description" id="description" required>
+            </div>
+        </div>
+    </div>
+    <button type="submit" class="btn btn-primary mb-2">Submit</button>
+</form>

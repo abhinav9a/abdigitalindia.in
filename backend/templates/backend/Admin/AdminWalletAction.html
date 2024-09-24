@@ -5,17 +5,14 @@
     .divider-text {
         position: relative;
         text-align: center;
-        margin-top: 15px;
-        margin-bottom: 15px;
+        margin: 15px 0;
     }
-
     .divider-text span {
         padding: 7px;
         font-size: 12px;
         position: relative;
         z-index: 2;
     }
-
     .divider-text:after {
         content: "";
         position: absolute;
@@ -25,20 +22,9 @@
         left: 0;
         z-index: 1;
     }
-
-    #walletType, #userType {
-        background-color: #ffffff;
-        padding: 16px;
-        color: #000000;
-        appearance: none;
-        -webkit-appearance: none;
-        -moz-appearance: none;
-    }
-
     .select-wrapper {
         position: relative;
     }
-
     .select-wrapper::after {
         content: "\25BC";
         font-size: 14px;
@@ -48,124 +34,121 @@
         position: absolute;
         pointer-events: none;
     }
+    #walletType, #userType, #holdWalletType, .form-select {
+        background-color: #ffffff;
+        padding: 16px;
+        color: #000000;
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        width: 100%;
+        font-size: 1rem;
+        line-height: 1.5;
+        border: 1px solid #ced4da;
+        border-radius: 0.25rem;
+        transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    }
+    .action-selector {
+        margin-bottom: 2rem;
+    }
 </style>
 
 <div class="row">
     <div class="col-lg-6 mx-auto grid-margin stretch-card">
         <div class="card">
             <div class="card-body">
-                <h4 class="card-title">Recharge Wallet for your users</h4>
+                <h4 class="card-title">Wallet Management</h4>
                 {% for message in messages %}
-                <p class="text-{{message.extra_tags}}">{{message}}</p>
-                {% endfor %}
-                <p class="card-description">
-                    Please fill correct details.
-                </p>
+				    <div class="alert alert-{{ message.extra_tags }}">{{message}}</div>
+				{% endfor %}
+                <p class="card-description">Please select an action and fill in the correct details.</p>
 
-                <form action="{% url 'AdminWalletAction' %}" method="post">
-                    {% csrf_token %}
-                    <div class="row">
-                        <div class="col-md-12">
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label for="addWallet">Add to wallet</label>
-                                        <input type="radio" name="actionType" value="addWallet" id="addWallet" checked>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label for="deductWallet">Deduct from wallet</label>
-                                        <input type="radio" name="actionType" value="deductWallet" id="deductWallet">
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label for="walletType">Wallet</label>
-                                        <div class="select-wrapper">
-                                            <select name="walletType" class="form-control form-control-lg custom-select" id="walletType" required>
-                                                <option value="">Select Wallet ...</option>
-                                                <option value="wallet1">Wallet 1</option>
-                                                <option value="wallet2">Wallet 2</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label for="userType">User Type</label>
-                                        <div class="select-wrapper">
-                                            <select name="userType" class="form-control form-control-lg" id="userType" required>
-                                                <option value="Admin">Admin</option>
-                                                <option value="Retailer">Retailer</option>
-                                                <option value="Distributor">Distributor</option>
-                                                <option value="Master Distributor">Master Distributor</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label for="username">Username</label>
-                                        <input type="text" class="form-control" name="username" id="username" onkeyup="fetchUser(event)" required>
-                                        <span id="user_status"></span>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label for="txnid">Transaction ID</label>
-                                        <input type="text" class="form-control" name="txnid" id="txnid" required>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label for="amount">Amount in Rs.</label>
-                                        <input type="text" class="form-control" name="amount" id="amount" required>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label for="description">Description</label>
-                                        <input type="text" class="form-control" name="description" id="description"
-                                            required>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <button type="submit" class="btn btn-primary mb-2">Recharge Wallet</button>
-                </form>
+                <div class="action-selector">
+                    <label for="action-select" class="form-label">Select Action:</label>
+                    <select name="action-select" id="action-select" class="form-select" onchange="toggleForms()">
+                        <option value="add_deduct">Add/Deduct Money</option>
+                        <option value="hold_unhold">Hold/Unhold Wallet</option>
+                    </select>
+                </div>
+
+                {% include "backend/Components/AdminWalletAddDeductForm.html" %}
+                {% include "backend/Components/AdminWalletHoldUnholdForm.html" %}
             </div>
         </div>
     </div>
 </div>
 
 <script>
+    function toggleForms() {
+        const selectedAction = document.getElementById('action-select').value;
+        document.getElementById('add-deduct-form').style.display = selectedAction === 'add_deduct' ? 'block' : 'none';
+        document.getElementById('hold-unhold-form').style.display = selectedAction === 'hold_unhold' ? 'block' : 'none';
+    }
+
+    function toggleHoldReasonInput() {
+        const holdWalletChecked = document.getElementById('holdWallet').checked;
+        const reasonContainer = document.getElementById('reason-container');
+        const holdReasonInput = document.getElementById('holdReason');
+
+        if (holdWalletChecked) {
+            reasonContainer.style.display = 'block';
+            holdReasonInput.setAttribute('required', 'required'); // Set required when visible
+        } else {
+            reasonContainer.style.display = 'none';
+            holdReasonInput.removeAttribute('required'); // Remove required when not visible
+        }
+    }
+
     function fetchUser(event) {
-        $('#user_status').empty();
-        const userType = $('#userType').val();
+        const selectedAction = document.getElementById('action-select').value; // Get the selected action
+
+        // Define the appropriate form and status elements based on the selected action
+        let formId, userStatusElement;
+        if (selectedAction === 'add_deduct') {
+            formId = 'add-deduct-form';
+            userStatusElement = '#user_status';
+        } else if (selectedAction === 'hold_unhold') {
+            formId = 'hold-unhold-form';
+            userStatusElement = '#user_status2';
+        }
+
+        // Check if form and elements exist before trying to access their values
+        const usernameField = document.querySelector(`#${formId} #username`);
+        const userTypeField = document.querySelector(`#${formId} #userType`);
+
+        if (!usernameField || !userTypeField) {
+            console.error('Form fields not found. Please check if the form is correctly rendered.');
+            return;
+        }
+
+        const username = usernameField.value;
+        const userType = userTypeField.value;
+
+        // Clear the user status message
+        $(userStatusElement).empty();
+
+        // Perform the AJAX request to fetch the user
         $.ajax({
             type: "GET",
-            url: '{% url "AdminGetUser" %}',
-            data: {'username': event.target.value, 'userType': userType},
-            headers: { "X-CSRFToken": '{{ csrf_token }}' },
+            url: '/user/get-user',
+            data: { 'username': username, 'userType': userType },
+            headers: { "X-CSRFToken": '1XMuzvbZW4AVFKvJ3UrjtJZLreoCQFKKTBza5CZgFo4E5C0nMfcc3XYujizRADUZ' },
             success: function (response) {
                 if (response.success) {
-                    var apiData = response.user;
-                    $('#user_status').empty();
-                    $('#user_status').removeClass('text-danger').text(response.message);
-                    $('#user_status').addClass('text-success').text(response.message);
+                    $(userStatusElement).empty().removeClass('text-danger').addClass('text-success').text(response.message);
                 } else {
-                    $('#user_status').empty();
-                    $('#user_status').addClass('text-danger').text(response.message);
-                    $('#user_status').removeClass('text-success').text(response.message);
+                    $(userStatusElement).empty().removeClass('text-success').addClass('text-danger').text(response.message);
                 }
             },
             error: function (e) {
-                $('#user_status').empty();
-                $('#user_status').text(`Some Error Occurred: ${e.statusText}`);
+                $(userStatusElement).empty().text(`Some Error Occurred: ${e.statusText}`);
             }
         });
     }
+
+
+
+    // Initialize the form visibility
+    toggleForms();
 </script>
 {% endblock main %}
