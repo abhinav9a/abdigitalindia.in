@@ -31,6 +31,10 @@ class PaySprintRoutes(Enum):
     DO_TRANSACTION = f"{PAYSPRINT_BASE_URL}api/v1/service/payout/payout/dotransaction"
     TRANSACTION_STATUS = f"{PAYSPRINT_BASE_URL}api/v1/service/payout/payout/status"
 
+    # Wallet Balance
+    CREDIT_BALANCE = f"{PAYSPRINT_BASE_URL}api/v1/service/balance/balance/mainbalance"
+    DEBIT_BALANCE = f"{PAYSPRINT_BASE_URL}api/v1/service/balance/balance/cashbalance"
+
 DMT_BANK_LIST = [
     {
         "bank_id": 649,
