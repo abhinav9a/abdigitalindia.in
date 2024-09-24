@@ -19,12 +19,13 @@ def get_commission_charge(service_type, amount=None):
 
 def calculate_commission(base_amount=0, commission_rate=0, is_percentage=0):
     if is_percentage:
-        return Decimal(base_amount) * (Decimal(commission_rate) / 100)
+        return Decimal(base_amount) * Decimal(commission_rate)
     return Decimal(commission_rate)
 
 
-def credit_aeps_commission(request, user_id, amount):
+def credit_aeps_commission(request, user_id):
     try:
+        amount = request.POST.get('amount')
         merchant = UserAccount.objects.select_for_update().get(id=user_id)
         merchant_wallet = Wallet2.objects.get(userAccount=merchant)
         if merchant_wallet.is_hold:
@@ -131,8 +132,9 @@ def credit_mini_statement_commission(request, merchant_id):
         return False
 
 
-def debit_aadhaar_pay_charges(request, merchant_id, amount):
+def debit_aadhaar_pay_charges(request, merchant_id):
     try:
+        amount = request.POST.get('amount')
         merchant = UserAccount.objects.select_for_update().get(id=merchant_id)
         merchant_wallet = Wallet2.objects.get(userAccount=merchant)
 
@@ -212,15 +214,83 @@ def debit_payout_charges(request, merchant_id, amount):
         messages.error(request, "Something Went Wrong.", extra_tags="danger")
         return False
 
-# Usage example
-def process_transaction(request, merchant_id, amount, service_type):
-    if service_type == 'AEPS':
-        return credit_aeps_commission(request, merchant_id, amount)
-    elif service_type == 'Mini Statement':
-        return credit_mini_statement_commission(request, merchant_id, amount)
-    elif service_type == 'Aadhaar Pay':
-        return debit_aadhaar_pay_charges(request, merchant_id, amount)
-    elif service_type == 'Payout':
-        return debit_payout_charges(request, merchant_id, amount)
-    else:
-        raise ValueError(f"Invalid service type: {service_type}")
+
+def get_total_commission(request, user, amount, service_type):
+    try:
+        commission_charge = Decimal(0)
+        total_commission = Decimal(0)
+
+        if service_type == 'Aadhaar Pay':
+            commission_charge = get_commission_charge(service_type)
+        else:
+            commission_charge = get_commission_charge(service_type, amount)
+        if not commission_charge:
+            messages.error(request, f"No commission charge found for {service_type} and amount {amount}.", extra_tags="danger")
+            return Decimal(0)
+
+
+        if service_type == 'AEPS':
+            if user.userType == 'Retailer':
+                retailer_commission = calculate_commission(amount, commission_charge.retailer_commission, commission_charge.is_percentage)
+                total_commission += retailer_commission
+
+                if user.userManager:
+                    distributor = UserAccount.objects.get(id=user.userManager)
+                    if distributor.userType == 'Distributor':
+                        distributor_commission = calculate_commission(amount, commission_charge.distributor_commission, commission_charge.is_percentage)
+                        total_commission += distributor_commission
+
+                        if distributor.userManager:
+                            master_distributor = UserAccount.objects.get(id=distributor.userManager)
+                            if master_distributor.userType == 'Master Distributor':
+                                master_distributor_commission = calculate_commission(amount, commission_charge.master_distributor_commission, commission_charge.is_percentage)
+                                total_commission += master_distributor_commission
+                    elif distributor.userType == 'Master Distributor':
+                        master_distributor_commission = calculate_commission(amount, commission_charge.master_distributor_commission, commission_charge.is_percentage)
+                        total_commission += master_distributor_commission
+
+            elif user.userType == 'Distributor':
+                distributor_commission = calculate_commission(amount, commission_charge.distributor_commission, commission_charge.is_percentage)
+                total_commission += distributor_commission
+
+                if user.userManager:
+                    master_distributor = UserAccount.objects.get(id=user.userManager)
+                    if master_distributor.userType == 'Master Distributor':
+                        master_distributor_commission = calculate_commission(amount, commission_charge.master_distributor_commission, commission_charge.is_percentage)
+                        total_commission += master_distributor_commission
+
+            elif user.userType == 'Master Distributor':
+                master_distributor_commission = calculate_commission(amount, commission_charge.master_distributor_commission, commission_charge.is_percentage)
+                total_commission += master_distributor_commission
+
+            else:
+                messages.error(request, f"Invalid User type: {user.userType}", extra_tags="danger")
+                return Decimal(0)
+        elif service_type == 'Mini Statement':
+            retailer_commission = calculate_commission(amount, commission_charge.retailer_commission, commission_charge.is_percentage)
+            total_commission += retailer_commission
+        elif service_type == 'Aadhaar Pay':
+            if user.userType == 'Retailer':
+                retailer_commission = calculate_commission(amount, commission_charge.retailer_commission, commission_charge.is_percentage)
+                total_commission += retailer_commission
+            elif user.userType == 'Distributor':
+                distributor_commission = calculate_commission(amount, commission_charge.distributor_commission, commission_charge.is_percentage)
+                total_commission += distributor_commission
+            elif user.userType == 'Master Distributor':
+                master_distributor_commission = calculate_commission(amount, commission_charge.master_distributor_commission, commission_charge.is_percentage)
+                total_commission += master_distributor_commission
+            else:
+                messages.error(request, f"Invalid User type: {user.userType}", extra_tags="danger")
+                return Decimal(0)
+        elif service_type == 'Payout':
+            total_commission += commission_charge.flat_charge
+
+        return total_commission
+
+    except UserAccount.DoesNotExist:
+        messages.error(request, "User Not Found.", extra_tags="danger")
+        return Decimal(0)
+    except Exception as e:
+        logger.error(f"Error occurred in {__name__}: {str(e)}", exc_info=True)
+        messages.error(request, "Something Went Wrong.", extra_tags="danger")
+        return Decimal(0)

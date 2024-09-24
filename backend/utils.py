@@ -287,7 +287,7 @@ def get_pay_sprint_common_payload(request, user):
     return data
 
 
-def get_pay_sprint_payload(request, user, transaction_type, merchant_auth_txn_id = None):
+def get_pay_sprint_payload(request, user, transaction_type, merchant_auth_txn_id = None, amount = None):
     data = get_pay_sprint_common_payload(request, user)
     data.update({
         "nationalbankidentification": request.POST.get("bank_identifier"),
@@ -297,7 +297,7 @@ def get_pay_sprint_payload(request, user, transaction_type, merchant_auth_txn_id
         "is_iris": "No"
     })
     if transaction_type in ["CW", "M", "FM", "IM"]:
-        data["amount"] = request.POST.get("amount")
+        data["amount"] = amount
     if transaction_type == "CW":
         data["MerAuthTxnId"] = merchant_auth_txn_id
     return data

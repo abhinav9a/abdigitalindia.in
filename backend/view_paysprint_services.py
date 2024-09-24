@@ -28,7 +28,8 @@ from backend.utils import (
     update_payout_statuses,
     get_aadhaar_pay_txn_status,
 )
-from backend.utils_paysprint import credit_aeps_commission, credit_mini_statement_commission, debit_aadhaar_pay_charges,debit_payout_charges
+from backend.utils_paysprint import (credit_aeps_commission, credit_mini_statement_commission, debit_aadhaar_pay_charges,
+                                     debit_payout_charges, get_total_commission)
 from backend.models import (
     PaySprintMerchantAuth,
     PaySprintAEPSTxnDetail,
@@ -255,6 +256,7 @@ def balance_enquiry(request):
 @user_passes_test(is_user_registered_with_paysprint, login_url="onboarding_user_paysprint")
 @user_passes_test(is_merchant_bank_registered, login_url="merchant_registration_with_bank_paysprint")
 @login_required(login_url="user_login")
+@transaction_required
 def cash_withdrawal(request):
     user = UserAccount.objects.get(username=request.user)
     bank_list = get_pay_sprint_aeps_bank_list()
@@ -264,7 +266,7 @@ def cash_withdrawal(request):
         try:
             aeps_bank = request.POST.get('aeps_bank')
             # Credit AEPS commission before making the request
-            if not credit_mini_statement_commission(request, user.id):
+            if not credit_aeps_commission(request, user.id):
                 transaction.set_rollback(True)
                 return redirect("cash_withdrawl_paysprint")
 
@@ -317,7 +319,10 @@ def process_bank3_withdrawal(request, user):
     return redirect("cash_withdrawl_paysprint")
 
 def perform_withdrawal(request, user, merchant_auth_txn_id):
-    data = get_pay_sprint_payload(request, user, "CW", merchant_auth_txn_id)
+    amount = float(request.POST.get("amount"))
+    commission = get_total_commission(request, user, amount, "AEPS")
+    amount += float(commission)
+    data = get_pay_sprint_payload(request, user, "CW", merchant_auth_txn_id, amount)
     response = make_post_request(url=PaySprintRoutes.CASH_WITHDRAWAL.value, data=data)
 
     if response.status_code == 200:
@@ -428,16 +433,21 @@ def mini_statement(request):
 @login_required(login_url="user_login")
 @user_passes_test(is_kyc_completed, login_url="unauthorized")
 @user_passes_test(is_user_registered_with_paysprint, login_url="onboarding_user_paysprint")
+@transaction_required
 def aadhar_pay(request):
     user = UserAccount.objects.get(username=request.user)
     bank_list = get_pay_sprint_aeps_bank_list()
-    heading = "Aadhar Pay"
+    heading = "Aadhaar Pay"
     if request.method == "POST":
         # Debit Aadhaar Pay charges before making the request
-        if not debit_aadhaar_pay_charges(request, user.id, request.POST.get("amount")):
+        if not debit_aadhaar_pay_charges(request, user.id):
             transaction.set_rollback(True)
             return redirect('aadhar_pay_paysprint')
-        data = get_pay_sprint_payload(request, user, "M")  # M OR FM OR IM
+
+        amount = float(request.POST.get("amount"))
+        commission = get_total_commission(request, user, amount, heading)
+        amount += float(commission)
+        data = get_pay_sprint_payload(request, user, "M", amount)  # M OR FM OR IM
         response = make_post_request(url=PaySprintRoutes.AADHAR_PAY.value, data=data)
         logger.error(f"Response Body: {response.json()}")
         if response.status_code == 200:
@@ -704,6 +714,7 @@ def merchant_authenticity_bank_3_api(request, user):
 @login_required(login_url="user_login")
 @user_passes_test(is_kyc_completed, login_url="unauthorized")
 @user_passes_test(is_user_registered_with_paysprint, login_url="onboarding_user_paysprint")
+@transaction_required
 def do_transaction(request):
     userObj = UserAccount.objects.get(username=request.user)
     bank_list = get_payout_bank_list(merchant_id=userObj.platform_id)
@@ -722,12 +733,16 @@ def do_transaction(request):
         ref_id = generate_unique_id()
         try:
             # Debit Payout charges before making the request
-            if not debit_aadhaar_pay_charges(request, userObj.id, request.POST.get("amount")):
+            if not debit_payout_charges(request, userObj.id, request.POST.get("amount")):
                 transaction.set_rollback(True)
                 return redirect("do_transaction")
+            amount = float(request.POST.get("amount"))
+            commission = get_total_commission(request, userObj, amount, "Payout")
+            amount += float(commission)
+            logger.error(f"amount: {amount}")
             data = {
                 "bene_id": request.POST.get("bene_id"),
-                "amount": float(request.POST.get("amount")),
+                "amount": float(amount),
                 "refid": ref_id,
                 "mode": request.POST.get("mode"),
             }
@@ -785,6 +800,7 @@ def do_transaction(request):
             return redirect("do_transaction")
         except Exception as e:
             messages.error(request, f"Internal server error: {e}")
+            logger.error(f"error in {__name__}: {e}", exc_info=True)
             transaction.set_rollback(True)
             return redirect("do_transaction")
 
