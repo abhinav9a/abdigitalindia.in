@@ -27,6 +27,9 @@ def credit_aeps_commission(request, user_id, amount):
     try:
         merchant = UserAccount.objects.select_for_update().get(id=user_id)
         merchant_wallet = Wallet2.objects.get(userAccount=merchant)
+        if merchant_wallet.is_hold:
+            messages.error(request, f"Wallet is on hold. Reason: {merchant_wallet.hold_reason}.", extra_tags="danger")
+            return False
 
         # Add the amount to the merchant's wallet
         merchant_wallet.balance += Decimal(amount)
@@ -57,7 +60,7 @@ def credit_aeps_commission(request, user_id, amount):
                         if master_distributor.userType == 'Master Distributor':
                             master_distributor_commission = calculate_commission(amount, commission_charge.master_distributor_commission, commission_charge.is_percentage)
                             add_commission(master_distributor, master_distributor_commission, "AePS Commission", merchant.username)
-                elif distributor.userType == 'Master Distributor' or distributor.userType == 'Admin':
+                elif distributor.userType == 'Master Distributor':
                     master_distributor_commission = calculate_commission(amount, commission_charge.master_distributor_commission, commission_charge.is_percentage)
                     add_commission(distributor, master_distributor_commission, "AePS Commission", merchant.username)
 
@@ -67,11 +70,11 @@ def credit_aeps_commission(request, user_id, amount):
 
             if merchant.userManager:
                 master_distributor = UserAccount.objects.get(id=merchant.userManager)
-                if master_distributor.userType == 'Master Distributor' or master_distributor.userType == 'Admin':
+                if master_distributor.userType == 'Master Distributor':
                     master_distributor_commission = calculate_commission(amount, commission_charge.master_distributor_commission, commission_charge.is_percentage)
                     add_commission(master_distributor, master_distributor_commission, "AePS Commission", merchant.username)
 
-        elif merchant.userType in ['Master Distributor', 'Admin']:
+        elif merchant.userType == 'Master Distributor':
             master_distributor_commission = calculate_commission(amount, commission_charge.master_distributor_commission, commission_charge.is_percentage)
             add_commission(merchant, master_distributor_commission, "AePS Commission", "Self")
 
@@ -97,6 +100,10 @@ def credit_mini_statement_commission(request, merchant_id):
     try:
         merchant = UserAccount.objects.select_for_update().get(id=merchant_id)
         merchant_wallet = Wallet2.objects.get(userAccount=merchant)
+
+        if merchant_wallet.is_hold:
+            messages.error(request, f"Wallet is on hold. Reason: {merchant_wallet.hold_reason}.", extra_tags="danger")
+            return False
 
         # Get the appropriate commission charge
         commission_charge = get_commission_charge('Mini Statement')
@@ -128,6 +135,10 @@ def debit_aadhaar_pay_charges(request, merchant_id, amount):
     try:
         merchant = UserAccount.objects.select_for_update().get(id=merchant_id)
         merchant_wallet = Wallet2.objects.get(userAccount=merchant)
+
+        if merchant_wallet.is_hold:
+            messages.error(request, f"Wallet is on hold. Reason: {merchant_wallet.hold_reason}.", extra_tags="danger")
+            return False
 
         # Get the appropriate commission charge
         commission_charge = get_commission_charge('Aadhaar Pay')
@@ -165,6 +176,10 @@ def debit_payout_charges(request, merchant_id, amount):
     try:
         merchant = UserAccount.objects.select_for_update().get(id=merchant_id)
         merchant_wallet = Wallet2.objects.get(userAccount=merchant)
+
+        if merchant_wallet.is_hold:
+            messages.error(request, f"Wallet is on hold. Reason: {merchant_wallet.hold_reason}.", extra_tags="danger")
+            return False
 
         # Get the appropriate commission charge
         commission_charge = get_commission_charge('Payout', amount)
