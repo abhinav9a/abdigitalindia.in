@@ -320,9 +320,9 @@ def process_bank3_withdrawal(request, user):
 
 def perform_withdrawal(request, user, merchant_auth_txn_id):
     amount = float(request.POST.get("amount"))
-    commission = get_total_commission(request, user, amount, "AEPS")
-    amount += float(commission)
-    data = get_pay_sprint_payload(request, user, "CW", merchant_auth_txn_id, amount)
+    # commission = get_total_commission(request, user, amount, "AEPS")
+    # amount += float(commission)
+    data = get_pay_sprint_payload(request, user, "CW", merchant_auth_txn_id)
     response = make_post_request(url=PaySprintRoutes.CASH_WITHDRAWAL.value, data=data)
 
     if response.status_code == 200:
@@ -445,9 +445,9 @@ def aadhar_pay(request):
             return redirect('aadhar_pay_paysprint')
 
         amount = float(request.POST.get("amount"))
-        commission = get_total_commission(request, user, amount, heading)
-        amount += float(commission)
-        data = get_pay_sprint_payload(request, user, "M", amount)  # M OR FM OR IM
+        # commission = get_total_commission(request, user, amount, heading)
+        # amount += float(commission)
+        data = get_pay_sprint_payload(request, user, "M")  # M OR FM OR IM
         response = make_post_request(url=PaySprintRoutes.AADHAR_PAY.value, data=data)
         logger.error(f"Response Body: {response.json()}")
         if response.status_code == 200:
@@ -737,12 +737,12 @@ def do_transaction(request):
                 transaction.set_rollback(True)
                 return redirect("do_transaction")
             amount = float(request.POST.get("amount"))
-            commission = get_total_commission(request, userObj, amount, "Payout")
-            amount += float(commission)
-            logger.error(f"amount: {amount}")
+            # commission = get_total_commission(request, userObj, amount, "Payout")
+            # amount += float(commission)
+            # logger.error(f"amount: {amount}")
             data = {
                 "bene_id": request.POST.get("bene_id"),
-                "amount": float(amount),
+                "amount": amount,
                 "refid": ref_id,
                 "mode": request.POST.get("mode"),
             }
