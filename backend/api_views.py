@@ -450,8 +450,8 @@ def pay_sprint_onboarding_callback(request):
                 wallet.balance -= amount_decimal
                 wallet.save()
 
-                user.pay_sprint_ref_no = request_id
-                user.save()
+                # user.pay_sprint_ref_no = request_id
+                # user.save()
 
                 return Response({"status":200,"message":"Transaction completed successfully"}, status=200)
 
