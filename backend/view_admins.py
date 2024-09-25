@@ -118,6 +118,8 @@ def AdminWalletAction(request):
                 messages.error(request, message='User Not Found, Please Check Details', extra_tags='danger')
             except Wallet.DoesNotExist:
                 messages.error(request, message='User Wallet Not Found', extra_tags='danger')
+            except Wallet2.DoesNotExist:
+                messages.error(request, message='User Wallet Not Found', extra_tags='danger')
             return redirect('AdminWalletAction')
 
         elif actionSelected == 'hold_unhold':
@@ -138,6 +140,8 @@ def AdminWalletAction(request):
             except UserAccount.DoesNotExist:
                 messages.error(request, message='User Not Found, Please Check Details', extra_tags='danger')
             except Wallet.DoesNotExist:
+                messages.error(request, message='User Wallet Not Found', extra_tags='danger')
+            except Wallet2.DoesNotExist:
                 messages.error(request, message='User Wallet Not Found', extra_tags='danger')
 
             return redirect('AdminWalletAction')

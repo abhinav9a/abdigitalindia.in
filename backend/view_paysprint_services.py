@@ -33,7 +33,7 @@ from backend.utils_paysprint import (credit_aeps_commission, credit_mini_stateme
 from backend.models import (
     PaySprintMerchantAuth,
     PaySprintAEPSTxnDetail,
-    Wallet,
+    Wallet2,
     PaySprintPayout,
     PaySprintPayoutBankAccountDetails, PaySprintCommissionTxn
 )
@@ -56,6 +56,14 @@ def user_onboarding(request):
     try:
         redirect_url = None
         if request.method == "POST":
+            wallet = Wallet2.objects.get(userAccount=onboarding_details)
+            if wallet.is_hold:
+                messages.error(request, f"Wallet is on hold. Reason: {wallet.hold_reason}.", extra_tags="danger")
+                return redirect("onboarding_user_paysprint")
+            elif wallet.balance < 10:
+                messages.error(request, "Insufficient balance to complete onboarding.", extra_tags="danger")
+                return redirect("onboarding_user_paysprint")
+
             mobile_number = request.POST.get("mobile_number")
             email = request.POST.get("email")
             shop_name = request.POST.get("shop_name")
@@ -101,6 +109,8 @@ def user_onboarding(request):
                 messages.error(
                     request, "An unexpected error occurred. Please try again later."
                 )
+    except Wallet2.DoesNotExist:
+            messages.error(request, message='User Wallet Not Found', extra_tags='danger')
     except Exception as e:
         logger.exception(f"Unexpected error in user_onboarding view. {e}")
         messages.error(request, "An unexpected error occurred. Please try again later.")
