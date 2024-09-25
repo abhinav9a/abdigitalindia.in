@@ -7,7 +7,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from .serializers import QRTxnCallbackByEkoSerializer, AepsTxnCallbackByEkoSerializer, CMSTxnCallbackByEkoSerializer
 from core.models import UserAccount
-from .models import AepsTxnCallbackByEko, Wallet, Commission, CommissionTxn, CMSTxnCallbackByEko
+from .models import AepsTxnCallbackByEko, Wallet, Commission, CommissionTxn, CMSTxnCallbackByEko, Wallet2
 from .utils import generate_key
 import hashlib
 import hmac
@@ -440,7 +440,7 @@ def pay_sprint_onboarding_callback(request):
                 merchant_id = data.get("param").get("merchant_id")
 
                 user = UserAccount.objects.get(platform_id=merchant_id)
-                wallet = Wallet.objects.get(userAccount=user)
+                wallet = Wallet2.objects.get(userAccount=user)
 
                 amount_decimal = Decimal(str(amount))
 

@@ -58,10 +58,10 @@ def user_onboarding(request):
         if request.method == "POST":
             wallet = Wallet2.objects.get(userAccount=onboarding_details)
             if wallet.is_hold:
-                messages.error(request, f"Wallet is on hold. Reason: {wallet.hold_reason}.", extra_tags="danger")
+                messages.error(request, f"Wallet 2 is on hold. Reason: {wallet.hold_reason}.", extra_tags="danger")
                 return redirect("onboarding_user_paysprint")
             elif wallet.balance < 10:
-                messages.error(request, "Insufficient balance to complete onboarding.", extra_tags="danger")
+                messages.error(request, "Insufficient Wallet 2 balance to complete onboarding.", extra_tags="danger")
                 return redirect("onboarding_user_paysprint")
 
             mobile_number = request.POST.get("mobile_number")
