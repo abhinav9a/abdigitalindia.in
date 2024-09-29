@@ -1,34 +1,62 @@
 <script>
+	const RD_SERVICE_PORTS = [11100, 11101, 11102, 11103, 11104, 11105, 11106, 11107, 11108, 11109, 11110, 11111, 11112, 11113, 11114, 11115, 11116, 11117, 11118, 11119, 11120];
+	const RD_SERVICE_PROTOCOLS = ['http', 'https'];
+
+	async function findAvailableRDService() {
+		for (const protocol of RD_SERVICE_PROTOCOLS) {
+			for (const port of RD_SERVICE_PORTS) {
+				const url = `${protocol}://127.0.0.1:${port}`;
+				try {
+					const response = await fetch(url, { method: 'RDSERVICE' });
+					if (response.ok) {
+						return { url, port, protocol };
+					}
+				} catch (error) {
+					console.log(`Port ${port} (${protocol}) is not available`);
+				}
+			}
+		}
+		throw new Error("No available RD Service found");
+	}
+
 	async function Capture() {
 		const XML = '<?xml version="1.0"?><PidOptions ver="1.0"><Opts fCount="1" fType="2" iCount="0" pCount="0" format="0" pidVer="2.0" timeout="10000" posh="UNKNOWN" env="P" /></PidOptions>';
-		const finUrl = "http://127.0.0.1:11100/rd/capture";
 
 		try {
-			const data = await $.ajax({
-				type: "CAPTURE",
-				url: finUrl,
-				data: XML,
-				contentType: "application/xml; charset=utf-8",
-				dataType: "xml", // Specify that we expect XML in response
+			const rdService = await findAvailableRDService();
+			console.log(`Found available RD Service at ${rdService.url}`);
+
+			const finUrl = `${rdService.url}/rd/capture`;
+
+			const response = await fetch(finUrl, {
+				method: 'CAPTURE',
+				body: XML,
+				headers: {
+					'Content-Type': 'application/xml; charset=utf-8',
+				},
 			});
 
-			if (data && data.documentElement) {
-				$("#data").val(new XMLSerializer().serializeToString(data));
-				const errorcode = $(data).find("Resp").attr("errCode");
-				if (errorcode == 0) {
-					alert("Capture successful");
-				} else {
-					alert("Capture failed: " + $(data).find("Resp").attr("errInfo"));
-				}
+			if (!response.ok) {
+				throw new Error(`HTTP error! status: ${response.status}`);
+			}
+
+			const data = await response.text();
+			const parser = new DOMParser();
+			const xmlDoc = parser.parseFromString(data, "text/xml");
+
+			$("#data").val(new XMLSerializer().serializeToString(xmlDoc));
+
+			const errorcode = xmlDoc.querySelector("Resp").getAttribute("errCode");
+			if (errorcode == "0") {
+				alert("Capture successful");
 			} else {
-				console.error("Invalid XML response:", data);
-				$("#data").val("Received invalid data. Please check the console for details.");
-				alert("Capture failed: Received invalid data from the device");
+				const errInfo = xmlDoc.querySelector("Resp").getAttribute("errInfo");
+				alert("Capture failed: " + errInfo);
 			}
 		} catch (error) {
 			console.error("Capture error:", error);
 			$("#data").val("Error during capture. Please check the console for details.");
-			alert("Capture failed: " + (error.statusText || "Unknown error occurred"));
+			alert("Capture failed: " + (error.message || "Unknown error occurred"));
 		}
 	}
 
