@@ -583,6 +583,8 @@ class PaySprintAEPSTxnDetail(models.Model):
         if not self.timestamp:
             # Set the timestamp to the current time in the default time zone
             self.timestamp = timezone.now()
+        if self.amount is None:
+            self.amount = 0.0
 
         super().save(*args, **kwargs)
 
