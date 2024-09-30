@@ -585,6 +585,8 @@ class PaySprintAEPSTxnDetail(models.Model):
             self.timestamp = timezone.now()
         if self.amount is None:
             self.amount = 0.0
+        if self.balance_amount is None:
+            self.balance_amount = 0.0
 
         super().save(*args, **kwargs)
 
