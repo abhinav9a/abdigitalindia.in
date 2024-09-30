@@ -57,7 +57,7 @@ class PaySprintPayoutAdmin(admin.ModelAdmin):
         return "Payouts 2"
 
 class PaySprintAEPSTxnDetailsAdmin(admin.ModelAdmin):
-    list_display = ('id', 'userAccount', 'reference_no', 'amount', 'txn_status', 'service_type', 'timestamp')
+    list_display = ('id', 'userAccount', 'reference_no', 'amount', 'aadhar_no', 'txn_status', 'service_type', 'timestamp')
 
 
 class ServiceStatusAdmin(admin.ModelAdmin):
