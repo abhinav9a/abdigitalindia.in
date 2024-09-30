@@ -349,12 +349,12 @@ def perform_withdrawal(request, user, merchant_auth_txn_id):
             "bank_rrn": response_json.get("bankrrn"),
             "service_type": "2",  # Cash Withdrawal
         }
-        PaySprintAEPSTxnDetail.objects.create(**transaction_data)
+        txn_detail = PaySprintAEPSTxnDetail.objects.create(**transaction_data)
 
         txn_status = check_transaction_status(data.get("referenceno"))
-        txn_details = PaySprintAEPSTxnDetail.objects.get(reference_no=transaction_data['reference_no'])
-        txn_details.txn_status = txn_status
-        txn_details.save()
+        
+        txn_detail.txn_status = txn_status
+        txn_detail.save()
 
         return render(
             request,
