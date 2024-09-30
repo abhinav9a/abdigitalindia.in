@@ -411,7 +411,7 @@ def mini_statement(request):
                 "message": response.get("message"),
                 "ack_no": response.get("ackno"),
                 # 'amount': response.get('amount'),
-                "balance_amount": response.get("balanceamount"),
+                "balance_amount": response.get("balanceamount", 0),
                 "bank_rrn": response.get("bankrrn"),
                 "bank_iin": response.get("bankiin"),
                 "service_type": "4",  # Mini Statement
@@ -467,8 +467,8 @@ def aadhar_pay(request):
                 "userAccount": user,
                 "reference_no": data.get("referenceno"),
                 "ack_no": response.get("ackno"),
-                "amount": response.get("amount"),
-                "balance_amount": response.get("balanceamount"),
+                "amount": response.get("amount", 0),
+                "balance_amount": response.get("balanceamount", 0),
                 "bank_rrn": response.get("bankrrn"),
                 "bank_iin": response.get("bankiin"),
                 "service_type": "1",  # Aadhaar Pay
