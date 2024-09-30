@@ -225,8 +225,11 @@ def balance_enquiry(request):
             #   "errorcode": "00",
             #   "clientrefno": "435678232323"
             # }
+            aadhaar_no = request.POST.get("aadhar_no")
+            masked_aadhaar_no = "XXXXXXXX" + aadhaar_no[-4:] if aadhaar_no and len(aadhaar_no) == 12 and aadhaar_no.isdigit() else "N/A"
             response_data = {
                 "userAccount": user,
+                "aadhaar_no": masked_aadhaar_no,
                 "reference_no": response.get("clientrefno"),
                 "txn_status": response.get("response_code"),
                 "message": response.get("message"),
@@ -337,10 +340,14 @@ def perform_withdrawal(request, user, merchant_auth_txn_id):
 
     if response.status_code == 200:
         response_json = response.json()
-
+        
+        aadhaar_no = request.POST.get("aadhar_no")
+        masked_aadhaar_no = "XXXXXXXX" + aadhaar_no[-4:] if aadhaar_no and len(aadhaar_no) == 12 and aadhaar_no.isdigit() else "N/A"
+    
         # Create Transaction Record
         transaction_data = {
             "userAccount": user,
+            "aadhaar_no": masked_aadhaar_no,
             "reference_no": data.get("referenceno"),
             "txn_status": response_json.get("txnstatus", 2),
             "message": response_json.get("message"),
@@ -404,8 +411,12 @@ def mini_statement(request):
         logger.error(f"Response Body: {response.json()}")
         if response.status_code == 200 and response.json().get("status"):
             response = response.json()
+            aadhaar_no = request.POST.get("aadhar_no")
+            masked_aadhaar_no = "XXXXXXXX" + aadhaar_no[-4:] if aadhaar_no and len(aadhaar_no) == 12 and aadhaar_no.isdigit() else "N/A"
+            
             response_data = {
                 "userAccount": user,
+                "aadhaar_no": masked_aadhaar_no,
                 "reference_no": data.get("referenceno"),
                 "txn_status": response.get("response_code"),
                 "message": response.get("message"),
@@ -463,8 +474,12 @@ def aadhar_pay(request):
         if response.status_code == 200:
             # if True:
             response = response.json()
+            aadhaar_no = request.POST.get("aadhar_no")
+            masked_aadhaar_no = "XXXXXXXX" + aadhaar_no[-4:] if aadhaar_no and len(aadhaar_no) == 12 and aadhaar_no.isdigit() else "N/A"
+            
             response_data = {
                 "userAccount": user,
+                "aadhaar_no": masked_aadhaar_no,
                 "reference_no": data.get("referenceno"),
                 "ack_no": response.get("ackno"),
                 "amount": response.get("amount", 0),

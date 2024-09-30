@@ -568,6 +568,7 @@ class PaySprintAEPSTxnDetail(models.Model):
         Mini_Statement = "4", _("Mini Statement")
 
     userAccount = models.ForeignKey(UserAccount, verbose_name=_("Linked User"), on_delete=models.CASCADE)
+    aadhaar_no = models.CharField(_("Aadhaar No."), max_length=12, default="N/A")
     reference_no = models.CharField(_("Reference No"), max_length=500, blank=True, default="N/A")
     txn_status = models.CharField(max_length=20, choices=Txn_Status.choices, default=Txn_Status.Pending)
     message = models.CharField(_("Message"), max_length=500, blank=True, default="N/A")
@@ -578,6 +579,7 @@ class PaySprintAEPSTxnDetail(models.Model):
     bank_iin = models.CharField(_("bank_iin"), max_length=255, blank=True, default="N/A")
     service_type = models.CharField(max_length=20, choices=Service_Type.choices)
     timestamp = models.DateTimeField(auto_now_add=True)
+
 
     def save(self, *args, **kwargs):
         if not self.timestamp:
