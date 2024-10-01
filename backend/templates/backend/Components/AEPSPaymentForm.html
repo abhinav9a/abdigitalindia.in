@@ -72,7 +72,9 @@
 							<div class="form-group">
 								<label for="data" class="form-label">Fingerprint Data</label>
 								<input type="hidden" id="data" name="data" />
-								<button type="button" class="form-control btn btn-primary me-2 py-3" onclick="captureFingerprint('data')">Capture Fingerprint</button>
+								<button type="button" class="form-control fingerprint" onclick="captureFingerprint('data')">
+									<img class="fingerprint-img" src="/static/assets/img/fingerprint_icon.png" alt="Fingerprint Icon">
+								</button>
 							</div>
 						</div>
 					</div>

@@ -49,3 +49,13 @@
     -webkit-text-stroke: 1px #ee5b5b;
     -webkit-text-fill-color: transparent;
 }
+
+.fingerprint {
+    padding: 0px;
+    border-radius: 50%;
+    width: 64px;
+}
+
+.fingerprint-img {
+    width: 64px;
+}
