@@ -786,6 +786,11 @@ def update_charges(request):
             payout_field = f"payout_{payout_slab.id}"
             payout_slab.flat_charge = request.POST.get(payout_field)
             payout_slab.save()
+        
+        # Onboarding Charges
+        onboarding = PaySprintCommissionCharge.objects.get(service_type='Onboarding')
+        onboarding.flat_charge = request.POST.get("onboarding_charges")
+        onboarding.save()
 
         messages.success(request, "Charges updated successfully!", extra_tags="success")
         return redirect('update_charges_paysprint')
@@ -796,12 +801,14 @@ def update_charges(request):
         mini_statement_commission = PaySprintCommissionCharge.objects.get(service_type='Mini Statement')
         aadhaar_pay_commission = PaySprintCommissionCharge.objects.get(service_type='Aadhaar Pay')
         payout_slabs = PaySprintCommissionCharge.objects.filter(service_type='Payout')
+        onboarding = PaySprintCommissionCharge.objects.get(service_type='Onboarding')
 
         context = {
             'aeps_commissions': aeps_commissions,
             'mini_statement_commission': mini_statement_commission,
             'aadhaar_pay_commission': aadhaar_pay_commission,
-            'payout_slabs': payout_slabs
+            'payout_slabs': payout_slabs,
+            'onboarding': onboarding
         }
 
         return render(request, 'backend/Admin/AdminUpdateChargesPaySprint.html', context)

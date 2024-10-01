@@ -36,7 +36,7 @@ from backend.models import (
     PaySprintAEPSTxnDetail,
     Wallet2,
     PaySprintPayout,
-    PaySprintPayoutBankAccountDetails, PaySprintCommissionTxn
+    PaySprintPayoutBankAccountDetails, PaySprintCommissionTxn, PaySprintCommissionCharge
 )
 from backend.config.consts import (
     PaySprintRoutes,
@@ -58,10 +58,11 @@ def user_onboarding(request):
         redirect_url = None
         if request.method == "POST":
             wallet = Wallet2.objects.get(userAccount=onboarding_details)
+            onboarding_charge = PaySprintCommissionCharge.objects.get(service_type='Onboarding')
             if wallet.is_hold:
                 messages.error(request, f"Wallet 2 is on hold. Reason: {wallet.hold_reason}.", extra_tags="danger")
                 return redirect("onboarding_user_paysprint")
-            elif wallet.balance < 10:
+            elif wallet.balance < onboarding_charge.flat_charge:
                 messages.error(request, "Insufficient Wallet 2 balance to complete onboarding.", extra_tags="danger")
                 return redirect("onboarding_user_paysprint")
 

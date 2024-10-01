@@ -119,7 +119,7 @@
                             </div>
                         </div>
 
-                        <!-- Aadhaar Pay Commission Section -->
+                        <!-- Aadhaar Pay Charges Section -->
                         <div class="col-md-12">
                             <h5 class="section-title">Aadhaar Pay Charges (Percentage)</h5>
                             <table>
@@ -167,6 +167,27 @@
                                     {% endfor %}
                                 </tbody>
                             </table>
+                        </div>
+
+                        <!-- Onboarding Charges Section -->
+                        <div class="col-md-12">
+                            <h5 class="section-title">Onboarding Charges (Flat Charges)</h5>
+                            <div class="form-group col-md-4">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Charge</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>
+                                                <input type="number" name="onboarding_charges" step="0.01" value="{{ onboarding.flat_charge }}" required>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
 

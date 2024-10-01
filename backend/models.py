@@ -605,7 +605,8 @@ class PaySprintCommissionCharge(models.Model):
         ('AEPS', 'AEPS'),
         ('Mini Statement', 'Mini Statement'),
         ('Aadhaar Pay', 'Aadhaar Pay'),
-        ('Payout', 'Payout')
+        ('Payout', 'Payout'),
+        ('Onboarding', 'Onboarding')
     ]
 
     service_type = models.CharField(max_length=20, choices=SERVICE_TYPES)  # AEPS, Mini Statement, Aadhaar Pay, Payout

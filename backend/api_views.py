@@ -7,7 +7,8 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from .serializers import QRTxnCallbackByEkoSerializer, AepsTxnCallbackByEkoSerializer, CMSTxnCallbackByEkoSerializer
 from core.models import UserAccount
-from .models import AepsTxnCallbackByEko, Wallet, Commission, CommissionTxn, CMSTxnCallbackByEko, Wallet2
+from .models import (AepsTxnCallbackByEko, Wallet, Commission, CommissionTxn, CMSTxnCallbackByEko, 
+                     Wallet2, PaySprintCommissionCharge, Wallet2Transaction)
 from .utils import generate_key
 import hashlib
 import hmac
@@ -441,14 +442,23 @@ def pay_sprint_onboarding_callback(request):
 
                 user = UserAccount.objects.get(platform_id=merchant_id)
                 wallet = Wallet2.objects.get(userAccount=user)
+                onboarding_charge = PaySprintCommissionCharge.objects.get(service_type='Onboarding')
 
-                amount_decimal = Decimal(str(amount))
-
-                if wallet.balance < amount_decimal:
+                if wallet.balance < onboarding_charge.flat_charge:
                     return Response({"status": 400,"message": "Transaction Failed"}, status=400)
 
-                wallet.balance -= amount_decimal
+                wallet.balance -= onboarding_charge.flat_charge
                 wallet.save()
+                # Log Transaction
+                Wallet2Transaction.objects.create(
+                    wallet2=wallet,
+                    txnId=request_id,
+                    amount=onboarding_charge.flat_charge,
+                    txn_status='Success',
+                    client_ref_id="N/A",
+                    description="AEPS 2 Onboarding Charges",
+                    transaction_type="Onboarding Charges Deduct"
+                )
 
                 # user.pay_sprint_ref_no = request_id
                 # user.save()
