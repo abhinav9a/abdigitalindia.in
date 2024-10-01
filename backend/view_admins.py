@@ -6,6 +6,7 @@ from .models import (UserKYCDocument, Wallet, WalletTransaction, ServiceActivati
                      PanVerificationTxn, BankVerificationTxn, Payout, BbpsTxn, CreditCardTxn, Wallet2,
                      Wallet2Transaction, PaySprintCommissionCharge)
 from core.models import UserAccount
+from django.db import transaction
 from django.db.models import Q
 from django.contrib.auth.decorators import user_passes_test
 from decimal import Decimal
@@ -20,6 +21,10 @@ from backend.forms import CreateCustomUserForm
 from django.contrib.auth.models import Group
 from datetime import datetime, timedelta
 import requests
+import logging
+
+
+logger = logging.getLogger(__name__)
 
 
 @login_required(login_url='user_login')
@@ -91,7 +96,7 @@ def AdminWalletAction(request):
 
         if actionSelected == 'add_deduct':
             txnid = request.POST.get('txnid')
-            amount = Decimal(request.POST.get('amount'))
+            amount = Decimal(request.POST.get('amount', 0))
             description = request.POST.get('description')
 
             # Check if any required fields are None
@@ -116,10 +121,17 @@ def AdminWalletAction(request):
 
             except UserAccount.DoesNotExist:
                 messages.error(request, message='User Not Found, Please Check Details', extra_tags='danger')
+                transaction.set_rollback(True)
             except Wallet.DoesNotExist:
                 messages.error(request, message='User Wallet Not Found', extra_tags='danger')
+                transaction.set_rollback(True)
             except Wallet2.DoesNotExist:
                 messages.error(request, message='User Wallet Not Found', extra_tags='danger')
+                transaction.set_rollback(True)
+            except Exception as e:
+                logger.error(f"Error in {__name__}: {e}", exc_info=True)
+                messages.error(request, message='Something Went Wrong.', extra_tags='danger')
+                transaction.set_rollback(True)
             return redirect('AdminWalletAction')
 
         elif actionSelected == 'hold_unhold':

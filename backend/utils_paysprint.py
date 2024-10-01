@@ -25,7 +25,9 @@ def calculate_commission(base_amount=0, commission_rate=0, is_percentage=0):
 
 def credit_aeps_commission(request, user_id):
     try:
-        amount = request.POST.get('amount')
+        amount = request.POST.get('amount', 0)
+        if not amount:
+            amount = 0
         merchant = UserAccount.objects.select_for_update().get(id=user_id)
         merchant_wallet = Wallet2.objects.get(userAccount=merchant)
         if merchant_wallet.is_hold:
@@ -134,7 +136,9 @@ def credit_mini_statement_commission(request, merchant_id):
 
 def debit_aadhaar_pay_charges(request, merchant_id):
     try:
-        amount = request.POST.get('amount')
+        amount = request.POST.get('amount', 0)
+        if not amount:
+            amount = 0
         merchant = UserAccount.objects.select_for_update().get(id=merchant_id)
         merchant_wallet = Wallet2.objects.get(userAccount=merchant)
 
