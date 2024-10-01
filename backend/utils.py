@@ -306,11 +306,11 @@ def get_pay_sprint_payload(request, user, transaction_type, merchant_auth_txn_id
 def check_daily_kyc(user):
     obj = PaySprintMerchantAuth.objects.filter(userAccount=user).first()
     today = timezone.now().date()
-
-    # Check if any of the authentication dates is today
-    if (obj.bank2_last_authentication_date and obj.bank2_last_authentication_date.date() == today) or \
-        (obj.bank3_last_authentication_date and obj.bank3_last_authentication_date.date() == today):
-        return True
+    if obj:
+        # Check if any of the authentication dates is today
+        if (obj.bank2_last_authentication_date and obj.bank2_last_authentication_date.date() == today) or \
+            (obj.bank3_last_authentication_date and obj.bank3_last_authentication_date.date() == today):
+            return True
     
     return False
 
