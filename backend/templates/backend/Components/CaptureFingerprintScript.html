@@ -19,7 +19,7 @@
 		throw new Error("No available RD Service found");
 	}
 
-	async function Capture() {
+	async function Capture(targetField) {
 		const XML = '<?xml version="1.0"?><PidOptions ver="1.0"><Opts fCount="1" fType="2" iCount="0" pCount="0" format="0" pidVer="2.0" timeout="10000" posh="UNKNOWN" env="P" /></PidOptions>';
 
 		try {
@@ -44,7 +44,8 @@
 			const parser = new DOMParser();
 			const xmlDoc = parser.parseFromString(data, "text/xml");
 
-			$("#data").val(new XMLSerializer().serializeToString(xmlDoc));
+			// $("#data").val(new XMLSerializer().serializeToString(xmlDoc));
+			document.getElementById(targetField).value = new XMLSerializer().serializeToString(xmlDoc);
 
 			const errorcode = xmlDoc.querySelector("Resp").getAttribute("errCode");
 			if (errorcode == "0") {
@@ -55,12 +56,12 @@
 			}
 		} catch (error) {
 			console.error("Capture error:", error);
-			$("#data").val("Error during capture. Please check the console for details.");
+			// $("#data").val("Error during capture. Please check the console for details.");
 			alert("Capture failed: " + (error.message || "Unknown error occurred"));
 		}
 	}
 
-	function captureFingerprint() {
-		Capture();
+	function captureFingerprint(field) {
+		Capture(field);
 	}
 </script>

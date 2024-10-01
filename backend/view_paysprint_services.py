@@ -609,7 +609,7 @@ def daily_kyc(request):
     context = {
         "user": user,
         "title": "Merchant Daily KYC",
-        "action_url": "daily_kyc_paysprint",
+        "form_submit_url": "daily_kyc_paysprint",
     }
     return render(
         request, "backend/Pages/dailyKYCPaySprint.html", context=context
