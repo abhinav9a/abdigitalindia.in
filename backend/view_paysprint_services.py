@@ -27,6 +27,7 @@ from backend.utils import (
     make_post_request,
     update_payout_statuses,
     get_aadhaar_pay_txn_status,
+    check_daily_kyc
 )
 from backend.utils_paysprint import (credit_aeps_commission, credit_mini_statement_commission, debit_aadhaar_pay_charges,
                                      debit_payout_charges, get_total_commission)
@@ -190,9 +191,8 @@ def get_pay_sprint_aeps_bank_list():
 
 @login_required(login_url="user_login")
 @user_passes_test(is_kyc_completed, login_url="unauthorized")
-@user_passes_test(
-    is_user_registered_with_paysprint, login_url="onboarding_user_paysprint"
-)
+@user_passes_test(is_user_registered_with_paysprint, login_url="onboarding_user_paysprint")
+@user_passes_test(check_daily_kyc, login_url="daily_kyc_paysprint")
 def balance_enquiry(request):
     user = UserAccount.objects.get(username=request.user)
     bank_list = get_pay_sprint_aeps_bank_list()
@@ -268,7 +268,7 @@ def balance_enquiry(request):
 @user_passes_test(is_kyc_completed, login_url="unauthorized")
 @user_passes_test(is_user_registered_with_paysprint, login_url="onboarding_user_paysprint")
 @user_passes_test(is_merchant_bank_registered, login_url="merchant_registration_with_bank_paysprint")
-@login_required(login_url="user_login")
+@user_passes_test(check_daily_kyc, login_url="daily_kyc_paysprint")
 @transaction_required
 def cash_withdrawal(request):
     user = UserAccount.objects.get(username=request.user)
@@ -294,11 +294,17 @@ def cash_withdrawal(request):
             transaction.set_rollback(True)
             logger.exception(f"Unexpected error in cash_withdrawal view. {e}",  exc_info=True)
 
+    context = {
+        "user": user, 
+        "heading": heading, 
+        "bank_list": bank_list,
+        "action_url": "cash_withdrawl_paysprint"
+    }
 
     return render(
         request,
         "backend/Pages/cashWithdrawl.html",
-        {"user": user, "heading": heading, "bank_list": bank_list},
+        context,
     )
 
 def process_bank2_withdrawal(request, user):
@@ -306,7 +312,8 @@ def process_bank2_withdrawal(request, user):
         return redirect("merchant_registration_with_bank_paysprint")
 
     if not is_bank2_last_authentication_valid(user):
-        merchant_authentication_bank_2_api(request=request, user=user)
+        messages.error(request, "Bank 2 Daily KYC Pending.", extra_tags="danger")
+        return redirect("daily_kyc_paysprint")
 
     merchant_authenticity_response = merchant_authenticity_bank_2_api(request=request, user=user)
 
@@ -321,7 +328,8 @@ def process_bank3_withdrawal(request, user):
         return redirect("merchant_registration_with_bank_paysprint")
 
     if not is_bank3_last_authentication_valid(user):
-        merchant_authentication_bank_3_api(request=request, user=user)
+        messages.error(request, "Bank 3 Daily KYC Pending.", extra_tags="danger")
+        return redirect("daily_kyc_paysprint")
 
     merchant_authenticity_response = merchant_authenticity_bank_3_api(request=request, user=user)
 
@@ -396,6 +404,7 @@ def check_transaction_status(reference_no):
 @login_required(login_url="user_login")
 @user_passes_test(is_kyc_completed, login_url="unauthorized")
 @user_passes_test(is_user_registered_with_paysprint, login_url="merchant_registration_with_bank_paysprint")
+@user_passes_test(check_daily_kyc, login_url="daily_kyc_paysprint")
 @transaction_required
 def mini_statement(request):
     user = UserAccount.objects.get(username=request.user)
@@ -454,6 +463,7 @@ def mini_statement(request):
 @login_required(login_url="user_login")
 @user_passes_test(is_kyc_completed, login_url="unauthorized")
 @user_passes_test(is_user_registered_with_paysprint, login_url="onboarding_user_paysprint")
+@user_passes_test(check_daily_kyc, login_url="daily_kyc_paysprint")
 @transaction_required
 def aadhar_pay(request):
     user = UserAccount.objects.get(username=request.user)
@@ -585,6 +595,26 @@ def merchant_registration_with_bank(request):
     )
 
 
+@login_required(login_url="user_login")
+@user_passes_test(is_kyc_completed, login_url="unauthorized")
+@user_passes_test(is_user_registered_with_paysprint, login_url="onboarding_user_paysprint")
+def daily_kyc(request):
+    user = UserAccount.objects.get(username=request.user)
+    heading = "Mini Statement"
+    if request.method == "POST":
+        daily_kyc_bank_2(request=request, user=user)
+        daily_kyc_bank_3(request=request, user=user)
+        return redirect("daily_kyc_paysprint")
+    
+    context = {
+        "user": user,
+        "title": "Merchant Daily KYC",
+        "action_url": "daily_kyc_paysprint",
+    }
+    return render(
+        request, "backend/Pages/dailyKYCPaySprint.html", context=context
+    )
+
 def merchant_registration_bank_2(request):
     user = UserAccount.objects.get(username=request.user)
 
@@ -609,7 +639,7 @@ def merchant_registration_bank_2(request):
     return is_merchant_bank2_registered(user)
 
 
-def merchant_authentication_bank_2_api(request, user):
+def daily_kyc_bank_2(request, user):
     data = get_pay_sprint_common_payload(request, user)
     response = make_post_request(
         url=PaySprintRoutes.BANK_2_AUTHENTICATION.value, data=data
@@ -627,13 +657,16 @@ def merchant_authentication_bank_2_api(request, user):
         merchant_auth = PaySprintMerchantAuth.objects.filter(userAccount=user).first()
         merchant_auth.bank2_last_authentication_date = datetime.now()
         merchant_auth.save()
+        messages.success(request, f'Daily KYC Bank 2: {api_data.get("message")}', extra_tags="success")
     else:
-        messages.error(request, api_data.get("message"), extra_tags="danger")
+        messages.error(request, f'Daily KYC Bank 2: {api_data.get("message")}', extra_tags="danger")
     return response
 
 
 def merchant_authenticity_bank_2_api(request, user):
     data = get_pay_sprint_common_payload(request, user)
+    data["adhaarnumber"] = request.POST.get("merchant_aadhar_no")
+    data["data"] = request.POST.get("merchant_data")
     response = make_post_request(
         url=PaySprintRoutes.BANK_2_MERCHANT_AUTHENTICITY.value, data=data
     )
@@ -682,7 +715,7 @@ def merchant_registration_bank_3(request):
     return is_merchant_bank3_registered(user)
 
 
-def merchant_authentication_bank_3_api(request, user):
+def daily_kyc_bank_3(request, user):
     data = get_pay_sprint_common_payload(request, user)
     response = make_post_request(
         url=PaySprintRoutes.BANK_3_AUTHENTICATION.value, data=data
@@ -700,13 +733,16 @@ def merchant_authentication_bank_3_api(request, user):
         merchant_auth = PaySprintMerchantAuth.objects.filter(userAccount=user).first()
         merchant_auth.bank3_last_authentication_date = datetime.now()
         merchant_auth.save()
+        messages.success(request, f'Daily KYC Bank 3: {api_data.get("message")}', extra_tags="success")
     else:
-        messages.error(request, api_data.get("message"), extra_tags="danger")
+        messages.error(request, f'Daily KYC Bank 3: {api_data.get("message")}', extra_tags="danger")
     return response
 
 
 def merchant_authenticity_bank_3_api(request, user):
     data = get_pay_sprint_common_payload(request, user)
+    data["adhaarnumber"] = request.POST.get("merchant_aadhar_no")
+    data["data"] = request.POST.get("merchant_data")
     response = make_post_request(
         url=PaySprintRoutes.BANK_2_MERCHANT_AUTHENTICITY.value, data=data
     )

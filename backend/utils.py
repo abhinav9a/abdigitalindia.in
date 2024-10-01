@@ -303,6 +303,18 @@ def get_pay_sprint_payload(request, user, transaction_type, merchant_auth_txn_id
     return data
 
 
+def check_daily_kyc(user):
+    obj = PaySprintMerchantAuth.objects.filter(userAccount=user).first()
+    today = timezone.now().date()
+
+    # Check if any of the authentication dates is today
+    if (obj.bank2_last_authentication_date and obj.bank2_last_authentication_date.date() == today) or \
+        (obj.bank3_last_authentication_date and obj.bank3_last_authentication_date.date() == today):
+        return True
+    
+    return False
+
+
 def is_merchant_bank_registered(user):
     obj = PaySprintMerchantAuth.objects.filter(userAccount=user).first()
     if obj:
@@ -325,7 +337,7 @@ def is_bank2_last_authentication_valid(user):
     last_auth_date = obj.bank2_last_authentication_date
     is_auth_valid = False
     if last_auth_date:
-        is_auth_valid = timezone.now() <= last_auth_date + timedelta(hours=24)
+        is_auth_valid = timezone.now().date() <= last_auth_date.date
         if not is_auth_valid:
             obj.bank2_MerAuthTxnId = None
             obj.save()
