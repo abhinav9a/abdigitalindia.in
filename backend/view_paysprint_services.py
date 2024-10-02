@@ -360,12 +360,12 @@ def perform_withdrawal(request, user, merchant_auth_txn_id=None):
         transaction_data = {
             "userAccount": user,
             "aadhaar_no": masked_aadhaar_no,
-            "reference_no": data.get("referenceno"),
+            "reference_no": data.get("referenceno", "N/A"),
             "txn_status": response_json.get("txnstatus", 2),
-            "message": response_json.get("message"),
-            "ack_no": response_json.get("ackno"),
-            "amount": response_json.get("amount"),
-            "bank_rrn": response_json.get("bankrrn"),
+            "message": response_json.get("message", "N/A"),
+            "ack_no": response_json.get("ackno", "N/A"),
+            "amount": response_json.get("amount", 0),
+            "bank_rrn": response_json.get("bankrrn", "N/A"),
             "service_type": "2",  # Cash Withdrawal
         }
         txn_detail = PaySprintAEPSTxnDetail.objects.create(**transaction_data)
