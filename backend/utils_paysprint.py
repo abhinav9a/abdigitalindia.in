@@ -35,8 +35,10 @@ def credit_aeps_commission(request, user_id):
             return False
 
         # Add the amount to the merchant's wallet
+        logger.error(f"credit_aeps_commission: User: {merchant} - BEFORE adding balance: {merchant_wallet.balance}")
         merchant_wallet.balance += Decimal(amount)
         merchant_wallet.save()
+        logger.error(f"credit_aeps_commission: User: {merchant} - AFTER adding balance: {merchant_wallet.balance}")
 
         # Get the appropriate commission charge
         commission_charge = get_commission_charge('AEPS', amount)
@@ -45,6 +47,7 @@ def credit_aeps_commission(request, user_id):
             return False
 
         def add_commission(user, commission, desc, agent_name):
+            logger.error(f"add_commission - Commission: {commission}")
             Wallet2.objects.filter(userAccount=user).update(balance=F('balance') + commission)
             PaySprintCommissionTxn.objects.create(userAccount=user, amount=commission, txn_status="Success", desc=desc, agent_name=agent_name)
 

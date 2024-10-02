@@ -2,7 +2,8 @@ from django.contrib import admin
 from .models import (UserKYCDocument, OtherServices, Wallet, WalletTransaction, QRTxnCallbackByEko, ServiceActivation,
                      AepsTxnCallbackByEko, DMTBankList, PanVerificationTxn, BankVerificationTxn, DmtTxn, Commission,
                      Payout, PaySprintPayout, BbpsTxn, CommissionTxn, CMSTxnCallbackByEko, CreditCardTxn, PaySprintCommissionCharge,
-                     AdhaarVerificationTxn, OtherServices2, PaySprintAEPSTxnDetail, Wallet2, Wallet2Transaction, PaySprintMerchantAuth)
+                     AdhaarVerificationTxn, OtherServices2, PaySprintAEPSTxnDetail, Wallet2, Wallet2Transaction, PaySprintMerchantAuth,
+                     PaySprintCommissionTxn)
 from django.utils.translation import gettext_lazy as _
 
 # Register your models here.
@@ -58,6 +59,9 @@ class PaySprintPayoutAdmin(admin.ModelAdmin):
 
 class PaySprintAEPSTxnDetailsAdmin(admin.ModelAdmin):
     list_display = ('id', 'userAccount', 'reference_no', 'amount', 'aadhaar_no', 'txn_status', 'service_type', 'timestamp')
+
+class PaySprintCommissionTxnAdmin(admin.ModelAdmin):
+    list_display = ('id', 'userAccount', 'amount', 'txn_status', 'desc', 'timestamp')
 
 class PaySprintMerchantAuthAdmin(admin.ModelAdmin):
     list_display = ('id', 'userAccount', 'is_bank2_registered', 'is_bank3_registered', 'bank2_last_authentication_date', 'bank3_last_authentication_date')
@@ -391,3 +395,4 @@ admin.site.register(CMSTxnCallbackByEko, CMSTxnCallbackByEkoAdmin)
 admin.site.register(PaySprintAEPSTxnDetail, PaySprintAEPSTxnDetailsAdmin)
 admin.site.register(PaySprintCommissionCharge, PaySprintCommissionChargeAdmin)
 admin.site.register(PaySprintMerchantAuth, PaySprintMerchantAuthAdmin)
+admin.site.register(PaySprintCommissionTxn, PaySprintCommissionTxnAdmin)
