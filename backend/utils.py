@@ -298,8 +298,8 @@ def get_pay_sprint_payload(request, user, transaction_type, merchant_auth_txn_id
     })
     if transaction_type in ["CW", "M", "FM", "IM"]:
         data["amount"] = request.POST.get("amount")
-    if transaction_type == "CW":
-        data["MerAuthTxnId"] = merchant_auth_txn_id
+    # if transaction_type == "CW":
+    #     data["MerAuthTxnId"] = merchant_auth_txn_id
     return data
 
 

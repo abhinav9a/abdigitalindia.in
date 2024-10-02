@@ -316,13 +316,14 @@ def process_bank2_withdrawal(request, user):
         messages.error(request, "Bank 2 Daily KYC Pending.", extra_tags="danger")
         return redirect("daily_kyc_paysprint")
 
-    merchant_authenticity_response = merchant_authenticity_bank_2_api(request=request, user=user)
+    # merchant_authenticity_response = merchant_authenticity_bank_2_api(request=request, user=user)
 
-    if merchant_authenticity_response.status_code == 200 and is_bank2_last_authentication_valid(user):
-        merchant_auth_txn_id = PaySprintMerchantAuth.objects.get(userAccount=user).bank2_MerAuthTxnId
-        return perform_withdrawal(request, user, merchant_auth_txn_id)
+    # if merchant_authenticity_response.status_code == 200 and is_bank2_last_authentication_valid(user):
+    #     merchant_auth_txn_id = PaySprintMerchantAuth.objects.get(userAccount=user).bank2_MerAuthTxnId
+        # return perform_withdrawal(request, user, merchant_auth_txn_id)
+    return perform_withdrawal(request, user)
 
-    return redirect("cash_withdrawl_paysprint")
+    # return redirect("cash_withdrawl_paysprint")
 
 def process_bank3_withdrawal(request, user):
     if not is_merchant_bank3_registered(user):
@@ -332,15 +333,16 @@ def process_bank3_withdrawal(request, user):
         messages.error(request, "Bank 3 Daily KYC Pending.", extra_tags="danger")
         return redirect("daily_kyc_paysprint")
 
-    merchant_authenticity_response = merchant_authenticity_bank_3_api(request=request, user=user)
+    # merchant_authenticity_response = merchant_authenticity_bank_3_api(request=request, user=user)
 
-    if merchant_authenticity_response.status_code == 200 and is_bank3_last_authentication_valid(user):
-        merchant_auth_txn_id = PaySprintMerchantAuth.objects.get(userAccount=user).bank3_MerAuthTxnId
-        return perform_withdrawal(request, user, merchant_auth_txn_id)
+    # if merchant_authenticity_response.status_code == 200 and is_bank3_last_authentication_valid(user):
+    #     merchant_auth_txn_id = PaySprintMerchantAuth.objects.get(userAccount=user).bank3_MerAuthTxnId
+    #     return perform_withdrawal(request, user, merchant_auth_txn_id)
+    return perform_withdrawal(request, user)
 
-    return redirect("cash_withdrawl_paysprint")
+    # return redirect("cash_withdrawl_paysprint")
 
-def perform_withdrawal(request, user, merchant_auth_txn_id):
+def perform_withdrawal(request, user, merchant_auth_txn_id=None):
     amount = float(request.POST.get("amount"))
     # commission = get_total_commission(request, user, amount, "AEPS")
     # amount += float(commission)
