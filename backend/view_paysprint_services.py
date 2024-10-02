@@ -607,9 +607,31 @@ def daily_kyc(request):
     user = UserAccount.objects.get(username=request.user)
     heading = "Mini Statement"
     if request.method == "POST":
-        daily_kyc_bank_2(request=request, user=user)
-        daily_kyc_bank_3(request=request, user=user)
-        return redirect("daily_kyc_paysprint")
+        try:
+            with transaction.atomic():
+                wallet = Wallet2.objects.get(userAccount=user)
+                daily_kyc_charge = PaySprintCommissionCharge.objects.get(service_type='Daily KYC')
+                if wallet.is_hold:
+                    messages.error(request, f"Wallet 2 is on hold. Reason: {wallet.hold_reason}.", extra_tags="danger")
+                    return redirect("daily_kyc_paysprint")
+                elif wallet.balance < daily_kyc_charge.flat_charge:
+                    messages.error(request, "Insufficient Wallet 2 balance to complete Daily KYC.", extra_tags="danger")
+                    return redirect("daily_kyc_paysprint")
+                
+                daily_kyc_bank_2_status = daily_kyc_bank_2(request=request, user=user)
+                daily_kyc_bank_3_status = daily_kyc_bank_3(request=request, user=user)
+
+                if daily_kyc_bank_2_status or daily_kyc_bank_3_status:
+                    wallet.balance -= daily_kyc_charge.flat_charge
+                    wallet.save()
+                    messages.success(request, "Daily KYC completed successfully.")
+                else:
+                    messages.error(request, "Daily KYC failed for both banks.", extra_tags="danger")
+                    raise Exception("Daily KYC failed")
+        except Exception as e:
+            logger.error("Daily KYC Failed")
+
+        return redirect("dashboard")
     
     context = {
         "user": user,
@@ -663,9 +685,10 @@ def daily_kyc_bank_2(request, user):
         merchant_auth.bank2_last_authentication_date = datetime.now()
         merchant_auth.save()
         messages.success(request, f'Daily KYC Bank 2: {api_data.get("message")}', extra_tags="success")
+        return True
     else:
         messages.error(request, f'Daily KYC Bank 2: {api_data.get("message")}', extra_tags="danger")
-    return response
+        return False
 
 
 def merchant_authenticity_bank_2_api(request, user):
@@ -739,9 +762,10 @@ def daily_kyc_bank_3(request, user):
         merchant_auth.bank3_last_authentication_date = datetime.now()
         merchant_auth.save()
         messages.success(request, f'Daily KYC Bank 3: {api_data.get("message")}', extra_tags="success")
+        return True
     else:
         messages.error(request, f'Daily KYC Bank 3: {api_data.get("message")}', extra_tags="danger")
-    return response
+        return False
 
 
 def merchant_authenticity_bank_3_api(request, user):

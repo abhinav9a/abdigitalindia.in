@@ -792,6 +792,11 @@ def update_charges(request):
         onboarding.flat_charge = request.POST.get("onboarding_charges")
         onboarding.save()
 
+        # Daily KYC Charges
+        daily_kyc_charges = PaySprintCommissionCharge.objects.get(service_type='Daily KYC')
+        daily_kyc_charges.flat_charge = request.POST.get("daily_kyc_charges")
+        daily_kyc_charges.save()
+
         messages.success(request, "Charges updated successfully!", extra_tags="success")
         return redirect('update_charges_paysprint')
 
@@ -802,13 +807,15 @@ def update_charges(request):
         aadhaar_pay_commission = PaySprintCommissionCharge.objects.get(service_type='Aadhaar Pay')
         payout_slabs = PaySprintCommissionCharge.objects.filter(service_type='Payout')
         onboarding = PaySprintCommissionCharge.objects.get(service_type='Onboarding')
+        daily_kyc_charges = PaySprintCommissionCharge.objects.get(service_type='Daily KYC')
 
         context = {
             'aeps_commissions': aeps_commissions,
             'mini_statement_commission': mini_statement_commission,
             'aadhaar_pay_commission': aadhaar_pay_commission,
             'payout_slabs': payout_slabs,
-            'onboarding': onboarding
+            'onboarding': onboarding,
+            'daily_kyc_charges': daily_kyc_charges
         }
 
         return render(request, 'backend/Admin/AdminUpdateChargesPaySprint.html', context)
