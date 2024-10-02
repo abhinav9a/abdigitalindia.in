@@ -606,6 +606,7 @@ def merchant_registration_with_bank(request):
 @login_required(login_url="user_login")
 @user_passes_test(is_kyc_completed, login_url="unauthorized")
 @user_passes_test(is_user_registered_with_paysprint, login_url="onboarding_user_paysprint")
+@user_passes_test(is_merchant_bank_registered, login_url="merchant_registration_with_bank_paysprint")
 def daily_kyc(request):
     user = UserAccount.objects.get(username=request.user)
     heading = "Mini Statement"
