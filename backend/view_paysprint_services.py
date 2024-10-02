@@ -654,7 +654,7 @@ def merchant_registration_bank_2(request):
     response = make_post_request(url=PaySprintRoutes.BANK_2_REGISTRATION.value, data=data)
     # logger.error(f"Response Body: {response.json()}")
     api_data = response.json()
-    if response.status_code == 200:
+    if response.status_code == 200 and api_data.get("errorcode") == "0":
         merchant_auth = PaySprintMerchantAuth.objects.filter(userAccount=user).first()
         if not merchant_auth:
             merchant_auth = PaySprintMerchantAuth.objects.create(
@@ -731,7 +731,7 @@ def merchant_registration_bank_3(request):
     response = make_post_request(url=PaySprintRoutes.BANK_3_REGISTRATION.value, data=data)
     # logger.error(f"Response Body: {response.json()}")
     api_data = response.json()
-    if response.status_code == 200:
+    if response.status_code == 200 and api_data.get("errorcode") == "0":
         merchant_auth = PaySprintMerchantAuth.objects.filter(userAccount=user).first()
         if not merchant_auth:
             merchant_auth = PaySprintMerchantAuth.objects.create(
