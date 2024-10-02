@@ -270,31 +270,31 @@ def balance_enquiry(request):
 @user_passes_test(is_user_registered_with_paysprint, login_url="onboarding_user_paysprint")
 @user_passes_test(is_merchant_bank_registered, login_url="merchant_registration_with_bank_paysprint")
 @user_passes_test(check_daily_kyc, login_url="daily_kyc_paysprint")
-@transaction_required
+# @transaction_required
 def cash_withdrawal(request):
     user = UserAccount.objects.get(username=request.user)
     bank_list = get_pay_sprint_aeps_bank_list()
     heading = "Cash Withdrawal"
 
     if request.method == "POST":
-        try:
-            aeps_bank = request.POST.get('aeps_bank')
-            # Credit AEPS commission before making the request
-            if not credit_aeps_commission(request, user.id):
-                transaction.set_rollback(True)
-                return redirect("cash_withdrawl_paysprint")
+        with transaction.atomic():
+            try:
+                aeps_bank = request.POST.get('aeps_bank')
+                # Credit AEPS commission before making the request
+                if not credit_aeps_commission(request, user.id):
+                    transaction.set_rollback(True)
+                    return redirect("cash_withdrawl_paysprint")
 
-            if aeps_bank == 'bank2':
-                return process_bank2_withdrawal(request, user)
-            elif aeps_bank == 'bank3':
-                return process_bank3_withdrawal(request, user)
-            else:
+                if aeps_bank == 'bank2':
+                    return process_bank2_withdrawal(request, user)
+                elif aeps_bank == 'bank3':
+                    return process_bank3_withdrawal(request, user)
+                else:
+                    transaction.set_rollback(True)
+                    messages.error(request, message="Please select AEPS Bank Provider", extra_tags="danger")
+            except Exception as e:
                 transaction.set_rollback(True)
-                messages.error(request, message="Please select AEPS Bank Provider", extra_tags="danger")
-        except Exception as e:
-            transaction.set_rollback(True)
-            logger.exception(f"Unexpected error in cash_withdrawal view. {e}",  exc_info=True)
-
+                logger.exception(f"Unexpected error in cash_withdrawal view. {e}",  exc_info=True)
     context = {
         "user": user, 
         "heading": heading, 
@@ -408,42 +408,43 @@ def check_transaction_status(reference_no):
 @user_passes_test(is_kyc_completed, login_url="unauthorized")
 @user_passes_test(is_user_registered_with_paysprint, login_url="merchant_registration_with_bank_paysprint")
 @user_passes_test(check_daily_kyc, login_url="daily_kyc_paysprint")
-@transaction_required
+# @transaction_required
 def mini_statement(request):
     user = UserAccount.objects.get(username=request.user)
     bank_list = get_pay_sprint_aeps_bank_list()
     heading = "Mini Statement"
     if request.method == "POST":
-        # Credit mini statement commission before making the request
-        if not credit_mini_statement_commission(request, user.id):
-            transaction.set_rollback(True)
-            return redirect("mini_statement_paysprint")
-        data = get_pay_sprint_payload(request, user, "MS")
-        response = make_post_request(url=PaySprintRoutes.MINI_STATEMENT.value, data=data)
-        logger.error(f"Response Body: {response.json()}")
-        if response.status_code == 200 and response.json().get("status"):
-            response = response.json()
-            aadhaar_no = request.POST.get("aadhar_no")
-            masked_aadhaar_no = "XXXXXXXX" + aadhaar_no[-4:] if aadhaar_no and len(aadhaar_no) == 12 and aadhaar_no.isdigit() else "N/A"
-            
-            response_data = {
-                "userAccount": user,
-                "aadhaar_no": masked_aadhaar_no,
-                "reference_no": data.get("referenceno"),
-                "txn_status": response.get("response_code"),
-                "message": response.get("message"),
-                "ack_no": response.get("ackno"),
-                # 'amount': response.get('amount'),
-                "balance_amount": response.get("balanceamount", 0),
-                "bank_rrn": response.get("bankrrn"),
-                "bank_iin": response.get("bankiin"),
-                "service_type": "4",  # Mini Statement
-            }
+        with transaction.atomic():
+            # Credit mini statement commission before making the request
+            if not credit_mini_statement_commission(request, user.id):
+                transaction.set_rollback(True)
+                return redirect("mini_statement_paysprint")
+            data = get_pay_sprint_payload(request, user, "MS")
+            response = make_post_request(url=PaySprintRoutes.MINI_STATEMENT.value, data=data)
+            logger.error(f"Response Body: {response.json()}")
+            if response.status_code == 200 and response.json().get("status"):
+                response = response.json()
+                aadhaar_no = request.POST.get("aadhar_no")
+                masked_aadhaar_no = "XXXXXXXX" + aadhaar_no[-4:] if aadhaar_no and len(aadhaar_no) == 12 and aadhaar_no.isdigit() else "N/A"
+                
+                response_data = {
+                    "userAccount": user,
+                    "aadhaar_no": masked_aadhaar_no,
+                    "reference_no": data.get("referenceno"),
+                    "txn_status": response.get("response_code"),
+                    "message": response.get("message"),
+                    "ack_no": response.get("ackno"),
+                    # 'amount': response.get('amount'),
+                    "balance_amount": response.get("balanceamount", 0),
+                    "bank_rrn": response.get("bankrrn"),
+                    "bank_iin": response.get("bankiin"),
+                    "service_type": "4",  # Mini Statement
+                }
 
-            merchant_auth = PaySprintAEPSTxnDetail.objects.create(**response_data)
-        else:
-            messages.error(request, response.json().get("message"), extra_tags="danger")
-            transaction.set_rollback(True)
+                merchant_auth = PaySprintAEPSTxnDetail.objects.create(**response_data)
+            else:
+                messages.error(request, response.json().get("message"), extra_tags="danger")
+                transaction.set_rollback(True)
 
         return render(
             request,
@@ -467,55 +468,56 @@ def mini_statement(request):
 @user_passes_test(is_kyc_completed, login_url="unauthorized")
 @user_passes_test(is_user_registered_with_paysprint, login_url="onboarding_user_paysprint")
 @user_passes_test(check_daily_kyc, login_url="daily_kyc_paysprint")
-@transaction_required
+# @transaction_required
 def aadhar_pay(request):
     user = UserAccount.objects.get(username=request.user)
     bank_list = get_pay_sprint_aeps_bank_list()
     heading = "Aadhaar Pay"
     if request.method == "POST":
-        # Debit Aadhaar Pay charges before making the request
-        if not debit_aadhaar_pay_charges(request, user.id):
-            transaction.set_rollback(True)
-            return redirect('aadhar_pay_paysprint')
+        with transaction.atomic():
+            # Debit Aadhaar Pay charges before making the request
+            if not debit_aadhaar_pay_charges(request, user.id):
+                transaction.set_rollback(True)
+                return redirect('aadhar_pay_paysprint')
 
-        amount = float(request.POST.get("amount"))
-        # commission = get_total_commission(request, user, amount, heading)
-        # amount += float(commission)
-        data = get_pay_sprint_payload(request, user, "M")  # M OR FM OR IM
-        response = make_post_request(url=PaySprintRoutes.AADHAR_PAY.value, data=data)
-        logger.error(f"Response Body: {response.json()}")
-        if response.status_code == 200:
-            # if True:
-            response = response.json()
-            aadhaar_no = request.POST.get("aadhar_no")
-            masked_aadhaar_no = "XXXXXXXX" + aadhaar_no[-4:] if aadhaar_no and len(aadhaar_no) == 12 and aadhaar_no.isdigit() else "N/A"
-            
-            response_data = {
-                "userAccount": user,
-                "aadhaar_no": masked_aadhaar_no,
-                "reference_no": data.get("referenceno"),
-                "ack_no": response.get("ackno"),
-                "amount": response.get("amount", 0),
-                "balance_amount": response.get("balanceamount", 0),
-                "bank_rrn": response.get("bankrrn"),
-                "bank_iin": response.get("bankiin"),
-                "service_type": "1",  # Aadhaar Pay
-                "message": response.get("message"),
-            }
-            merchant_auth = PaySprintAEPSTxnDetail.objects.create(**response_data)
-            merchant_auth.txn_status = get_aadhaar_pay_txn_status(
-                reference_no=data.get("referenceno")
-            )
-            merchant_auth.save()
+            amount = float(request.POST.get("amount"))
+            # commission = get_total_commission(request, user, amount, heading)
+            # amount += float(commission)
+            data = get_pay_sprint_payload(request, user, "M")  # M OR FM OR IM
+            response = make_post_request(url=PaySprintRoutes.AADHAR_PAY.value, data=data)
+            logger.error(f"Response Body: {response.json()}")
+            if response.status_code == 200:
+                # if True:
+                response = response.json()
+                aadhaar_no = request.POST.get("aadhar_no")
+                masked_aadhaar_no = "XXXXXXXX" + aadhaar_no[-4:] if aadhaar_no and len(aadhaar_no) == 12 and aadhaar_no.isdigit() else "N/A"
+                
+                response_data = {
+                    "userAccount": user,
+                    "aadhaar_no": masked_aadhaar_no,
+                    "reference_no": data.get("referenceno"),
+                    "ack_no": response.get("ackno"),
+                    "amount": response.get("amount", 0),
+                    "balance_amount": response.get("balanceamount", 0),
+                    "bank_rrn": response.get("bankrrn"),
+                    "bank_iin": response.get("bankiin"),
+                    "service_type": "1",  # Aadhaar Pay
+                    "message": response.get("message"),
+                }
+                merchant_auth = PaySprintAEPSTxnDetail.objects.create(**response_data)
+                merchant_auth.txn_status = get_aadhaar_pay_txn_status(
+                    reference_no=data.get("referenceno")
+                )
+                merchant_auth.save()
 
-            return render(
-                request,
-                "backend/Pages/paymentSuccess.html",
-                {"aadhar_pay_response": response_data},
-            )
-        else:
-            messages.error(request, response.json().get("message"), extra_tags="danger")
-            transaction.set_rollback(True)
+                return render(
+                    request,
+                    "backend/Pages/paymentSuccess.html",
+                    {"aadhar_pay_response": response_data},
+                )
+            else:
+                messages.error(request, response.json().get("message"), extra_tags="danger")
+                transaction.set_rollback(True)
 
     return render(
         request,
