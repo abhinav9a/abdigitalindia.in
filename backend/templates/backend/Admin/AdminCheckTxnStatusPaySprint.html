@@ -1,0 +1,87 @@
+{% extends "backend/Shared/AuthBase.html" %}
+
+{% block main %}
+<div class="row">
+    <div class="col-lg-6 mx-auto grid-margin stretch-card">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title">Check Transaction Status</h4>
+                {% for message in messages %}
+                <p class="text-{{message.extra_tags}}">{{message}}</p>
+                {% endfor %}
+                <p class="card-description">
+                    Please fill correct details.
+                </p>
+
+                <form action="{% url 'AdminTxnStatus_paysprint' %}" method="post">
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="row">
+                                <div class="form-group row">
+                                    <label class="col-sm-3 col-form-label">Select</label>
+                                        <div class="col-sm-4">
+                                            <div class="form-check">
+                                            <label class="form-check-label">
+                                                <input type="radio" class="form-check-input" name="txn_type" id="txn_type1" value="aadhaar_pay" checked="" required>
+                                                Aadhaar Pay
+                                            <i class="input-helper"></i></label>
+                                            </div>
+                                        </div>
+                                    <div class="col-sm-5">
+                                        <div class="form-check">
+                                            <label class="form-check-label">
+                                                <input type="radio" class="form-check-input" name="txn_type" id="txn_type2" value="cash_withdrawal" required>
+                                                Cash Withdrawal
+                                            <i class="input-helper"></i></label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="txnid">Reference No.</label>
+                                        <input type="text" class="form-control" name="reference" id="reference" required>
+                                    </div>
+                                </div>
+                                
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary mb-2">Check Status</button>
+                </form>
+                {% if data %}
+                    <div class="row">
+                        <div class="col-md-8 mx-auto grid-margin stretch-card">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h1 class="mb-4">Transaction Status</h1>
+                                    <table class="table table-bordered table-striped">
+                                        <thead class="thead-dark">
+                                            <tr>
+                                                <th>Reference Number</th>
+                                                <th>Ack Number</th>
+                                                <th>Amount</th>
+                                                <th>Bank RRN</th>
+                                                <th>Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>{{ reference_no }}</td>
+                                                <td>{{ data.ackno }}</td>
+                                                <td>{{ data.amount }}</td>
+                                                <td>{{ data.bankrrn }}</td>
+                                                <td>{{ data.txn_status_msg }}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock main %}

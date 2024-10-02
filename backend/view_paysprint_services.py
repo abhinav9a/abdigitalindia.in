@@ -27,7 +27,7 @@ from backend.utils import (
     make_post_request,
     update_payout_statuses,
     get_aadhaar_pay_txn_status,
-    check_daily_kyc
+    check_daily_kyc, is_admin_user
 )
 from backend.utils_paysprint import (credit_aeps_commission, credit_mini_statement_commission, debit_aadhaar_pay_charges,
                                      debit_payout_charges, get_total_commission)
@@ -1124,3 +1124,53 @@ def wallet2_commission_report(request):
     return render(request, 'backend/Services/Commission/Commission_Report.html', context)
 
 
+##########
+# Admin
+##########
+
+
+@login_required(login_url='user_login')
+@user_passes_test(is_admin_user, login_url='unauthorized')
+def AdminTxnStatus(request):
+    context = {}
+    if request.method == 'POST':
+        txn_type = request.POST.get('txn_type')
+        reference = request.POST.get('reference')
+
+        if txn_type == 'aadhaar_pay':
+            url = PaySprintRoutes.AADHAR_PAY_TXN_STATUS.value
+        else:
+            url = PaySprintRoutes.CASH_WITHDRAWAL_TXN_STATUS.value
+
+        payload = {"reference": reference}
+
+        response = make_post_request(url=url, data=payload)
+
+        if response.status_code == 200:
+            api_data = response.json()
+            status = api_data.get("status", False)
+            txn_status_code = api_data.get("txnstatus", 0)
+            response_code = api_data.get("response_code", 0)
+            txn_status_msg = "Transaction Not found in system"
+
+            if status and txn_status_code == 1 and response_code == 1:
+                txn_status_msg = "Success"
+            elif status and txn_status_code == 3 and response_code == 0:
+                txn_status_msg = "Failed"
+            elif status and txn_status_code == 2 and response_code == 2:
+                txn_status_msg = "Pending"
+            elif not status and response_code == 3:
+                txn_status_msg = "Transaction Not found in system"
+            else:
+                txn_status_msg = "Bad request, Try again"
+            
+            context = {
+                "data": api_data,
+                "txn_status_msg": txn_status_msg,
+                "reference_no": reference
+            }
+                
+        else:
+            messages.error(request, response.json().get("message"), extra_tags="danger")
+
+    return render(request, 'backend/Admin/AdminCheckTxnStatusPaySprint.html', context)

@@ -243,7 +243,7 @@ def get_pay_sprint_headers():
         "Token": generate_pay_sprint_token()
         # "Authorisedkey": AUTHORISED_KEY
     }
-    logger.error(f"Request Headers: {json.dumps(headers)}")
+    # logger.error(f"Request Headers: {json.dumps(headers)}")
     return headers
 
 

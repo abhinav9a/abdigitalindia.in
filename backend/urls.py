@@ -111,6 +111,7 @@ urlpatterns = [
     path('all-distributors', view_admins.allDistributors, name='allDistributors'), #admin only to view all Distributors
     path('all-master-distributors', view_admins.allMasterDistributors, name='allMasterDistributors'), #admin only to view all Master Distributors
     path('txn-status', view_admins.AdminTxnStatus, name='AdminTxnStatus'), #admin only to view all Master Distributors
+    path('txn-status-2', view_paysprint_services.AdminTxnStatus, name='AdminTxnStatus_paysprint'),
     path('unauthorized', views.unauthorized, name='unauthorized'), #unauthorized
     path('balance-sheet/<int:id>', view_admins.balance_sheet, name='balance_sheet'),
     path('change-user-password', view_admins.AdminChangeUserPassword, name='AdminChangeUserPassword'),
