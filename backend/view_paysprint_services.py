@@ -671,7 +671,7 @@ def daily_kyc_bank_2(request, user):
     response = make_post_request(
         url=PaySprintRoutes.BANK_2_AUTHENTICATION.value, data=data
     )
-    logger.error(f"Response Body: {response.json()}")
+    logger.error(f"daily_kyc_bank_2 Response Body: {response.text}")
     api_data = response.json()
     # api_data = {
     #     "response_code": 1,
@@ -748,7 +748,7 @@ def daily_kyc_bank_3(request, user):
     response = make_post_request(
         url=PaySprintRoutes.BANK_3_AUTHENTICATION.value, data=data
     )
-    logger.error(f"Response Body: {response.json()}")
+    logger.error(f"daily_kyc_bank_3 Response Body: {response.text}")
     api_data = response.json()
     # api_data = {
     #     "response_code": 1,
