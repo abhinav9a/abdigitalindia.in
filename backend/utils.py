@@ -337,7 +337,7 @@ def is_bank2_last_authentication_valid(user):
     last_auth_date = obj.bank2_last_authentication_date
     is_auth_valid = False
     if last_auth_date:
-        is_auth_valid = timezone.now().date() <= last_auth_date.date
+        is_auth_valid = timezone.now().date() <= last_auth_date.date()
         if not is_auth_valid:
             obj.bank2_MerAuthTxnId = None
             obj.save()
