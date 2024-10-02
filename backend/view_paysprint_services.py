@@ -626,10 +626,11 @@ def daily_kyc(request):
                     wallet.save()
                     messages.success(request, "Daily KYC completed successfully.")
                 else:
-                    messages.error(request, "Daily KYC failed for both banks.", extra_tags="danger")
+                    # messages.error(request, "Daily KYC failed for both banks.", extra_tags="danger")
                     raise Exception("Daily KYC failed")
         except Exception as e:
-            logger.error("Daily KYC Failed")
+            messages.error(request, "Daily KYC failed for both banks.", extra_tags="danger")
+            logger.error("Daily KYC Failed: {e}", exc_info=True)
 
         return redirect("dashboard")
     
