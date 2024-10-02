@@ -193,6 +193,7 @@ def get_pay_sprint_aeps_bank_list():
 @login_required(login_url="user_login")
 @user_passes_test(is_kyc_completed, login_url="unauthorized")
 @user_passes_test(is_user_registered_with_paysprint, login_url="onboarding_user_paysprint")
+@user_passes_test(is_merchant_bank_registered, login_url="merchant_registration_with_bank_paysprint")
 @user_passes_test(check_daily_kyc, login_url="daily_kyc_paysprint")
 def balance_enquiry(request):
     user = UserAccount.objects.get(username=request.user)
@@ -407,6 +408,7 @@ def check_transaction_status(reference_no):
 @login_required(login_url="user_login")
 @user_passes_test(is_kyc_completed, login_url="unauthorized")
 @user_passes_test(is_user_registered_with_paysprint, login_url="merchant_registration_with_bank_paysprint")
+@user_passes_test(is_merchant_bank_registered, login_url="merchant_registration_with_bank_paysprint")
 @user_passes_test(check_daily_kyc, login_url="daily_kyc_paysprint")
 # @transaction_required
 def mini_statement(request):
@@ -467,6 +469,7 @@ def mini_statement(request):
 @login_required(login_url="user_login")
 @user_passes_test(is_kyc_completed, login_url="unauthorized")
 @user_passes_test(is_user_registered_with_paysprint, login_url="onboarding_user_paysprint")
+@user_passes_test(is_merchant_bank_registered, login_url="merchant_registration_with_bank_paysprint")
 @user_passes_test(check_daily_kyc, login_url="daily_kyc_paysprint")
 # @transaction_required
 def aadhar_pay(request):
@@ -630,7 +633,7 @@ def daily_kyc(request):
                     raise Exception("Daily KYC failed")
         except Exception as e:
             messages.error(request, "Daily KYC failed for both banks.", extra_tags="danger")
-            logger.error("Daily KYC Failed: {e}", exc_info=True)
+            logger.error("Daily KYC Failed", exc_info=True)
 
         return redirect("dashboard")
     
