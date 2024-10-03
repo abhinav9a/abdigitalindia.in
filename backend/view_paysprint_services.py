@@ -1160,7 +1160,6 @@ def AdminTxnStatus(request):
 
         if response.status_code == 200:
             api_data = response.json()
-            api_data = api_data.get("data")
             status = api_data.get("status", False)
             txn_status_code = api_data.get("txnstatus", "0")
             response_code = api_data.get("response_code", 0)
