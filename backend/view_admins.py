@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from .models import (UserKYCDocument, Wallet, WalletTransaction, ServiceActivation, AepsTxnCallbackByEko, DmtTxn,
                      PanVerificationTxn, BankVerificationTxn, Payout, BbpsTxn, CreditCardTxn, Wallet2,
-                     Wallet2Transaction, PaySprintCommissionCharge)
+                     Wallet2Transaction, PaySprintCommissionCharge, PaySprintAEPSTxnDetail)
 from core.models import UserAccount
 from django.db import transaction
 from django.db.models import Q
@@ -347,6 +347,47 @@ def AdminExploreAepsReport(request, id):
 @login_required(login_url='user_login')
 @user_passes_test(is_distributor_access, login_url='unauthorized')
 @user_passes_test(is_kyc_completed, login_url='unauthorized')
+def AdminExploreAeps2Report(request, id):
+    current_user = UserAccount.objects.get(username=request.user)
+    sub_current_user = UserAccount.objects.get(id=id)
+
+    if sub_current_user.userManager == str(current_user.id) or current_user.groups.filter(name='Admin').exists():
+        start_date_str = request.POST.get('start_date', None)
+        end_date_str = request.POST.get('end_date', None)
+        page = request.GET.get('page', 1)
+
+        try:
+            if start_date_str and end_date_str:
+                start_date = timezone.datetime.strptime(start_date_str, '%Y-%m-%d').date()
+                end_date = timezone.datetime.strptime(end_date_str, '%Y-%m-%d').date() + timedelta(days=1)
+                start_date = timezone.make_aware(datetime.combine(start_date, datetime.min.time()))
+                end_date = timezone.make_aware(datetime.combine(end_date, datetime.max.time()))
+                transactions = PaySprintAEPSTxnDetail.objects.filter(userAccount=id, timestamp__range=[start_date, end_date]).order_by('-id')
+            else:
+                transactions = PaySprintAEPSTxnDetail.objects.filter(userAccount=id).order_by('-id')
+
+        except ValueError as e:
+            messages.error(request, str(e))
+            transactions = []
+
+        paginator = Paginator(transactions, 20)
+
+        try:
+            transactions_page = paginator.page(page)
+        except PageNotAnInteger:
+            transactions_page = paginator.page(1)
+        except EmptyPage:
+            transactions_page = paginator.page(paginator.num_pages)
+
+        context = {'transactions_page': transactions_page}
+        return render(request, 'backend/Services/AEPS/AEPS_Report_PaySprint.html', context)
+    else:
+        return redirect('unauthorized')
+
+
+@login_required(login_url='user_login')
+@user_passes_test(is_distributor_access, login_url='unauthorized')
+@user_passes_test(is_kyc_completed, login_url='unauthorized')
 def AdminExploreDmtReport(request, id):
     current_user = UserAccount.objects.get(username=request.user)
     sub_current_user = UserAccount.objects.get(id=id)
@@ -443,9 +484,9 @@ def AdminExploreWallet2Report(request, id):
                 end_date = timezone.datetime.strptime(end_date_str, '%Y-%m-%d').date() + timedelta(days=1)
                 start_date = timezone.make_aware(datetime.combine(start_date, datetime.min.time()))
                 end_date = timezone.make_aware(datetime.combine(end_date, datetime.max.time()))
-                transactions = Wallet2Transaction.objects.filter(wallet__userAccount=id, timestamp__range=[start_date, end_date]).order_by('-id')
+                transactions = Wallet2Transaction.objects.filter(wallet2__userAccount=id, timestamp__range=[start_date, end_date]).order_by('-id')
             else:
-                transactions = Wallet2Transaction.objects.filter(wallet__userAccount=id).order_by('-id')
+                transactions = Wallet2Transaction.objects.filter(wallet2__userAccount=id).order_by('-id')
 
         except ValueError as e:
             messages.error(request, str(e))

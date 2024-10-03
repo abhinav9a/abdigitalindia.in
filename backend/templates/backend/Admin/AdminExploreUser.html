@@ -45,6 +45,15 @@
                                 <div class="col-lg-2 stretch-card">
                                     <div class="card">
                                         <div class="text-center p-2 border border-2">
+                                            <a class="text-dark" href="{% url 'AdminExploreAeps2Report' user.id %}">
+                                                AEPS Report 2
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-2 stretch-card">
+                                    <div class="card">
+                                        <div class="text-center p-2 border border-2">
                                             <a class="text-dark" href="{% url 'AdminExploreDmtReport' user.id %}">
                                                 DMT Report
                                             </a>
@@ -147,7 +156,9 @@
                                 <div class="col-3">BC Id : {{user.platform_id}}</div>
                                 <div class="col-3">User Code : {{user.eko_user_code}}</div>
                                 <div class="col-3">User type : {{user.userType}}</div>
-                                <div class="col-3">D.O.B. : {{user.dob}}</div>                               
+                                <div class="col-3">D.O.B. : {{user.dob}}</div>    
+                                <div class="col-3 my-2">AEPS 2 Merchant Code : {{user.platform_id}}</div>         
+                                <div class="col-3 my-2">AEPS 2 Reference no. : {{user.pay_sprint_ref_no}}</div>                  
                             </div>
                             <div class="row my-3">
                                 <div class="col-12 fw-bold text-black">BANK DETAILS</div>

@@ -118,6 +118,7 @@ urlpatterns = [
     
     path('explore-user/<int:id>', view_admins.AdminExploreUser, name='AdminExploreUser'), #admin only to view users profile
     path('explore-aeps-report/<int:id>', view_admins.AdminExploreAepsReport, name='AdminExploreAepsReport'), #admin, md, d only to view user's AEPS report
+    path('explore-aeps-2-report/<int:id>', view_admins.AdminExploreAeps2Report, name='AdminExploreAeps2Report'),
     path('explore-dmt-report/<int:id>', view_admins.AdminExploreDmtReport, name='AdminExploreDmtReport'), #admin, md, d only to view user's DMT report
     path('explore-wallet-report/<int:id>', view_admins.AdminExploreWalletReport, name='AdminExploreWalletReport'), #admin, md, d only to view user's Wallet report
     path('explore-wallet-2-report/<int:id>', view_admins.AdminExploreWallet2Report, name='AdminExploreWallet2Report'), #admin, md, d only to view user's Wallet 2 report
