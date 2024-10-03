@@ -350,7 +350,7 @@ def perform_withdrawal(request, user, merchant_auth_txn_id=None):
     data = get_pay_sprint_payload(request, user, "CW", merchant_auth_txn_id)
     response = make_post_request(url=PaySprintRoutes.CASH_WITHDRAWAL.value, data=data)
 
-    if response.status_code == 200:
+    if response.status_code == 200 and response.json().get("response_code") == 1:
         response_json = response.json()
         
         aadhaar_no = request.POST.get("aadhar_no")
@@ -364,7 +364,7 @@ def perform_withdrawal(request, user, merchant_auth_txn_id=None):
             "txn_status": response_json.get("txnstatus", 2),
             "message": response_json.get("message", "N/A"),
             "ack_no": response_json.get("ackno", "N/A"),
-            "amount": response_json.get("amount", 0),
+            "amount": amount,
             "bank_rrn": response_json.get("bankrrn", "N/A"),
             "service_type": "2",  # Cash Withdrawal
         }
@@ -488,8 +488,8 @@ def aadhar_pay(request):
             # amount += float(commission)
             data = get_pay_sprint_payload(request, user, "M")  # M OR FM OR IM
             response = make_post_request(url=PaySprintRoutes.AADHAR_PAY.value, data=data)
-            logger.error(f"Response Body: {response.json()}")
-            if response.status_code == 200:
+            logger.error(f"Aadhaar Pay Response Body: {response.json()}")
+            if response.status_code == 200 and response.json().get("response_code") == 1:
                 # if True:
                 response = response.json()
                 aadhaar_no = request.POST.get("aadhar_no")
@@ -500,7 +500,7 @@ def aadhar_pay(request):
                     "aadhaar_no": masked_aadhaar_no,
                     "reference_no": data.get("referenceno"),
                     "ack_no": response.get("ackno"),
-                    "amount": response.get("amount", 0),
+                    "amount": amount,
                     "balance_amount": response.get("balanceamount", 0),
                     "bank_rrn": response.get("bankrrn"),
                     "bank_iin": response.get("bankiin"),
@@ -1148,6 +1148,7 @@ def AdminTxnStatus(request):
 
         if response.status_code == 200:
             api_data = response.json()
+            logger.error(f"AdminTxnStatus 2  Response: {api_data}")
             status = api_data.get("status", False)
             txn_status_code = api_data.get("txnstatus", 0)
             response_code = api_data.get("response_code", 0)
