@@ -1148,7 +1148,6 @@ def AdminTxnStatus(request):
 
         if response.status_code == 200:
             api_data = response.json()
-            logger.error(f"AdminTxnStatus 2  Response: {api_data}")
             status = api_data.get("status", False)
             txn_status_code = api_data.get("txnstatus", 0)
             response_code = api_data.get("response_code", 0)
@@ -1170,6 +1169,8 @@ def AdminTxnStatus(request):
                 "txn_status_msg": txn_status_msg,
                 "reference_no": reference
             }
+
+            logger.error(f"AdminTxnStatus 2  Response: {context}")
                 
         else:
             messages.error(request, response.json().get("message"), extra_tags="danger")
