@@ -160,6 +160,7 @@ def debit_aadhaar_pay_charges(request, merchant_id):
 
         # Check if merchant has sufficient balance
         if merchant_wallet.balance < Decimal(amount) + commission:
+            logger.error(f"Aadhaar Pay=> Amoount: {amount} - Commission: {commission} - Wallet2 Balance: {merchant_wallet.balance}")
             messages.error(request, "Insufficient balance.", extra_tags="danger")
             return False
 

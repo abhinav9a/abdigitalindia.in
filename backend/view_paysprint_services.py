@@ -211,7 +211,7 @@ def balance_enquiry(request):
         response = make_post_request(
             url=PaySprintRoutes.BALANCE_ENQUIRY.value, data=data
         )
-        logger.error(f"Response Body: {response.json()}")
+        logger.error(f"Response Body - Balance Enquiry: {response.json()}")
         if response.status_code == 200:
             # if True:
             response = response.json()
@@ -435,7 +435,7 @@ def mini_statement(request):
                 return redirect("mini_statement_paysprint")
             data = get_pay_sprint_payload(request, user, "MS")
             response = make_post_request(url=PaySprintRoutes.MINI_STATEMENT.value, data=data)
-            logger.error(f"Response Body: {response.json()}")
+            logger.error(f"Response Body - Mini Statement: {response.json()}")
             if response.status_code == 200 and response.json().get("status"):
                 response = response.json()
                 aadhaar_no = request.POST.get("aadhar_no")
