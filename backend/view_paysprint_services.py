@@ -1160,16 +1160,17 @@ def AdminTxnStatus(request):
 
         if response.status_code == 200:
             api_data = response.json()
+            api_data = api_data.get("data")
             status = api_data.get("status", False)
-            txn_status_code = api_data.get("txnstatus", 0)
+            txn_status_code = api_data.get("txnstatus", "0")
             response_code = api_data.get("response_code", 0)
             txn_status_msg = "Transaction Not found in system"
 
-            if status and txn_status_code == 1 and response_code == 1:
+            if status and txn_status_code == "1" and response_code == 1:
                 txn_status_msg = "Success"
-            elif status and txn_status_code == 3 and response_code == 0:
+            elif status and txn_status_code == "3" and response_code == 0:
                 txn_status_msg = "Failed"
-            elif status and txn_status_code == 2 and response_code == 2:
+            elif status and txn_status_code == "2" and response_code == 2:
                 txn_status_msg = "Pending"
             elif not status and response_code == 3:
                 txn_status_msg = "Transaction Not found in system"

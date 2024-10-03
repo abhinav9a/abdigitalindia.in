@@ -49,39 +49,41 @@
                     </div>
                     <button type="submit" class="btn btn-primary mb-2">Check Status</button>
                 </form>
-                {% if data %}
-                    <div class="row">
-                        <div class="col-md-8 mx-auto grid-margin stretch-card">
-                            <div class="card">
-                                <div class="card-body">
-                                    <h1 class="mb-4">Transaction Status</h1>
-                                    <table class="table table-bordered table-striped">
-                                        <thead class="thead-dark">
-                                            <tr>
-                                                <th>Reference Number</th>
-                                                <th>Ack Number</th>
-                                                <th>Amount</th>
-                                                <th>Bank RRN</th>
-                                                <th>Status</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr>
-                                                <td>{{ reference_no }}</td>
-                                                <td>{{ data.ackno }}</td>
-                                                <td>{{ data.amount }}</td>
-                                                <td>{{ data.bankrrn }}</td>
-                                                <td>{{ txn_status_msg }}</td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                {% endif %}
             </div>
         </div>
     </div>
 </div>
+{% if data %}
+<div class="row">
+    <div class="col-md-8 mx-auto grid-margin stretch-card">
+        <div class="card">
+            <div class="card-body">
+                <h1 class="mb-4" style="color: #001737;">Transaction Status</h1>
+                <table class="table table-bordered table-striped">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th>Reference No.</th>
+                            <th>Acknowledgment No.</th>
+                            <th>Amount</th>
+                            <th>Bank RRN</th>
+                            <th>Message</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>{{ reference_no }}</td>
+                            <td>{{ data.ackno }}</td>
+                            <td>{{ data.amount|default:"N/A" }}</td>
+                            <td>{{ data.bankrrn }}</td>
+                            <td>{{ data.message|default:"N/A" }}</td>
+                            <td>{{ txn_status_msg }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
 {% endblock main %}
