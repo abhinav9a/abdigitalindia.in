@@ -19,7 +19,7 @@ def get_commission_charge(service_type, amount=None):
 
 def calculate_commission(base_amount=0, commission_rate=0, is_percentage=0):
     if is_percentage:
-        return Decimal(base_amount) * Decimal(commission_rate)
+        return Decimal(base_amount) * Decimal(commission_rate/100)
     return Decimal(commission_rate)
 
 
