@@ -281,11 +281,15 @@ def cash_withdrawal(request):
         with transaction.atomic():
             try:
                 aeps_bank = request.POST.get('aeps_bank')
-                # Credit AEPS commission before making the request
-                if not credit_aeps_commission(request, user.id):
+                
+                amount = request.POST.get('amount', 0)
+
+                merchant_wallet = Wallet2.objects.get(userAccount=user)
+                if merchant_wallet.is_hold:
+                    messages.error(request, f"Wallet is on hold. Reason: {merchant_wallet.hold_reason}.", extra_tags="danger")
                     transaction.set_rollback(True)
                     return redirect("cash_withdrawl_paysprint")
-
+        
                 if aeps_bank == 'bank2':
                     return process_bank2_withdrawal(request, user)
                 elif aeps_bank == 'bank3':
@@ -371,6 +375,14 @@ def perform_withdrawal(request, user, merchant_auth_txn_id=None):
         txn_detail = PaySprintAEPSTxnDetail.objects.create(**transaction_data)
 
         txn_status = check_transaction_status(data.get("referenceno"))
+
+        if txn_status == "1":
+            # Credit AEPS commission before making the request
+            if not credit_aeps_commission(request, user.id):
+                transaction.set_rollback(True)
+                messages.error(request, message="DONE", extra_tags="success")
+                return redirect("cash_withdrawl_paysprint")
+
         
         txn_detail.txn_status = txn_status
         txn_detail.save()
