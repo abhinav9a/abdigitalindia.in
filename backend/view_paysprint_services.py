@@ -27,7 +27,7 @@ from backend.utils import (
     make_post_request,
     update_payout_statuses,
     get_aadhaar_pay_txn_status,
-    check_daily_kyc, is_admin_user
+    check_daily_kyc, is_admin_user, update_aeps_txn_status
 )
 from backend.utils_paysprint import (credit_aeps_commission, credit_mini_statement_commission, debit_aadhaar_pay_charges,
                                      debit_payout_charges, get_total_commission)
@@ -550,6 +550,7 @@ def aeps_report(request):
     page = request.GET.get("page", 1)
 
     try:
+        update_aeps_txn_status()
         if start_date_str and end_date_str:
             start_date = timezone.datetime.strptime(start_date_str, "%Y-%m-%d").date()
             end_date = timezone.datetime.strptime(
@@ -1146,6 +1147,7 @@ def wallet2_commission_report(request):
 def AdminTxnStatus(request):
     context = {}
     if request.method == 'POST':
+        update_aeps_txn_status()
         txn_type = request.POST.get('txn_type')
         reference = request.POST.get('reference')
 

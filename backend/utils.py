@@ -1,7 +1,7 @@
 import qrcode
 from io import BytesIO
 from backend.models import (WalletTransaction, ServiceActivation, PaySprintMerchantAuth, PaySprintPayout, Wallet,
-                            Wallet2Transaction, Wallet2, CommissionTxn)
+                            Wallet2Transaction, Wallet2, CommissionTxn, PaySprintAEPSTxnDetail)
 from django.utils import timezone
 from django.contrib import messages
 from decimal import Decimal
@@ -397,6 +397,61 @@ def update_payout_statuses(user):
                 PaySprintPayout.objects.bulk_update(payouts_to_update, ['txn_status'])
     except Exception as e:
         print(f"Error updating payout statuses: {e}")
+
+
+def update_aeps_txn_status():
+    # Query all transactions that are either in Pending or Bad Request state
+    pending_txns = PaySprintAEPSTxnDetail.objects.filter(
+        txn_status__in=[PaySprintAEPSTxnDetail.Txn_Status.Pending, PaySprintAEPSTxnDetail.Txn_Status.Bad_Request]
+    )
+    updated_txns = []
+
+    for txn in pending_txns:
+        # Determine the correct status check URL based on the service type
+        if txn.service_type == PaySprintAEPSTxnDetail.Service_Type.Aadhaar_Pay:
+            url = PaySprintRoutes.AADHAR_PAY_TXN_STATUS.value
+        else:
+            url = PaySprintRoutes.CASH_WITHDRAWAL_TXN_STATUS.value
+        
+        # Prepare payload with the reference number
+        payload = {"reference": txn.reference_no}
+
+        try:
+            # Send a POST request to check the transaction status
+            response = make_post_request(url=url, data=payload)
+            
+            if response.status_code == 200:
+                api_data = response.json()
+                status = api_data.get("status", False)
+                txn_status_code = api_data.get("txnstatus", "0")
+                response_code = api_data.get("response_code", 0)
+                api_message = api_data.get("message", "N/A")
+
+                # Update status message based on txnstatus and response_code
+                if status and txn_status_code == "1" and response_code == 1:
+                    txn.txn_status = PaySprintAEPSTxnDetail.Txn_Status.Success
+                elif status and txn_status_code == "3" and response_code == 0:
+                    txn.txn_status = PaySprintAEPSTxnDetail.Txn_Status.Failed
+                elif status and txn_status_code == "2" and response_code == 2:
+                    txn.txn_status = PaySprintAEPSTxnDetail.Txn_Status.Pending
+                elif not status and response_code == 3:
+                    txn.txn_status = PaySprintAEPSTxnDetail.Txn_Status.Txn_Not_Found
+                else:
+                    txn.txn_status = PaySprintAEPSTxnDetail.Txn_Status.Bad_Request
+
+                # Update the message field with the status message
+                txn.message = api_message
+
+                updated_txns.append(txn)
+            logger.error("Done")
+
+        except requests.RequestException as e:
+            # Handle connection or request error
+            logger.error(f"Error while checking status for txn {txn.reference_no}: {str(e)}")
+
+    # Bulk update the txn_status and message fields
+    if updated_txns:
+        PaySprintAEPSTxnDetail.objects.bulk_update(updated_txns, ['txn_status', 'message'])
 
 
 def get_aadhaar_pay_txn_status(reference_no: str):
