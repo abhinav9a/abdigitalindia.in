@@ -8,8 +8,10 @@ from rest_framework.response import Response
 from .serializers import QRTxnCallbackByEkoSerializer, AepsTxnCallbackByEkoSerializer, CMSTxnCallbackByEkoSerializer
 from core.models import UserAccount
 from .models import (AepsTxnCallbackByEko, Wallet, Commission, CommissionTxn, CMSTxnCallbackByEko, 
-                     Wallet2, PaySprintCommissionCharge, Wallet2Transaction)
+                     Wallet2, PaySprintCommissionCharge, Wallet2Transaction, PaySprintPayout)
 from .utils import generate_key
+from backend.config.consts import PAYOUT_TRANSACTION_STATUS
+from backend.utils_paysprint import debit_payout_charges
 import hashlib
 import hmac
 import base64
@@ -467,6 +469,25 @@ def pay_sprint_onboarding_callback(request):
 
             elif data.get("event") == "MERCHANT_STATUS_ONBOARD":
                 return Response({"status":200,"message":"Transaction completed successfully"}, status=200)
+            
+            elif data.get("event") == "PAYOUT_SETTLEMENT":
+                ref_id = data.get("param").get("refid")
+                amount = data.get("param").get("amount")
+
+                payout_obj = PaySprintPayout.objects.get(ref_id=ref_id)
+                payout_obj.utr = request.data.get("param").get("utr", payout_obj.utr)
+                payout_obj.ack_no = request.data.get("param").get("ackno", payout_obj.ack_no)
+
+                payout_obj.save()
+
+
+                if not debit_payout_charges(request=request, merchant_id=payout_obj.userAccount.id, amount=amount):
+                    return Response({"status":400,"message":"Transaction failed"})
+                
+                return Response({"status":200,"message":"Transaction completed successfully"})
+            else:
+                return Response({"status":400,"message":"Transaction failed"})
+
         except Exception as e:
             logger.error(f"Error in {__name__}: {e}")
             return Response({"status": 400,"message": "Transaction Failed"}, status=400)

@@ -855,60 +855,72 @@ def do_transaction(request):
         ref_id = generate_unique_id()
         try:
             # Debit Payout charges before making the request
-            if not debit_payout_charges(request, userObj.id, request.POST.get("amount")):
-                transaction.set_rollback(True)
+            # if not debit_payout_charges(request, userObj.id, request.POST.get("amount")):
+            #     transaction.set_rollback(True)
+            #     return redirect("do_transaction")
+            merchant_wallet = Wallet2.objects.get(userAccount=userObj)
+
+            if merchant_wallet.is_hold:
+                messages.error(request, f"Wallet is on hold. Reason: {merchant_wallet.hold_reason}.", extra_tags="danger")
                 return redirect("do_transaction")
+
+            # Get the appropriate commission charge
+            commission_charge = get_commission_charge('Payout', amount)
+            if not commission_charge:
+                messages.error(request, "No commission charge found for Payout", extra_tags="danger")
+                return redirect("do_transaction")
+
+            # Check if merchant has sufficient balance
+            if merchant_wallet.balance < Decimal(request.POST.get("amount")) + commission_charge.flat_charge:
+                messages.error(request, "Insufficient balance.", extra_tags="danger")
+                return redirect("do_transaction")
+            
             amount = float(request.POST.get("amount"))
-            # commission = get_total_commission(request, userObj, amount, "Payout")
-            # amount += float(commission)
-            # logger.error(f"amount: {amount}")
-            data = {
+            
+            txn_api_payload = {
                 "bene_id": request.POST.get("bene_id"),
                 "amount": amount,
                 "refid": ref_id,
                 "mode": request.POST.get("mode"),
             }
-            # logger.debug(f"API URL: {PaySprintRoutes.DO_TRANSACTION.value}")
-            # logger.debug(f"Request Body: {data}")
-            response = requests.post(
+            txn_api_response = requests.post(
                 PaySprintRoutes.DO_TRANSACTION.value,
-                json=data,
+                json=txn_api_payload,
                 headers=get_pay_sprint_headers(),
             )
-            api_data = response.json()
-            # logger.debug(f"Response Body: {api_data}")
+            txn_api_data = txn_api_response.json()
+            logger.debug(f"Payout TXN Response Body: {txn_api_data}")
 
-            if response.status_code == 200 and api_data.get("status"):
-                messages.success(request, api_data.get("message"))
-                payload = {"refid": ref_id, "ackno": api_data.get("ackno")}
-                # logger.debug(f"API URL: {PaySprintRoutes.TRANSACTION_STATUS.value}")
-                # logger.debug(f"Request Body: {data}")
+            if txn_api_response.status_code == 200 and txn_api_data.get("status"):
+                messages.success(request, txn_api_data.get("message"))
+                payload = {"refid": ref_id, "ackno": txn_api_data.get("ackno")}
+
                 # Check the Transaction Status
-                response = requests.post(
+                txn_status_api_response = requests.post(
                     PaySprintRoutes.TRANSACTION_STATUS.value,
                     json=payload,
                     headers=get_pay_sprint_headers(),
                 )
-                api_data = response.json()
-                # logger.debug(f"Response Body: {api_data}")
+                txn_status_api_data = txn_status_api_response.json()
+                logger.debug(f"Payout Status Response Body: {txn_status_api_data}")
 
-                if response.status_code == 200 and api_data.get("status"):
-                    data = api_data.get("data")
+                if txn_status_api_response.status_code == 200 and txn_status_api_data.get("status"):
+                    txn_status_data = txn_status_api_data.get("data")
 
                     payout_details = {
                         "userAccount": request.user,
-                        "ref_id": data.get("refid"),
-                        "ack_no": data.get("ackno"),
-                        "bank_name": data.get("bankname"),
-                        "account_no": data.get("acno"),
-                        "beneficiary_name": data.get("benename"),
-                        "amount": data.get("amount"),
-                        "ifsc": data.get("ifsccode"),
-                        "mode": data.get("mode"),
-                        "charges": data.get("charges"),
-                        "utr": data.get("utr"),
+                        "ref_id": ref_id,
+                        "ack_no": txn_api_data.get("ackno"),
+                        "bank_name": txn_status_data.get("bankname"),
+                        "account_no": txn_status_data.get("acno"),
+                        "beneficiary_name": txn_status_data.get("benename"),
+                        "amount": txn_status_data.get("amount"),
+                        "ifsc": txn_status_data.get("ifsccode"),
+                        "mode": txn_status_data.get("mode"),
+                        "charges": txn_status_data.get("charges"),
+                        "utr": txn_status_data.get("utr"),
                         "txn_status": PAYOUT_TRANSACTION_STATUS.get(
-                            data.get("txn_status")
+                            txn_status_data.get("txn_status")
                         ),
                     }
 
@@ -917,7 +929,7 @@ def do_transaction(request):
 
                     return redirect("do_transaction")
 
-            messages.error(request, api_data.get("message"), extra_tags="danger")
+            messages.error(request, txn_status_data.get("message"), extra_tags="danger")
             transaction.set_rollback(True)
             return redirect("do_transaction")
         except Exception as e:

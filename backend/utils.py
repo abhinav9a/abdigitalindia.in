@@ -379,11 +379,12 @@ def make_post_request(url, data):
 
 def update_payout_status(user=None):
     payouts = None
+    
     try:
         if user:
-            payouts = PaySprintPayout.objects.filter(userAccount=user, txn_status__in=['2', '3', '4'])
+            payouts = PaySprintPayout.objects.filter(userAccount=user, txn_status__in=["Pending", "Transaction In Process", "On Hold"])
         else:
-            payouts = PaySprintPayout.objects.filter(txn_status__in=['2', '3', '4'])
+            payouts = PaySprintPayout.objects.filter(txn_status__in=["Pending", "Transaction In Process", "On Hold"])
     
         payouts_to_update = []
         for payout in payouts:

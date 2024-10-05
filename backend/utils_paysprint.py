@@ -4,7 +4,7 @@ from django.contrib import messages
 import logging
 
 from core.models import UserAccount
-from backend.models import Wallet2, PaySprintCommissionCharge, PaySprintCommissionTxn
+from backend.models import Wallet2, PaySprintCommissionCharge, PaySprintCommissionTxn, Wallet2Transaction
 
 
 logger = logging.getLogger(__name__)
@@ -188,12 +188,14 @@ def debit_payout_charges(request, merchant_id, amount):
 
         if merchant_wallet.is_hold:
             messages.error(request, f"Wallet is on hold. Reason: {merchant_wallet.hold_reason}.", extra_tags="danger")
+            logger.error(f"Wallet is on hold. Reason: {merchant_wallet.hold_reason}.")
             return False
 
         # Get the appropriate commission charge
         commission_charge = get_commission_charge('Payout', amount)
         if not commission_charge:
             messages.error(request, "No commission charge found for Payout", extra_tags="danger")
+            logger.error("No commission charge found for Payout")
             return False
 
         # For Payout, we use flat_charge
@@ -202,12 +204,26 @@ def debit_payout_charges(request, merchant_id, amount):
         # Check if merchant has sufficient balance
         if merchant_wallet.balance < Decimal(amount) + charge:
             messages.error(request, "Insufficient balance.", extra_tags="danger")
+            logger.error("Insufficient balance.")
             return False
 
         # Subtract amount and charge from merchant's wallet
         merchant_wallet.balance -= (Decimal(amount) + charge)
         merchant_wallet.save()
 
+        utr = request.data.get("param").get("utr")
+        ref_id = request.data.get("param").get("refid")
+
+        # Log Transaction
+        Wallet2Transaction.objects.create(
+            wallet2=merchant_wallet,
+            txnId=utr,
+            amount=(Decimal(amount) + charge),
+            txn_status='Success',
+            client_ref_id=ref_id,
+            description="Payout Amount and charges",
+            transaction_type="Payout Deduct"
+        )
         return True
 
     except UserAccount.DoesNotExist:
