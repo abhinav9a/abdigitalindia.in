@@ -389,11 +389,13 @@ def update_payout_status(user=None):
         payouts_to_update = []
         for payout in payouts:
             payload = {
-                "refid": payout.client_ref_id,
-                "ackno": payout.tid
+                "refid": payout.ref_id,
+                "ackno": payout.ack_no
             }
+            logger.error(f"update_payout_status: {payload}")
             response = requests.post(PaySprintRoutes.TRANSACTION_STATUS.value, json=payload, headers=get_pay_sprint_headers())
             api_data = response.json().get("data")
+            logger.error(f"update_payout_status Response: {api_data}")
 
             if api_data:
                 payout.txn_status = api_data.get("txn_status", payout.txn_status)

@@ -10,7 +10,7 @@
         <div class="card">
             <div class="card-body">
                 <h4 class="card-title">Fund Transfer</h4>
-                <p class="card-description">Minimum Payout 100 Rs | Available fund : {{wallet_balance}}</p>
+                <p class="card-description">Minimum Payout 100 Rs | Available fund : {{wallet2_balance}}</p>
                 {% if activated_banks %}
                     {% for bank in activated_banks %}
                         <button type="button" data-bs-toggle="modal" data-bs-target="#makePayout" class="btn btn-primary me-2 my-2"  data-bene-id="{{bank.beneid}}">Transfer to - {{bank.name}} <br> {{bank.bankname}} <br> {{bank.account}} - {{bank.ifsc}}</button>

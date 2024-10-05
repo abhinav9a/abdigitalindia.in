@@ -851,7 +851,7 @@ def do_transaction(request):
     )
 
     if request.method == "POST":
-        amount = 0
+        amount = float(request.POST.get("amount"))
         ref_id = generate_unique_id()
         try:
             # Debit Payout charges before making the request
@@ -871,11 +871,10 @@ def do_transaction(request):
                 return redirect("do_transaction")
 
             # Check if merchant has sufficient balance
-            if merchant_wallet.balance < Decimal(request.POST.get("amount")) + commission_charge.flat_charge:
+            if merchant_wallet.balance < Decimal(amount) + commission_charge.flat_charge:
                 messages.error(request, "Insufficient balance.", extra_tags="danger")
                 return redirect("do_transaction")
             
-            amount = float(request.POST.get("amount"))
             
             txn_api_payload = {
                 "bene_id": request.POST.get("bene_id"),
@@ -889,7 +888,7 @@ def do_transaction(request):
                 headers=get_pay_sprint_headers(),
             )
             txn_api_data = txn_api_response.json()
-            logger.debug(f"Payout TXN Response Body: {txn_api_data}")
+            logger.error(f"Payout TXN Response Body: {txn_api_data}")
 
             if txn_api_response.status_code == 200 and txn_api_data.get("status"):
                 messages.success(request, txn_api_data.get("message"))
@@ -902,7 +901,7 @@ def do_transaction(request):
                     headers=get_pay_sprint_headers(),
                 )
                 txn_status_api_data = txn_status_api_response.json()
-                logger.debug(f"Payout Status Response Body: {txn_status_api_data}")
+                logger.error(f"Payout Status Response Body: {txn_status_api_data}")
 
                 if txn_status_api_response.status_code == 200 and txn_status_api_data.get("status"):
                     txn_status_data = txn_status_api_data.get("data")
@@ -929,7 +928,7 @@ def do_transaction(request):
 
                     return redirect("do_transaction")
 
-            messages.error(request, txn_status_data.get("message"), extra_tags="danger")
+            messages.error(request, txn_api_data.get("message"), extra_tags="danger")
             transaction.set_rollback(True)
             return redirect("do_transaction")
         except Exception as e:
