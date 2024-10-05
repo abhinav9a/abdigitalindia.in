@@ -5,7 +5,7 @@ from .models import (UserKYCDocument, OtherServices, Wallet, WalletTransaction, 
                      AdhaarVerificationTxn, OtherServices2, PaySprintAEPSTxnDetail, Wallet2, Wallet2Transaction, PaySprintMerchantAuth,
                      PaySprintCommissionTxn)
 from django.utils.translation import gettext_lazy as _
-from backend.utils import update_aeps_txn_status
+from backend.utils import update_aeps_txn_status, update_payout_status
 
 # Register your models here.
 
@@ -57,6 +57,12 @@ class PaySprintPayoutAdmin(admin.ModelAdmin):
 
     def get_model_name(self, obj=None):
         return "Payouts 2"
+    
+    def changelist_view(self, request, extra_context=None):
+        update_payout_status()
+
+        # Continue with the normal changelist_view logic
+        return super().changelist_view(request, extra_context=extra_context)
 
 class PaySprintAEPSTxnDetailsAdmin(admin.ModelAdmin):
     list_display = ('id', 'userAccount', 'reference_no', 'amount', 'aadhaar_no', 'txn_status', 'service_type', 'timestamp')

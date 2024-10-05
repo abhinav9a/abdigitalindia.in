@@ -377,9 +377,14 @@ def make_post_request(url, data):
     return response
 
 
-def update_payout_statuses(user):
+def update_payout_status(user=None):
+    payouts = None
     try:
-        payouts = PaySprintPayout.objects.filter(userAccount=user, txn_status__in=['2', '3', '4'])
+        if user:
+            payouts = PaySprintPayout.objects.filter(userAccount=user, txn_status__in=['2', '3', '4'])
+        else:
+            payouts = PaySprintPayout.objects.filter(txn_status__in=['2', '3', '4'])
+    
         payouts_to_update = []
         for payout in payouts:
             payload = {
@@ -396,7 +401,7 @@ def update_payout_statuses(user):
             with transaction.atomic():
                 PaySprintPayout.objects.bulk_update(payouts_to_update, ['txn_status'])
     except Exception as e:
-        print(f"Error updating payout statuses: {e}")
+        logger.error(f"Error updating payout statuses: {e}")
 
 
 def update_aeps_txn_status():

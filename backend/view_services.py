@@ -9,7 +9,7 @@ import requests
 import base64
 from decimal import Decimal, ROUND_DOWN
 from backend.utils import (is_kyc_completed, generate_qr_code, is_user_onboard, generate_key, generate_unique_id,
-                           get_client_ip, electricity_operator_id, recharge_prepaid_operator_id, update_payout_statuses,
+                           get_client_ip, electricity_operator_id, recharge_prepaid_operator_id,
                            recharge_postpaid_operator_id, dth_operator_id, loan_operator_id, water_gas_lpg_operator_id)
 from .models import (CommissionTxn, Wallet, WalletTransaction, Wallet2Transaction, ServiceActivation, DMTBankList, AepsTxnCallbackByEko,
                      PanVerificationTxn, BankVerificationTxn, DmtTxn, Commission, Payout, BbpsTxn, CreditCardTxn,

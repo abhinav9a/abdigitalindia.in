@@ -25,7 +25,7 @@ from backend.utils import (
     is_bank2_last_authentication_valid,
     is_bank3_last_authentication_valid,
     make_post_request,
-    update_payout_statuses,
+    update_payout_status,
     get_aadhaar_pay_txn_status,
     check_daily_kyc, is_admin_user, update_aeps_txn_status
 )
@@ -1077,7 +1077,7 @@ def payout_report(request):
     page = request.GET.get("page", 1)
 
     try:
-        update_payout_statuses(user=request.user)
+        update_payout_status(user=request.user)
         if start_date_str and end_date_str:
             start_date = timezone.datetime.strptime(start_date_str, "%Y-%m-%d").date()
             end_date = timezone.datetime.strptime(
