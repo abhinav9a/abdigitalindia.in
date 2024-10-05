@@ -30,11 +30,11 @@ from backend.utils import (
     check_daily_kyc, is_admin_user, update_aeps_txn_status
 )
 from backend.utils_paysprint import (credit_aeps_commission, credit_mini_statement_commission, debit_aadhaar_pay_charges,
-                                     debit_payout_charges, get_total_commission)
+                                     debit_payout_charges, get_commission_charge, calculate_commission)
 from backend.models import (
     PaySprintMerchantAuth,
     PaySprintAEPSTxnDetail,
-    Wallet2,
+    Wallet2, Wallet2Transaction,
     PaySprintPayout,
     PaySprintPayoutBankAccountDetails, PaySprintCommissionTxn, PaySprintCommissionCharge
 )
@@ -524,6 +524,20 @@ def aadhar_pay(request):
                     reference_no=data.get("referenceno")
                 )
                 merchant_auth.save()
+
+                merchant_wallet = Wallet2.objects.get(userAccount=user)
+                commission_charge = get_commission_charge('Aadhaar Pay')
+                commission = calculate_commission(amount, commission_charge.retailer_commission, commission_charge.is_percentage)
+        
+                Wallet2Transaction.objects.create(
+                    wallet2=merchant_wallet,
+                    txnId=data.get("referenceno"),
+                    amount=commission,
+                    txn_status='Success',
+                    client_ref_id="N/A",
+                    description="Aadhaar Pay Charges",
+                    transaction_type="Aadhaar Pay charges Deduct"
+                )
 
                 return render(
                     request,
