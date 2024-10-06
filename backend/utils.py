@@ -385,7 +385,7 @@ def update_payout_status(user=None):
             payouts = PaySprintPayout.objects.filter(userAccount=user, txn_status__in=["Pending", "Transaction In Process", "On Hold"])
         else:
             payouts = PaySprintPayout.objects.filter(txn_status__in=["Pending", "Transaction In Process", "On Hold"])
-        payouts = PaySprintPayout.objects.all()
+        # payouts = PaySprintPayout.objects.all()
         payouts_to_update = []
         for payout in payouts:
             payload = {
