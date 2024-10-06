@@ -528,15 +528,29 @@ def aadhar_pay(request):
                 merchant_wallet = Wallet2.objects.get(userAccount=user)
                 commission_charge = get_commission_charge('Aadhaar Pay')
                 commission = calculate_commission(amount, commission_charge.retailer_commission, commission_charge.is_percentage)
-        
+
+                merchant_wallet.balance += Decimal(amount)
+                merchant_wallet.save()
+
                 Wallet2Transaction.objects.create(
                     wallet2=merchant_wallet,
                     txnId=data.get("referenceno"),
                     amount=commission,
                     txn_status='Success',
-                    client_ref_id="N/A",
+                    client_ref_id=data.get("referenceno"),
                     description="Aadhaar Pay Charges",
                     transaction_type="Aadhaar Pay charges Deduct"
+                )
+
+
+                Wallet2Transaction.objects.create(
+                    wallet2=merchant_wallet,
+                    txnId=data.get("referenceno"),
+                    amount=amount,
+                    txn_status='Success',
+                    client_ref_id=data.get("referenceno"),
+                    description="Aadhaar Pay Amount",
+                    transaction_type="Aadhaar Pay amount Deposit"
                 )
 
                 return render(

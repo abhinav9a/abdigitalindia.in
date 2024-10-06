@@ -22,9 +22,6 @@
                         <span class="text-white btn btn-danger btn-sm">Type : {{request.user.userType}} </span>
                     </li>
                     <li class="nav-item dropdown d-md-flex d-none">
-                        <span class="text-white btn btn-danger btn-sm">Email : {{request.user.email}} </span>
-                    </li>
-                    <li class="nav-item dropdown d-md-flex d-none">
                         <span class="text-white btn btn-danger btn-sm">KYC : 
                             {% if request.user.kycStatus == 'C' %}
                             Complete 

@@ -163,7 +163,7 @@ def debit_aadhaar_pay_charges(request, merchant_id):
             messages.error(request, "Insufficient balance.", extra_tags="danger")
             return False
 
-        # Subtract amount and commission from merchant's wallet
+        # Subtract charges from merchant's wallet
         merchant_wallet.balance -= commission
         merchant_wallet.save()
 
