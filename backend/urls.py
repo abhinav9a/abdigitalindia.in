@@ -125,6 +125,7 @@ urlpatterns = [
     path('explore-pan-verification-report/<int:id>', view_admins.AdminExplorePanVerificationReport, name='AdminExplorePanVerificationReport'), #admin, md, d only to view user's Pan Verification report
     path('explore-bank-verification-report/<int:id>', view_admins.AdminExploreBankVerificationReport, name='AdminExploreBankVerificationReport'), #admin, md, d only to view user's Bank Verification report
     path('explore-payout-report/<int:id>', view_admins.AdminExplorePayoutReport, name='AdminExplorePayoutReport'), #admin, md, d only to view user's Payout report
+    path('explore-payout-2-report/<int:id>', view_admins.AdminExplorePayout2Report, name='AdminExplorePayout2Report'), 
     path('explore-bbps-report/<int:id>', view_admins.AdminExploreBBPSReport, name='AdminExploreBBPSReport'), #admin, md, d only to view user's Payout report
     path('explore-creditcard-report/<int:id>', view_admins.AdminExploreCreditCardReport, name='AdminExploreCreditCardReport'), #admin, md, d only to view user's Payout report
 
