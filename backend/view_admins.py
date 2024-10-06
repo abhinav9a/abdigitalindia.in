@@ -11,7 +11,7 @@ from django.db.models import Q
 from django.contrib.auth.decorators import user_passes_test
 from decimal import Decimal
 from django.utils import timezone
-from backend.utils import (is_admin_user, generate_unique_id, is_kyc_completed, is_user_onboard,
+from backend.utils import (is_admin_user, update_payout_status, is_kyc_completed, is_user_onboard,
                            is_master_distributor_access, is_distributor_access, generate_platform_id, generate_key,
                            update_wallet, update_wallet2_hold_status)
 from core.decorators import transaction_required
@@ -636,6 +636,8 @@ def AdminExplorePayoutReport(request, id):
 def AdminExplorePayout2Report(request, id):
     current_user = UserAccount.objects.get(username=request.user)
     sub_current_user = UserAccount.objects.get(id=id)
+
+    update_payout_status()
 
     if sub_current_user.userManager == str(current_user.id) or current_user.groups.filter(name='Admin').exists():
         start_date_str = request.POST.get('start_date', None)

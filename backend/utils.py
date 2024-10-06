@@ -16,7 +16,7 @@ import time
 import socket
 import jwt
 from backend.config.secrets import JWT_KEY, AUTHORISED_KEY, PARTNER_ID, AES_ENCRYPTION_IV, AES_ENCRYPTION_KEY
-from backend.config.consts import PaySprintRoutes
+from backend.config.consts import PaySprintRoutes, PAYOUT_TRANSACTION_STATUS
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad
 import requests
@@ -385,7 +385,7 @@ def update_payout_status(user=None):
             payouts = PaySprintPayout.objects.filter(userAccount=user, txn_status__in=["Pending", "Transaction In Process", "On Hold"])
         else:
             payouts = PaySprintPayout.objects.filter(txn_status__in=["Pending", "Transaction In Process", "On Hold"])
-    
+        payouts = PaySprintPayout.objects.all()
         payouts_to_update = []
         for payout in payouts:
             payload = {
@@ -397,8 +397,8 @@ def update_payout_status(user=None):
             api_data = response.json().get("data")
             logger.error(f"update_payout_status Response: {api_data}")
 
-            if api_data:
-                payout.txn_status = api_data.get("txn_status", payout.txn_status)
+            if api_data and api_data.get("txn_status"):
+                payout.txn_status = PAYOUT_TRANSACTION_STATUS.get(api_data.get("txn_status"))
                 payouts_to_update.append(payout)
         if payouts_to_update:
             with transaction.atomic():
