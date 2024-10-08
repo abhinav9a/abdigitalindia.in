@@ -653,6 +653,9 @@ def daily_kyc(request):
     heading = "Mini Statement"
     if request.method == "POST":
         try:
+            daily_kyc_bank_2_status = None
+            daily_kyc_bank_3_status = None
+            bank = request.POST.get("aeps_bank")
             with transaction.atomic():
                 wallet = Wallet2.objects.get(userAccount=user)
                 daily_kyc_charge = PaySprintCommissionCharge.objects.get(service_type='Daily KYC')
@@ -663,8 +666,13 @@ def daily_kyc(request):
                     messages.error(request, "Insufficient Wallet 2 balance to complete Daily KYC.", extra_tags="danger")
                     return redirect("daily_kyc_paysprint")
                 
-                daily_kyc_bank_2_status = daily_kyc_bank_2(request=request, user=user)
-                daily_kyc_bank_3_status = daily_kyc_bank_3(request=request, user=user)
+                if bank == "bank2":
+                    daily_kyc_bank_2_status = daily_kyc_bank_2(request=request, user=user)
+                elif bank == "bank3":
+                    daily_kyc_bank_3_status = daily_kyc_bank_3(request=request, user=user)
+                else:
+                    messages.error(request, "Select an AEPS Bank Provider.", extra_tags="danger")
+                    return redirect("daily_kyc_paysprint")
 
                 if daily_kyc_bank_2_status or daily_kyc_bank_3_status:
                     wallet.balance -= daily_kyc_charge.flat_charge
@@ -672,10 +680,11 @@ def daily_kyc(request):
                     messages.success(request, "Daily KYC completed successfully.")
                 else:
                     # messages.error(request, "Daily KYC failed for both banks.", extra_tags="danger")
-                    raise Exception("Daily KYC failed")
+                    return redirect("daily_kyc_paysprint")  
         except Exception as e:
-            messages.error(request, "Daily KYC failed for both banks.", extra_tags="danger")
+            messages.error(request, "Daily KYC failed.", extra_tags="danger")
             logger.error("Daily KYC Failed", exc_info=True)
+            return redirect("daily_kyc_paysprint")
 
         return redirect("dashboard")
     

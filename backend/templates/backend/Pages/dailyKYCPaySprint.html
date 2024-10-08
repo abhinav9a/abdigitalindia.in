@@ -29,6 +29,21 @@
 						</div>
 						<div class="col-md-3">
 							<div class="form-group">
+								<label for="aeps_bank">AEPS Bank Provider</label>
+								<select
+									name="aeps_bank"
+									class="form-control"
+									style="background-color: #ffffff; border: 1px solid #d3d3d3; border-radius: 0.25rem; padding: 16px; color: #000000"
+									id="aeps_bank"
+								>
+									<option value="">Select AEPS Bank</option>
+									<option value="bank2">FINO</option>
+									<option value="bank3">NSDL</option>
+								</select>
+							</div>
+						</div>
+						<div class="col-md-3">
+							<div class="form-group">
 								<label for="data" class="form-label">Fingerprint Data</label>
 								<input type="hidden" id="data" name="data" />
 								<button type="button" class="form-control fingerprint" onclick="captureFingerprint('data')">
