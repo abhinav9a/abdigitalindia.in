@@ -275,7 +275,7 @@ def get_pay_sprint_common_payload(request, user):
         "latitude": latitude,
         "longitude": longitude,
         "mobilenumber": user.mobile,
-        "referenceno": int(time.time() * 1000),
+        "referenceno": generate_unique_id(),
         "ipaddress": get_client_ip(request),
         "adhaarnumber": request.POST.get("aadhar_no"),
         "accessmodetype": "SITE",

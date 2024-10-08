@@ -677,6 +677,16 @@ def daily_kyc(request):
                 if daily_kyc_bank_2_status or daily_kyc_bank_3_status:
                     wallet.balance -= daily_kyc_charge.flat_charge
                     wallet.save()
+                    # Log Transaction
+                    Wallet2Transaction.objects.create(
+                        wallet2=wallet,
+                        txnId="N/A",
+                        amount=daily_kyc_charge.flat_charge,
+                        txn_status='Success',
+                        client_ref_id=generate_unique_id(),
+                        description="Daily KYC charges",
+                        transaction_type="Daily KYC charges Deduct"
+                    )
                     messages.success(request, "Daily KYC completed successfully.")
                 else:
                     # messages.error(request, "Daily KYC failed for both banks.", extra_tags="danger")
