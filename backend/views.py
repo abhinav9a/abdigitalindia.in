@@ -20,13 +20,16 @@ def dashboard(request):
     if 'data' in request.GET:
         jwt_encrypted_data = request.GET['data']
         data = decrypt_pay_sprint_token_token(jwt_encrypted_data)
-        logger.error(f"PaySprint Data: {json.dumps(data)}")
-        if data is not None and data.get('txnid') and data.get('status') == "1":
-            onboarding_details = UserAccount.objects.get(username=request.user)
-            ref_no = data['refno']
-            onboarding_details.pay_sprint_ref_no = ref_no
-            onboarding_details.save()
-            messages.success(request, message="Merchant Onboarded.", extra_tags='success')
+        logger.error(f"Dashboard PaySprint Data: {json.dumps(data)}")
+        if data is not None and data.get('txnid'):
+            bank = data.get('bank')
+            if data.get('status') == "1" or bank.get("Bank2") == 1 or bank.get("Bank3") == 1:
+                logger.error("SUCCESS")
+                onboarding_details = UserAccount.objects.get(username=request.user)
+                ref_no = data['refno']
+                onboarding_details.pay_sprint_ref_no = ref_no
+                onboarding_details.save()
+                messages.success(request, message="Merchant Onboarded.", extra_tags='success')
         return redirect("dashboard")
 
     return render(request, 'backend/Pages/dashboard.html')
