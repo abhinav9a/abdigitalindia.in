@@ -114,14 +114,65 @@ class Wallet(models.Model):
     def __str__(self):
         return self.userAccount.username
 
+from django.db import models
+from django.core.exceptions import ValidationError
+
 class Wallet2(models.Model):
     userAccount = models.OneToOneField(UserAccount, on_delete=models.CASCADE)
     balance = models.DecimalField(max_digits=10, decimal_places=2, default=0.0)
-    is_hold = models.BooleanField(default=False)
+    held_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.0)
     hold_reason = models.TextField(null=True, blank=True)
 
     def __str__(self):
         return self.userAccount.username
+
+    def hold_amount(self, txnid, amount, reason):
+        if amount <= 0:
+            raise ValidationError("Hold amount must be positive.")
+        if self.balance < amount:
+            raise ValidationError(f"Insufficient balance for hold. Available Balance: {self.balance}")
+        
+        self.balance -= amount
+        self.held_amount += amount
+        self.hold_reason = reason
+        self.save()
+
+        # Log the hold transaction
+        Wallet2Transaction.objects.create(
+            wallet2=self,
+            txnId=txnid,
+            client_ref_id="N/A",
+            amount=amount,
+            description=reason,
+            transaction_type="Admin Hold",
+            txn_status="Success"
+        )
+
+    def unhold_amount(self, txnid, amount, reason):
+        if amount <= 0:
+            raise ValidationError("Unhold amount must be positive.")
+        if self.held_amount < amount:
+            raise ValidationError(f"Unhold amount exceeds held amount. Held Amount: {self.held_amount}")
+        
+        self.balance += amount
+        self.held_amount -= amount
+        if self.held_amount == 0:
+            self.hold_reason = None
+        self.save()
+
+        # Log the unhold transaction
+        Wallet2Transaction.objects.create(
+            wallet2=self,
+            txnId=txnid,
+            client_ref_id="N/A",
+            amount=amount,
+            description=reason,
+            transaction_type="Admin Unhold",
+            txn_status="Success"
+        )
+
+    def get_total_balance(self):
+        return self.balance + self.held_amount
 
 
 class WalletTransaction(models.Model):

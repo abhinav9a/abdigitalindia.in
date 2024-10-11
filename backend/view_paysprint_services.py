@@ -59,11 +59,11 @@ def user_onboarding(request):
         if request.method == "POST":
             wallet = Wallet2.objects.get(userAccount=onboarding_details)
             onboarding_charge = PaySprintCommissionCharge.objects.get(service_type='Onboarding')
-            if wallet.is_hold:
-                messages.error(request, f"Wallet 2 is on hold. Reason: {wallet.hold_reason}.", extra_tags="danger")
-                return redirect("onboarding_user_paysprint")
-            elif wallet.balance < onboarding_charge.flat_charge:
+
+            if wallet.balance < onboarding_charge.flat_charge:
                 messages.error(request, "Insufficient Wallet 2 balance to complete onboarding.", extra_tags="danger")
+                if wallet.held_amount > 0:
+                    messages.error(request, f"₹{wallet.held_amount} is on hold.", extra_tags="danger")
                 return redirect("onboarding_user_paysprint")
 
             mobile_number = request.POST.get("mobile_number")
@@ -79,14 +79,14 @@ def user_onboarding(request):
                 "firm": shop_name,
                 "callback": PaySprintRoutes.CALLBACK_URL.value,
             }
-            logger.error(f"PaySprint onboarding payload: {payload}")
+            logger.error(f"PaySprint user_onboarding payload: {payload}")
             try:
                 response = requests.post(
                     PaySprintRoutes.WEB_ONBOARDING.value,
                     json=payload,
                     headers=get_pay_sprint_headers(),
                 )
-                logger.error(f"PaySprint onboarding response {response.text}")
+                logger.error(f"PaySprint user_onboarding response {response.text}")
                 if response.status_code == 200:
                     api_data = response.json()
                     if api_data.get("onboard_pending") == 0:
@@ -281,14 +281,6 @@ def cash_withdrawal(request):
         with transaction.atomic():
             try:
                 aeps_bank = request.POST.get('aeps_bank')
-                
-                amount = request.POST.get('amount', 0)
-
-                merchant_wallet = Wallet2.objects.get(userAccount=user)
-                if merchant_wallet.is_hold:
-                    messages.error(request, f"Wallet is on hold. Reason: {merchant_wallet.hold_reason}.", extra_tags="danger")
-                    transaction.set_rollback(True)
-                    return redirect("cash_withdrawl_paysprint")
         
                 if aeps_bank == 'bank2':
                     return process_bank2_withdrawal(request, user)
@@ -659,11 +651,11 @@ def daily_kyc(request):
             with transaction.atomic():
                 wallet = Wallet2.objects.get(userAccount=user)
                 daily_kyc_charge = PaySprintCommissionCharge.objects.get(service_type='Daily KYC')
-                if wallet.is_hold:
-                    messages.error(request, f"Wallet 2 is on hold. Reason: {wallet.hold_reason}.", extra_tags="danger")
-                    return redirect("daily_kyc_paysprint")
-                elif wallet.balance < daily_kyc_charge.flat_charge:
+
+                if wallet.balance < daily_kyc_charge.flat_charge:
                     messages.error(request, "Insufficient Wallet 2 balance to complete Daily KYC.", extra_tags="danger")
+                    if wallet.held_amount > 0:
+                        messages.error(request, f"₹{wallet.held_amount} is on hold.", extra_tags="danger")
                     return redirect("daily_kyc_paysprint")
                 
                 if bank == "bank2":
@@ -893,9 +885,6 @@ def do_transaction(request):
             #     return redirect("do_transaction")
             merchant_wallet = Wallet2.objects.get(userAccount=userObj)
 
-            if merchant_wallet.is_hold:
-                messages.error(request, f"Wallet is on hold. Reason: {merchant_wallet.hold_reason}.", extra_tags="danger")
-                return redirect("do_transaction")
 
             # Get the appropriate commission charge
             commission_charge = get_commission_charge('Payout', amount)
@@ -906,6 +895,8 @@ def do_transaction(request):
             # Check if merchant has sufficient balance
             if merchant_wallet.balance < Decimal(amount) + commission_charge.flat_charge:
                 messages.error(request, "Insufficient balance.", extra_tags="danger")
+                if merchant_wallet.held_amount > 0:
+                    messages.error(request, f"₹{merchant_wallet.held_amount} is on hold.", extra_tags="danger")
                 return redirect("do_transaction")
             
             

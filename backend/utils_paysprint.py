@@ -30,9 +30,6 @@ def credit_aeps_commission(request, user_id):
             amount = 0
         merchant = UserAccount.objects.select_for_update().get(id=user_id)
         merchant_wallet = Wallet2.objects.get(userAccount=merchant)
-        if merchant_wallet.is_hold:
-            messages.error(request, f"Wallet is on hold. Reason: {merchant_wallet.hold_reason}.", extra_tags="danger")
-            return False
 
         # Add the amount to the merchant's wallet
         logger.error(f"credit_aeps_commission: User: {merchant} - BEFORE adding balance: {merchant_wallet.balance}")
@@ -105,11 +102,6 @@ def credit_aeps_commission(request, user_id):
 def credit_mini_statement_commission(request, merchant_id):
     try:
         merchant = UserAccount.objects.select_for_update().get(id=merchant_id)
-        merchant_wallet = Wallet2.objects.get(userAccount=merchant)
-
-        if merchant_wallet.is_hold:
-            messages.error(request, f"Wallet is on hold. Reason: {merchant_wallet.hold_reason}.", extra_tags="danger")
-            return False
 
         # Get the appropriate commission charge
         commission_charge = get_commission_charge('Mini Statement')
@@ -145,10 +137,6 @@ def debit_aadhaar_pay_charges(request, merchant_id):
         merchant = UserAccount.objects.select_for_update().get(id=merchant_id)
         merchant_wallet = Wallet2.objects.get(userAccount=merchant)
 
-        if merchant_wallet.is_hold:
-            messages.error(request, f"Wallet is on hold. Reason: {merchant_wallet.hold_reason}.", extra_tags="danger")
-            return False
-
         # Get the appropriate commission charge
         commission_charge = get_commission_charge('Aadhaar Pay')
         if not commission_charge:
@@ -161,6 +149,8 @@ def debit_aadhaar_pay_charges(request, merchant_id):
         # Check if merchant has sufficient balance
         if merchant_wallet.balance < commission:
             messages.error(request, "Insufficient balance.", extra_tags="danger")
+            if merchant_wallet.held_amount > 0:
+                messages.error(request, f"₹{merchant_wallet.held_amount} is on hold.", extra_tags="danger")
             return False
 
         # Subtract charges from merchant's wallet
@@ -186,11 +176,6 @@ def debit_payout_charges(request, merchant_id, amount):
         merchant = UserAccount.objects.select_for_update().get(id=merchant_id)
         merchant_wallet = Wallet2.objects.get(userAccount=merchant)
 
-        if merchant_wallet.is_hold:
-            messages.error(request, f"Wallet is on hold. Reason: {merchant_wallet.hold_reason}.", extra_tags="danger")
-            logger.error(f"Wallet is on hold. Reason: {merchant_wallet.hold_reason}.")
-            return False
-
         # Get the appropriate commission charge
         commission_charge = get_commission_charge('Payout', amount)
         if not commission_charge:
@@ -205,6 +190,8 @@ def debit_payout_charges(request, merchant_id, amount):
         if merchant_wallet.balance < Decimal(amount) + charge:
             messages.error(request, "Insufficient balance.", extra_tags="danger")
             logger.error("Insufficient balance.")
+            if merchant_wallet.held_amount > 0:
+                messages.error(request, f"₹{merchant_wallet.held_amount} is on hold.", extra_tags="danger")
             return False
 
         # Subtract amount and charge from merchant's wallet

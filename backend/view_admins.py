@@ -13,10 +13,11 @@ from decimal import Decimal
 from django.utils import timezone
 from backend.utils import (is_admin_user, update_payout_status, is_kyc_completed, is_user_onboard,
                            is_master_distributor_access, is_distributor_access, generate_platform_id, generate_key,
-                           update_wallet, update_wallet2_hold_status)
+                           update_wallet)
 from core.decorators import transaction_required
 from django.http import JsonResponse
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.core.exceptions import ValidationError
 from backend.forms import CreateCustomUserForm
 from django.contrib.auth.models import Group
 from datetime import datetime, timedelta
@@ -93,10 +94,10 @@ def AdminWalletAction(request):
         walletType = request.POST.get('walletType')
         userType = request.POST.get('userType')
         username = request.POST.get('username').lower()
+        amount = Decimal(request.POST.get('amount', 0))
+        txnid = request.POST.get('txnid')   
 
         if actionSelected == 'add_deduct':
-            txnid = request.POST.get('txnid')
-            amount = Decimal(request.POST.get('amount', 0))
             description = request.POST.get('description')
 
             # Check if any required fields are None
@@ -143,9 +144,9 @@ def AdminWalletAction(request):
 
                 # Update wallet 2 Hold status
                 if actionType == 'Hold':
-                    update_wallet2_hold_status(wallet, True, reason)
+                    wallet.hold_amount(txnid, amount, reason)
                 elif actionType == 'UnHold':
-                    update_wallet2_hold_status(wallet, False, reason)
+                    wallet.unhold_amount(txnid, amount, reason)
 
                 messages.success(request, message=f'{actionType} Action for {username} Successful.', extra_tags='success')
 
@@ -155,6 +156,8 @@ def AdminWalletAction(request):
                 messages.error(request, message='User Wallet Not Found', extra_tags='danger')
             except Wallet2.DoesNotExist:
                 messages.error(request, message='User Wallet Not Found', extra_tags='danger')
+            except ValidationError as e:
+                messages.error(request, message=e.message, extra_tags='danger')
 
             return redirect('AdminWalletAction')
 

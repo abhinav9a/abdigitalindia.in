@@ -85,20 +85,6 @@
         document.getElementById('hold-unhold-form').style.display = selectedAction === 'hold_unhold' ? 'block' : 'none';
     }
 
-    function toggleHoldReasonInput() {
-        const holdWalletChecked = document.getElementById('holdWallet').checked;
-        const reasonContainer = document.getElementById('reason-container');
-        const holdReasonInput = document.getElementById('holdReason');
-
-        if (holdWalletChecked) {
-            reasonContainer.style.display = 'block';
-            holdReasonInput.setAttribute('required', 'required'); // Set required when visible
-        } else {
-            reasonContainer.style.display = 'none';
-            holdReasonInput.removeAttribute('required'); // Remove required when not visible
-        }
-    }
-
     function fetchUser(event) {
         const selectedAction = document.getElementById('action-select').value; // Get the selected action
 
