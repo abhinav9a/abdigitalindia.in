@@ -615,8 +615,10 @@ def merchant_registration_with_bank(request):
     bank2_registered = False
     bank3_registered = False
     if request.method == "POST":
+        logger.error("Merchant Registration Started")
         bank2_registered = merchant_registration_bank_2(request)
         bank3_registered = merchant_registration_bank_3(request)
+        logger.error("Merchant Registration Ended")
 
 
         # Redirect to the next URL if provided
@@ -644,6 +646,7 @@ def daily_kyc(request):
     user = UserAccount.objects.get(username=request.user)
     heading = "Mini Statement"
     if request.method == "POST":
+        logger.error(f"Daily KYC started")
         try:
             daily_kyc_bank_2_status = None
             daily_kyc_bank_3_status = None
@@ -687,7 +690,7 @@ def daily_kyc(request):
             messages.error(request, "Daily KYC failed.", extra_tags="danger")
             logger.error("Daily KYC Failed", exc_info=True)
             return redirect("daily_kyc_paysprint")
-
+        logger.error(f"Daily KYC ended.")
         return redirect("dashboard")
     
     context = {
@@ -704,7 +707,7 @@ def merchant_registration_bank_2(request):
 
     data = get_pay_sprint_common_payload(request, user)
     response = make_post_request(url=PaySprintRoutes.BANK_2_REGISTRATION.value, data=data)
-    # logger.error(f"Response Body: {response.json()}")
+    logger.error(f"Bank 2 Merchant Registration Response Body: {response.json()}")
     api_data = response.json()
     if response.status_code == 200 and api_data.get("response_code") == "1":
         merchant_auth = PaySprintMerchantAuth.objects.filter(userAccount=user).first()
@@ -781,7 +784,7 @@ def merchant_registration_bank_3(request):
 
     data = get_pay_sprint_common_payload(request, user)
     response = make_post_request(url=PaySprintRoutes.BANK_3_REGISTRATION.value, data=data)
-    # logger.error(f"Response Body: {response.json()}")
+    logger.error(f"Bank 2 Merchant Registration Response Body: {response.json()}")
     api_data = response.json()
     if response.status_code == 200 and api_data.get("response_code") == "1":
         merchant_auth = PaySprintMerchantAuth.objects.filter(userAccount=user).first()
