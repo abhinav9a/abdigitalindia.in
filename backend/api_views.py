@@ -73,26 +73,28 @@ def aeps_txn_callback(request):
             }
 
             key = "d3d8a58d-d437-46bf-bbeb-f7a601a437f8"
-            
-            secret_key, secret_key_timestamp = generate_key()
-            data_signature = ''
-            if service_type == '2':
-                # request signature = secret_key_timestamp + customer_id + amount + user_code
-                formatted_data['amount'] = detail['data']['amount']
-                data_signature = secret_key_timestamp + detail['data']['customer_id'] + formatted_data['amount'] + detail['data']['user_code']
-            if service_type == '3':
-                # request signature = secret_key_timestamp + customer_id + user_code
-                data_signature = secret_key_timestamp + detail['data']['customer_id'] + detail['data']['user_code']
-            if service_type == '4':
-                # request signature = secret_key_timestamp + customer_id + user_code
-                data_signature = secret_key_timestamp + detail['data']['customer_id'] + detail['data']['user_code']
-
-            # Encode the key using base64
-            encoded_key = base64.b64encode(key.encode()).decode()
-
-            # HMAC the concatenated string and encoded key using HMAC-SHA256
             try:
+                secret_key, secret_key_timestamp = generate_key()
+                data_signature = ''
+                if service_type == '2':
+                    # request signature = secret_key_timestamp + customer_id + amount + user_code
+                    formatted_data['amount'] = detail['data']['amount']
+                    data_signature = secret_key_timestamp + detail['data']['customer_id'] + formatted_data['amount'] + detail['data']['user_code']
+                if service_type == '3':
+                    # request signature = secret_key_timestamp + customer_id + user_code
+                    data_signature = secret_key_timestamp + detail['data']['customer_id'] + detail['data']['user_code']
+                if service_type == '4':
+                    # request signature = secret_key_timestamp + customer_id + user_code
+                    data_signature = secret_key_timestamp + detail['data']['customer_id'] + detail['data']['user_code']
+
+                # Encode the key using base64
+                encoded_key = base64.b64encode(key.encode()).decode()
+
+                # HMAC the concatenated string and encoded key using HMAC-SHA256
                 signature_req_hash = hmac.new(encoded_key.encode(), data_signature.encode(), hashlib.sha256).digest()
+            except KeyError as e:
+                logger.error(f"Error occurred in {__name__}: {str(e)}", exc_info=True)
+                return Response({'success': True, 'message': f'Error Creating request hash ==> {e}'}, status=200)
             except Exception as e:
                 return Response({'success': True, 'message': f'Error Creating request hash ==> {e}'}, status=200)
                 
