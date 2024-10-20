@@ -69,7 +69,7 @@ def onboarding_user(request):
                 api_data = response.json()
                 message = api_data.get('message')
                 data = api_data.get('data', None)
-
+                logger.error(f"EKO onboarding_user response ==> {json.dumps(data)}")
                 if data is not None:
                     user_code = data['user_code']
                     onboardingDetails.eko_user_code = user_code
@@ -80,6 +80,7 @@ def onboarding_user(request):
                                  extra_tags='success')
             else:
                 api_data = response.json()
+                logger.error(f"EKO onboarding_user ERROR response ==> {json.dumps(api_data)}")
                 message = api_data.get('message')
                 messages.success(request, message=message, extra_tags='danger')
         except Exception as e:
