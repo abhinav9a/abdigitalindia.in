@@ -68,8 +68,10 @@ def credit_aeps_commission(request, user_id):
                     add_commission(distributor, master_distributor_commission, "AePS Commission", merchant.username)
 
         elif merchant.userType == 'Distributor':
+            retailer_commission = calculate_commission(amount, commission_charge.retailer_commission, commission_charge.is_percentage)
             distributor_commission = calculate_commission(amount, commission_charge.distributor_commission, commission_charge.is_percentage)
-            add_commission(merchant, distributor_commission, "AePS Commission", "Self")
+            total_distributor_commission = retailer_commission + distributor_commission
+            add_commission(merchant, total_distributor_commission, "AePS Commission", "Self")
 
             if merchant.userManager:
                 master_distributor = UserAccount.objects.get(id=merchant.userManager)
@@ -78,8 +80,11 @@ def credit_aeps_commission(request, user_id):
                     add_commission(master_distributor, master_distributor_commission, "AePS Commission", merchant.username)
 
         elif merchant.userType == 'Master Distributor':
+            retailer_commission = calculate_commission(amount, commission_charge.retailer_commission, commission_charge.is_percentage)
+            distributor_commission = calculate_commission(amount, commission_charge.distributor_commission, commission_charge.is_percentage)
             master_distributor_commission = calculate_commission(amount, commission_charge.master_distributor_commission, commission_charge.is_percentage)
-            add_commission(merchant, master_distributor_commission, "AePS Commission", "Self")
+            total_master_commission = retailer_commission + distributor_commission + master_distributor_commission
+            add_commission(merchant, total_master_commission, "AePS Commission", "Self")
 
         else:
             messages.error(request, f"Invalid User type: {merchant.userType}", extra_tags="danger")
