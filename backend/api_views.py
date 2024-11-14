@@ -479,6 +479,7 @@ def pay_sprint_onboarding_callback(request):
                 payout_obj = PaySprintPayout.objects.get(ref_id=ref_id)
                 payout_obj.utr = request.data.get("param").get("utr", payout_obj.utr)
                 payout_obj.ack_no = request.data.get("param").get("ackno", payout_obj.ack_no)
+                payout_obj.txn_status = PAYOUT_TRANSACTION_STATUS.get(data.get("param").get("status"))
 
                 payout_obj.save()
 
