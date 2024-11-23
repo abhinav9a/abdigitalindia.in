@@ -883,9 +883,9 @@ def do_transaction(request):
         ref_id = generate_unique_id()
         try:
             # Debit Payout charges before making the request
-            # if not debit_payout_charges(request, userObj.id, request.POST.get("amount")):
+            if not debit_payout_charges(request, userObj.id, request.POST.get("amount")):
             #     transaction.set_rollback(True)
-            #     return redirect("do_transaction")
+                return redirect("do_transaction")
             merchant_wallet = Wallet2.objects.get(userAccount=userObj)
 
 

@@ -4,7 +4,7 @@ from django.contrib import messages
 import logging
 
 from core.models import UserAccount
-from backend.models import Wallet2, PaySprintCommissionCharge, PaySprintCommissionTxn, Wallet2Transaction
+from backend.models import Wallet2, PaySprintCommissionCharge, PaySprintCommissionTxn, Wallet2Transaction, PaySprintPayout
 
 
 logger = logging.getLogger(__name__)
@@ -205,6 +205,47 @@ def debit_payout_charges(request, merchant_id, amount):
     except Exception as e:
         logger.error(f"Error occurred in {__name__}: {str(e)}", exc_info=True)
         messages.error(request, "Something Went Wrong.", extra_tags="danger")
+        return False
+    
+
+def refund_payout_charges(payout, utr):
+    try:
+        merchant = UserAccount.objects.select_for_update().get(id=payout.userAccount)
+        merchant_wallet = Wallet2.objects.get(userAccount=merchant)
+
+        # Get the appropriate commission charge
+        commission_charge = get_commission_charge('Payout', payout.amount)
+
+        # For Payout, we use flat_charge
+        charge = commission_charge.flat_charge
+
+        # Subtract amount and charge from merchant's wallet
+        merchant_wallet.balance += (Decimal(payout.amount) + charge)
+        merchant_wallet.save()
+
+        wallet2_txn = Wallet2Transaction.objects.get(client_ref_id=payout.ref_id)
+        wallet2_txn.utr = utr
+        wallet2_txn.txn_status = "Failed"
+        wallet2_txn.save()
+
+        # Log Transaction
+        Wallet2Transaction.objects.create(
+            wallet2=merchant_wallet,
+            txnId=utr,
+            amount=(Decimal(payout.amount) + charge),
+            txn_status='Success',
+            client_ref_id=payout.ref_id,
+            description="Payout Amount and charges",
+            transaction_type="Payout Refund"
+        )
+        return True
+
+    except UserAccount.DoesNotExist:
+        return False
+    except Wallet2.DoesNotExist:
+        return False
+    except Exception as e:
+        logger.error(f"Error occurred in {__name__}: {str(e)}", exc_info=True)
         return False
 
 

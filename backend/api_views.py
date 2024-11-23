@@ -484,12 +484,12 @@ def pay_sprint_onboarding_callback(request):
                 payout_obj.save()
 
 
-                if not debit_payout_charges(request=request, merchant_id=payout_obj.userAccount.id, amount=amount):
-                    return Response({"status":400,"message":"Transaction failed"})
+                # if not debit_payout_charges(request=request, merchant_id=payout_obj.userAccount.id, amount=amount):
+                #     return Response({"status":400,"message":"Transaction failed"})
                 
                 return Response({"status":200,"message":"Transaction completed successfully"})
             else:
-                return Response({"status":400,"message":"Transaction failed"})
+                return Response({"status":400,"message":"Transaction Failed"})
 
         except Exception as e:
             logger.error(f"Error in {__name__}: {e}")
