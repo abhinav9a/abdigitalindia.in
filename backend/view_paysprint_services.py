@@ -883,24 +883,24 @@ def do_transaction(request):
         ref_id = generate_unique_id()
         try:
             # Debit Payout charges before making the request
-            if not debit_payout_charges(request, userObj.id, request.POST.get("amount")):
+            if not debit_payout_charges(request, userObj.id, request.POST.get("amount"), ref_id):
             #     transaction.set_rollback(True)
                 return redirect("do_transaction")
             merchant_wallet = Wallet2.objects.get(userAccount=userObj)
 
 
             # Get the appropriate commission charge
-            commission_charge = get_commission_charge('Payout', amount)
-            if not commission_charge:
-                messages.error(request, "No commission charge found for Payout", extra_tags="danger")
-                return redirect("do_transaction")
+            # commission_charge = get_commission_charge('Payout', amount)
+            # if not commission_charge:
+            #     messages.error(request, "No commission charge found for Payout", extra_tags="danger")
+            #     return redirect("do_transaction")
 
             # Check if merchant has sufficient balance
-            if merchant_wallet.balance < Decimal(amount) + commission_charge.flat_charge:
-                messages.error(request, "Insufficient balance.", extra_tags="danger")
-                if merchant_wallet.held_amount > 0:
-                    messages.error(request, f"₹{merchant_wallet.held_amount} is on hold.", extra_tags="danger")
-                return redirect("do_transaction")
+            # if merchant_wallet.balance < Decimal(amount) + commission_charge.flat_charge:
+            #     messages.error(request, "Insufficient balance.", extra_tags="danger")
+            #     if merchant_wallet.held_amount > 0:
+            #         messages.error(request, f"₹{merchant_wallet.held_amount} is on hold.", extra_tags="danger")
+            #     return redirect("do_transaction")
             
             
             txn_api_payload = {
@@ -994,7 +994,7 @@ def add_bank(request):
             headers=get_pay_sprint_headers(),
         )
         api_data = response.json()
-        # logger.debug(f"Response Body: {api_data}")
+        print(f"Response Body: {api_data}")
         # api_data = {'response_code': 2, 'status': True, 'acc_status': 2, 'bene_id': 1258814, 'message': 'Account Detailed saved successfully. Please upload Supportive Document to activate'}
         if api_data.get("response_code") in (1, 2):
             # if True:

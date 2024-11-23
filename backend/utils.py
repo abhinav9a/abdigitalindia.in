@@ -241,8 +241,8 @@ def generate_pay_sprint_token():
 
 def get_pay_sprint_headers():
     headers = {
-        "Token": generate_pay_sprint_token()
-        # "Authorisedkey": AUTHORISED_KEY
+        "Token": generate_pay_sprint_token(),
+        "Authorisedkey": AUTHORISED_KEY
     }
     # logger.error(f"Request Headers: {json.dumps(headers)}")
     return headers
@@ -402,6 +402,9 @@ def update_payout_status(user=None):
                 payout.txn_status = PAYOUT_TRANSACTION_STATUS.get(api_data.get("txn_status"))
                 if api_data.get("utr") and not payout.utr:
                     payout.utr = api_data.get("utr")
+                    wallet2_txn = Wallet2Transaction.objects.get(client_ref_id=payout.ref_id)
+                    wallet2_txn.utr = api_data.get("utr")
+                    wallet2_txn.save()
                 if api_data.get("txn_status") == 0:
                     refund_payout_charges(payout, api_data.get("utr"))
                 payouts_to_update.append(payout)

@@ -154,7 +154,7 @@ def debit_aadhaar_pay_charges(request, merchant_id):
         return False
 
 
-def debit_payout_charges(request, merchant_id, amount):
+def debit_payout_charges(request, merchant_id, amount, ref_id):
     try:
         merchant = UserAccount.objects.select_for_update().get(id=merchant_id)
         merchant_wallet = Wallet2.objects.get(userAccount=merchant)
@@ -181,13 +181,12 @@ def debit_payout_charges(request, merchant_id, amount):
         merchant_wallet.balance -= (Decimal(amount) + charge)
         merchant_wallet.save()
 
-        utr = request.data.get("param").get("utr")
-        ref_id = request.data.get("param").get("refid")
+        # utr = request.POST.get("param").get("utr")
 
         # Log Transaction
         Wallet2Transaction.objects.create(
             wallet2=merchant_wallet,
-            txnId=utr,
+            txnId=None,
             amount=(Decimal(amount) + charge),
             txn_status='Success',
             client_ref_id=ref_id,
