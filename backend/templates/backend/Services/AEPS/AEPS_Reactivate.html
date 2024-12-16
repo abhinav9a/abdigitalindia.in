@@ -1,0 +1,135 @@
+{% extends "backend/Shared/AuthBase.html" %}
+
+{% block main %}
+
+
+<div class="row">
+	<div class="col-md-10 mx-auto grid-margin stretch-card">
+		<div class="card">
+			<div class="card-body">
+				{% for message in messages %}
+				<div class="alert alert-{{ message.extra_tags }}">
+					{{message}}
+				</div>
+				{% endfor %}
+				<h4 class="card-title">AePS Re-activate</h4>
+				<p class="card-description">
+					Fill the details.
+				</p>
+				<form class="forms-sample" method="post" action="{% url 'activate_aeps' %}"
+					enctype="multipart/form-data">
+					{% csrf_token %}
+					<div class="row">
+						<div class="col-md-12">
+							<div class="row">
+								<div class="col-12 fw-bold mb-2">
+									Device details
+								</div>
+								<div class="col-md-6">
+									<div class="form-group">
+										<label for="modelname">Model Name</label>
+										<select name="modelname" class="form-control form-control-lg" id="modelname"
+											required>
+											<option value="Morpho">Morpho</option>
+											<option value="TMF20">TMF20</option>
+											<option value="Mantra">Mantra</option>
+											<option value="Startek">Startek</option>
+										</select>
+									</div>
+								</div>
+								<div class="col-md-6">
+									<div class="form-group">
+										<label for="devicenumber">Device Number</label>
+										<input type="text" name="devicenumber" class="form-control" id="devicenumber"
+											required>
+									</div>
+								</div>
+								<div class="col-12 fw-bold mb-2">
+									Office Address
+								</div>
+								<div class="col-md-6">
+									<div class="form-group mb-0">
+										<label for="line">Line</label>
+										<input type="text" name="line" class="form-control" id="line" required>
+									</div>
+								</div>
+								<div class="col-md-6">
+									<div class="form-group mb-0">
+										<label for="city">City</label>
+										<input type="text" name="city" class="form-control" id="city" required>
+									</div>
+								</div>
+								<div class="col-md-6">
+									<div class="form-group mb-0">
+										<label for="state">State</label>
+										<input type="text" name="state" class="form-control" id="state" required>
+									</div>
+								</div>
+								<div class="col-md-6">
+									<div class="form-group">
+										<label for="pincode">pincode</label>
+										<input type="text" name="pincode" class="form-control" id="pincode" required>
+									</div>
+								</div>
+								<div class="col-12 fw-bold mb-2">
+									Address as per proof
+								</div>
+								<div class="col-md-6">
+									<div class="form-group mb-0">
+										<label for="appline">Line</label>
+										<input type="text" name="appline" class="form-control" id="appline" required>
+									</div>
+								</div>
+								<div class="col-md-6">
+									<div class="form-group mb-0">
+										<label for="appcity">City</label>
+										<input type="text" name="appcity" class="form-control" id="appcity" required>
+									</div>
+								</div>
+								<div class="col-md-6">
+									<div class="form-group mb-0">
+										<label for="appstate">State</label>
+										<input type="text" name="appstate" class="form-control" id="appstate" required>
+									</div>
+								</div>
+								<div class="col-md-6">
+									<div class="form-group">
+										<label for="apppincode">pincode</label>
+										<input type="text" name="apppincode" class="form-control" id="apppincode" required>
+									</div>
+								</div>
+								<div class="col-12 fw-bold mb-2">
+									Documents
+								</div>
+								<div class="col-md-6">
+									<div class="form-group mb-0">
+										<label for="aadhar_front">Aadhar Front</label>
+										<input type="file" name="aadhar_front" class="form-control" id="aadhar_front"
+											required>
+									</div>
+								</div>
+								<div class="col-md-6">
+									<div class="form-group mb-0">
+										<label for="aadhar_back">Aadhar Back</label>
+										<input type="file" name="aadhar_back" class="form-control" id="aadhar_back"
+											required>
+									</div>
+								</div>
+								<div class="col-md-6">
+									<div class="form-group">
+										<label for="pan_card">Pan Card</label>
+										<input type="file" name="pan_card" class="form-control" id="pan_card" required>
+									</div>
+								</div>
+							</div>
+							<button type="submit" class="btn btn-primary w-100">Activate</button>
+						</div>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+</div>
+
+
+{% endblock main %}
