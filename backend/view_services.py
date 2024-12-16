@@ -573,12 +573,14 @@ def activate_aeps(request):
         headers = {"accept": "application/json","developer_key": "552d8d5d982965b60f8fb4c618f95f4e","secret-key": secret_key,"secret-key-timestamp": secret_key_timestamp}
 
         response = requests.put(url, data=payload, headers=headers, files=files)
+        logger.error(f"==> AEPS Response: {response.text}")
         api_data = response.json()
         message = api_data.get('message')
         messages.success(request, message=message, extra_tags='success')
 
         print('==>Aeps here',response.text)
         logger.error(f"==> AEPS Payload: {payload}")
+        logger.error(f"==> AEPS Response API DATA: {api_data}")
         if created or not service_activation.AepsService:
             if message == 'This service already exist for the user code' or message == 'AePS Registration Successful':
                 service_activation.AepsService = True
