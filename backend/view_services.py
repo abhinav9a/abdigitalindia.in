@@ -560,7 +560,8 @@ def activate_aeps(request):
         aadhar_front = request.FILES['aadhar_front']
         aadhar_back = request.FILES['aadhar_back']
 
-        url = "https://api.eko.in/ekoicici/v1/user/service/activate"
+        # url = "https://api.eko.in/ekoicici/v1/user/service/activate"
+        url = "https://api.eko.in:25002/ekoicici/v1/user/service/activate"
 
         address=json.dumps({"line": line, "city": city, "state": state, "pincode": pincode})
         appaddress=json.dumps({"line": appline, "city": appcity, "state": appstate, "pincode": apppincode})
@@ -577,6 +578,7 @@ def activate_aeps(request):
         messages.success(request, message=message, extra_tags='success')
 
         print('==>Aeps here',response.text)
+        logger.error(f"==> AEPS Payload: {payload}")
         if created or not service_activation.AepsService:
             if message == 'This service already exist for the user code' or message == 'AePS Registration Successful':
                 service_activation.AepsService = True
