@@ -78,14 +78,36 @@
 				{% endfor %}
 				<h4 class="card-title">AePS-Activate</h4>
 				<p class="card-description">
-					fill the details.
+					Fill the details.
 				</p>
 				<form class="forms-sample" method="post" action="{% url 'activate_aeps' %}"
 					enctype="multipart/form-data">
 					{% csrf_token %}
+					<input type="hidden" name="latlong" id="latlong" required />
 					<div class="row">
 						<div class="col-md-12">
 							<div class="row">
+								<div class="col-12 fw-bold mb-2">
+									Merchant Details
+								</div>
+								<div class="col-md-6">
+									<div class="form-group">
+										<label for="aadhar">Aadhar Number</label>
+										<input type="text" name="aadhar" class="form-control" id="aadhar" required>
+									</div>
+								</div>
+								<div class="col-md-6">
+									<div class="form-group">
+										<label for="shop_type">Shop Type</label>
+										<select name="shop_type" class="form-control form-control-lg" id="shop_type" required>
+											<option value="">Select Shop Type</option>
+											{% for data in shop_type_list %}
+											<option value="{{ data.value }}">{{ data.label }}</option>
+											{% endfor %}
+										</select>
+									</div>
+								</div>
+
 								<div class="col-12 fw-bold mb-2">
 									Device details
 								</div>
@@ -131,7 +153,7 @@
 								</div>
 								<div class="col-md-6">
 									<div class="form-group">
-										<label for="pincode">pincode</label>
+										<label for="pincode">Pincode</label>
 										<input type="text" name="pincode" class="form-control" id="pincode" required>
 									</div>
 								</div>
@@ -158,8 +180,23 @@
 								</div>
 								<div class="col-md-6">
 									<div class="form-group">
-										<label for="apppincode">pincode</label>
+										<label for="apppincode">Pincode</label>
 										<input type="text" name="apppincode" class="form-control" id="apppincode" required>
+									</div>
+								</div>
+								<div class="col-12 fw-bold mb-2">
+									Bank Details
+								</div>
+								<div class="col-md-6">
+									<div class="form-group mb-0">
+										<label for="account_no">Account Number</label>
+										<input type="text" name="account_no" class="form-control" id="account_no" required>
+									</div>
+								</div>
+								<div class="col-md-6">
+									<div class="form-group mb-0">
+										<label for="ifsc">IFSC</label>
+										<input type="text" name="ifsc" class="form-control" id="ifsc" required>
 									</div>
 								</div>
 								<div class="col-12 fw-bold mb-2">
@@ -194,6 +231,57 @@
 		</div>
 	</div>
 </div>
+
+<script>
+	function getLocation() {
+		if (navigator.geolocation) {
+			navigator.geolocation.getCurrentPosition(
+				function (position) {
+					var latitude = position.coords.latitude;
+					var longitude = position.coords.longitude;
+					$("#latlong").val(latitude + "," + longitude);
+				},
+				function (error) {
+					handleGeolocationError(error);
+				}
+			);
+		} else {
+			alert("Geolocation is not supported by this browser.");
+		}
+	}
+
+	function handleGeolocationError(error) {
+		switch (error.code) {
+			case error.PERMISSION_DENIED:
+				alert("User denied the request for Geolocation.");
+				break;
+			case error.POSITION_UNAVAILABLE:
+				alert("Location information is unavailable.");
+				break;
+			case error.TIMEOUT:
+				alert("The request to get user location timed out.");
+				break;
+			case error.UNKNOWN_ERROR:
+				alert("An unknown error occurred.");
+				break;
+		}
+	}
+	getLocation();
+
+	function validateAadhaar(input) {
+        const aadhaarNumber = input.value.replace(/\s/g, '');
+        const aadhaarRegex = /^[0-9]{1}[0-9]{11}$/;
+        const errorElement = document.getElementById('aadhaarError');
+        const submitBtn = document.getElementById('submitBtn');
+        if (aadhaarRegex.test(aadhaarNumber)) {
+            errorElement.style.display = 'none';
+            submitBtn.disabled = false;
+        } else {
+            errorElement.style.display = 'block';
+            submitBtn.disabled = true;
+        }
+    }
+</script>
 
 {% endif %}
 
