@@ -571,7 +571,8 @@ def activate_aeps(request):
         payload = {
             "user_code": user_code,
             "initiator_id": initiator_id,
-            "shop_type": request.POST.get('shop_type'),
+            # "shop_type": request.POST.get('shop_type'),
+            "shop_type": 4816,
             "modelname": modelname,
             "devicenumber": devicenumber,
             "latlong": request.POST.get('latlong'),
@@ -630,8 +631,11 @@ def aeps(request):
     }
 
     response = requests.get(url, data=payload, headers=headers)
+    logger.error(f"payload: {payload}")
+    logger.error(f"headers: {headers}")
     logger.error(f"MCC: {response.json()}")
-    shop_type_list = response.json()["param_attributes"]["list_elements"]
+    # shop_type_list = response.json().get("param_attributes").get("list_elements")
+    shop_type_list = []
 
     return render(request, 'backend/Services/AEPS/AEPS.html', {'service_activation': service_activation, "shop_type_list": shop_type_list})
 
