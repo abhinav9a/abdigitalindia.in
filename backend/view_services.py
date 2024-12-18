@@ -618,10 +618,8 @@ def aeps(request):
 
     url = "https://api.eko.in:25002/ekoicici/v1/aeps/get-Mcc-Category"
 
-    payload = {
-        "user_code": user_code,
-        "initiator_id": initiator_id
-    }
+    payload = f"initiator_id={initiator_id}&user_code={user_code}"
+
     headers = {
         "accept": "application/json",
         "developer_key": "552d8d5d982965b60f8fb4c618f95f4e",
@@ -634,8 +632,8 @@ def aeps(request):
     logger.error(f"payload: {payload}")
     logger.error(f"headers: {headers}")
     logger.error(f"MCC: {response.json()}")
-    # shop_type_list = response.json().get("param_attributes").get("list_elements")
-    shop_type_list = []
+    shop_type_list = response.json().get("param_attributes").get("list_elements")
+    # shop_type_list = []
 
     return render(request, 'backend/Services/AEPS/AEPS.html', {'service_activation': service_activation, "shop_type_list": shop_type_list})
 
