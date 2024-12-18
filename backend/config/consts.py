@@ -3,6 +3,13 @@ from enum import Enum
 # PAYSPRINT_BASE_URL = "https://sit.paysprint.in/service-api/"  # Test URL
 PAYSPRINT_BASE_URL = "https://api.paysprint.in/"    # Live URL
 
+# EKO_BASE_URL = "https://staging.eko.in/ekoapi/"     # Test URL
+EKO_BASE_URL = "https://api.eko.in:25002/ekoicici/"     # Live URL
+
+class EkoRoutes(Enum):
+    MCC_CATEGORY_API = f"{EKO_BASE_URL}v1/aeps/get-Mcc-Category"
+    STATES_API = f"{EKO_BASE_URL}v1/aeps/get-states"
+    ACTIVATE_SERVICE = f"{EKO_BASE_URL}v1/user/service/activate"
 
 class PaySprintRoutes(Enum):
     CALLBACK_URL = "https://abdigitalindia.in/user/"

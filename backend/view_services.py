@@ -9,8 +9,9 @@ import requests
 import base64
 from decimal import Decimal, ROUND_DOWN
 from backend.utils import (is_kyc_completed, generate_qr_code, is_user_onboard, generate_key, generate_unique_id,
-                           get_client_ip, electricity_operator_id, recharge_prepaid_operator_id,
-                           recharge_postpaid_operator_id, dth_operator_id, loan_operator_id, water_gas_lpg_operator_id)
+                           get_client_ip, electricity_operator_id, recharge_prepaid_operator_id, dth_operator_id,
+                           recharge_postpaid_operator_id, loan_operator_id, water_gas_lpg_operator_id, get_eko_states_id,
+                           get_eko_shop_type_code)
 from .models import (CommissionTxn, Wallet, WalletTransaction, Wallet2Transaction, ServiceActivation, DMTBankList, AepsTxnCallbackByEko,
                      PanVerificationTxn, BankVerificationTxn, DmtTxn, Commission, Payout, BbpsTxn, CreditCardTxn,
                      AdhaarVerificationTxn, OtherServices)
@@ -25,7 +26,8 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 import hashlib
 import hmac
 import time
-from backend.config.consts import PaySprintRoutes
+from backend.config.consts import EkoRoutes
+from backend.config.secrets import DEVELOPER_KEY, INITIATOR_ID
 from django.template.loader import get_template
 from weasyprint import HTML
 
@@ -543,59 +545,56 @@ def activate_aeps(request):
         secret_key, secret_key_timestamp = generate_key()
         user_code = UserAccount.objects.get(username=request.user).eko_user_code
         service_activation, created = ServiceActivation.objects.get_or_create(userAccount=request.user)
-        initiator_id = "9568855837"
 
         modelname=request.POST.get('modelname')
         devicenumber=request.POST.get('devicenumber')
         line=request.POST.get('line')
         city=request.POST.get('city')
-        state=request.POST.get('state')
+        state, state_id=request.POST.get('state').split("-")
         pincode=request.POST.get('pincode')
 
         appline=request.POST.get('appline')
         appcity=request.POST.get('appcity')
-        appstate=request.POST.get('appstate')
+        appstate, appstate_id=request.POST.get('appstate').split("-")
         apppincode=request.POST.get('apppincode')
+
+        latlong = request.POST.get('latlong')
+        aadhar = request.POST.get('aadhar')
+        shop_type = request.POST.get('shop_type')
+        account = request.POST.get('account_no')
+        ifsc = request.POST.get('ifsc')
 
         pan_card = request.FILES['pan_card']
         aadhar_front = request.FILES['aadhar_front']
         aadhar_back = request.FILES['aadhar_back']
 
         # url = "https://api.eko.in/ekoicici/v1/user/service/activate"
-        url = "https://api.eko.in:25002/ekoicici/v1/user/service/activate"
+        url = EkoRoutes.ACTIVATE_SERVICE.value
 
-        address=json.dumps({"line": line, "city": city, "state": state, "pincode": pincode})
-        appaddress=json.dumps({"line": appline, "city": appcity, "state": appstate, "pincode": apppincode})
+        address=json.dumps({"line": line, "city": city, "state": state, "pincode": pincode, "state_id": state_id})
+        appaddress=json.dumps({"line": appline, "city": appcity, "state": appstate, "pincode": apppincode, "state_id": appstate_id})
 
         # payload = {"form-data": f"user_code={user_code}&initiator_id=9568855837&service_code=43&modelname={modelname}&devicenumber={devicenumber}&office_address={address}&address_as_per_proof={appaddress}"}
         payload = {
-            "user_code": user_code,
-            "initiator_id": initiator_id,
-            # "shop_type": request.POST.get('shop_type'),
-            "shop_type": 4816,
-            "modelname": modelname,
-            "devicenumber": devicenumber,
-            "latlong": request.POST.get('latlong'),
-            "aadhar": request.POST.get('aadhar'),
-            "account": request.POST.get('account_no'),
-            "ifsc": request.POST.get('ifsc'),
-            "address_as_per_proof": appaddress,
-            "office_address": address,
-            "service_code": "43"
+            "form-data": f"initiator_id={INITIATOR_ID}&user_code={user_code}&devicenumber={devicenumber}&modelname={modelname}&account={account}&ifsc={ifsc}&aadhar={aadhar}&shop_type={shop_type}&service_code=43&latlong={latlong}&address_as_per_proof={appaddress}&office_address={address}"
         }
+
         files = [(('pan_card'),pan_card), (('aadhar_front'),aadhar_front), (('aadhar_back'),aadhar_back)]
         
-        headers = {"accept": "application/json","developer_key": "552d8d5d982965b60f8fb4c618f95f4e","secret-key": secret_key,"secret-key-timestamp": secret_key_timestamp}
+        headers = {
+            "Cache-Control": "no-cache",
+            "developer_key": DEVELOPER_KEY,
+            "secret-key": secret_key,
+            "secret-key-timestamp": secret_key_timestamp
+        }
 
-        response = requests.put(url, data=payload, headers=headers, files=files)
+        response = requests.put(url, data=payload, headers=headers, files=files, verify=False)
         logger.error(f"==> AEPS Response: {response.text}")
+        logger.error(f"==> AEPS Payload: {payload}")
         api_data = response.json()
         message = api_data.get('message')
         messages.success(request, message=message, extra_tags='success')
 
-        print('==>Aeps here',response.text)
-        logger.error(f"==> AEPS Payload: {payload}")
-        logger.error(f"==> AEPS Response API DATA: {api_data}")
         if created or not service_activation.AepsService:
             if message == 'This service already exist for the user code' or message == 'AePS Registration Successful':
                 service_activation.AepsService = True
@@ -611,33 +610,12 @@ def activate_aeps(request):
 @user_passes_test(is_user_onboard, login_url='onboardingUser')
 def aeps(request):
     service_activation = ServiceActivation.objects.get_or_create(userAccount=request.user)[0]
-    secret_key, secret_key_timestamp = generate_key()
     user_code = UserAccount.objects.get(username=request.user).eko_user_code
-    service_activation, created = ServiceActivation.objects.get_or_create(userAccount=request.user)
-    initiator_id = "9568855837"
 
-    url = "https://api.eko.in:25002/ekoicici/v1/aeps/get-Mcc-Category"
+    shop_type_list = get_eko_shop_type_code(user_code=user_code)
+    states_id_list = get_eko_states_id(user_code=user_code)
 
-    params = {
-        "user_code": user_code,
-        "initiator_id": initiator_id
-    }
-
-    headers = {
-        "accept": "application/json",
-        "developer_key": "552d8d5d982965b60f8fb4c618f95f4e",
-        "secret-key": secret_key,
-        "secret-key-timestamp": secret_key_timestamp,
-        "content-type": "application/x-www-form-urlencoded"
-    }
-
-    response = requests.get(url, params=params, headers=headers)
-    logger.error(f"params: {params}")
-    logger.error(f"headers: {headers}")
-    logger.error(f"MCC: {response.json()}")
-    shop_type_list = response.json().get("param_attributes").get("list_elements")
-
-    return render(request, 'backend/Services/AEPS/AEPS.html', {'service_activation': service_activation, "shop_type_list": shop_type_list})
+    return render(request, 'backend/Services/AEPS/AEPS.html', {'service_activation': service_activation, "shop_type_list": shop_type_list, "states_id_list": states_id_list})
 
 # aeps configuration
 @login_required(login_url='user_login')

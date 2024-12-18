@@ -15,8 +15,9 @@ import random
 import time
 import socket
 import jwt
-from backend.config.secrets import JWT_KEY, AUTHORISED_KEY, PARTNER_ID, AES_ENCRYPTION_IV, AES_ENCRYPTION_KEY
-from backend.config.consts import PaySprintRoutes, PAYOUT_TRANSACTION_STATUS
+from backend.config.secrets import (JWT_KEY, AUTHORISED_KEY, PARTNER_ID, AES_ENCRYPTION_IV, 
+                                    AES_ENCRYPTION_KEY, INITIATOR_ID, DEVELOPER_KEY, KEY)
+from backend.config.consts import PaySprintRoutes, PAYOUT_TRANSACTION_STATUS, EkoRoutes
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad
 import requests
@@ -104,7 +105,7 @@ def generate_qr_code(qr_string):
 
 # Get secret key for API authentication
 def generate_key():
-    key = "d3d8a58d-d437-46bf-bbeb-f7a601a437f8"
+    key = KEY
     
     # Encode it using base64
     encoded_key = base64.b64encode(key.encode()).decode()
@@ -517,6 +518,51 @@ def update_wallet(wallet, amount, txnid, description, action_type):
             transaction_type=transaction_type
         )
 
+
+def get_eko_shop_type_code(user_code):
+    url = EkoRoutes.MCC_CATEGORY_API.value
+    secret_key, secret_key_timestamp = generate_key()
+
+    params = {
+        "user_code": user_code,
+        "initiator_id": INITIATOR_ID
+    }
+
+    headers = {
+        "accept": "application/json",
+        "developer_key": DEVELOPER_KEY,
+        "secret-key": secret_key,
+        "secret-key-timestamp": secret_key_timestamp,
+        "content-type": "application/x-www-form-urlencoded"
+    }
+
+    response = requests.get(url, params=params, headers=headers)
+    shop_type_list = response.json().get("param_attributes").get("list_elements")
+
+    return shop_type_list
+
+
+def get_eko_states_id(user_code):
+    url = EkoRoutes.STATES_API.value
+    secret_key, secret_key_timestamp = generate_key()
+
+    params = {
+        "user_code": user_code,
+        "initiator_id": INITIATOR_ID
+    }
+
+    headers = {
+        "accept": "application/json",
+        "developer_key": DEVELOPER_KEY,
+        "secret-key": secret_key,
+        "secret-key-timestamp": secret_key_timestamp,
+        "content-type": "application/x-www-form-urlencoded"
+    }
+
+    response = requests.get(url, params=params, headers=headers)
+    states_id_list = response.json().get("param_attributes").get("list_elements")
+
+    return states_id_list
 
 
 electricity_operator_id = [22, 23, 24, 53, 55, 56, 57, 59, 60, 61, 62, 63, 69, 76, 78, 81, 82, 96, 101, 107, 109, 115, 121, 122, 125, 126, 131, 133, 136, 137, 138, 139, 140, 141, 142, 143, 145, 148, 149, 150, 153, 155, 156, 160, 164, 166, 171, 174, 175, 178, 190, 195, 198, 204, 230, 238, 239, 242, 243, 244, 245, 246, 247, 364, 375, 397, 452, 465, 473, 491, 546, 598, 603, 618, 619, 2706, 2707]

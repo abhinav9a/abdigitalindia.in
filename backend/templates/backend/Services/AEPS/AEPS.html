@@ -148,7 +148,12 @@
 								<div class="col-md-6">
 									<div class="form-group mb-0">
 										<label for="state">State</label>
-										<input type="text" name="state" class="form-control" id="state" required>
+										<select name="state" class="form-control form-control-lg" id="state" required>
+											<option value="">Select State</option>
+											{% for state in states_id_list %}
+											<option value="{{ state.label }}-{{ state.value }}">{{ state.label }}</option>
+											{% endfor %}
+										</select>
 									</div>
 								</div>
 								<div class="col-md-6">
@@ -175,7 +180,12 @@
 								<div class="col-md-6">
 									<div class="form-group mb-0">
 										<label for="appstate">State</label>
-										<input type="text" name="appstate" class="form-control" id="appstate" required>
+										<select name="appstate" class="form-control form-control-lg" id="appstate" required>
+											<option value="">Select State</option>
+											{% for state in states_id_list %}
+											<option value="{{ state.label }}-{{ state.value }}">{{ state.label }}</option>
+											{% endfor %}
+										</select>
 									</div>
 								</div>
 								<div class="col-md-6">
