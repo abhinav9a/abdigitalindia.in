@@ -588,7 +588,7 @@ def activate_aeps(request):
             "secret-key-timestamp": secret_key_timestamp
         }
 
-        response = requests.put(url, data=payload, headers=headers, files=files, verify=False)
+        response = requests.put(url, data=payload, headers=headers, files=files)
         logger.error(f"==> AEPS Response: {response.text}")
         logger.error(f"==> AEPS Payload: {payload}")
         api_data = response.json()
