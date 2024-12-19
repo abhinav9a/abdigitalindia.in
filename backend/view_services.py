@@ -571,8 +571,8 @@ def activate_aeps(request):
         # url = "https://api.eko.in/ekoicici/v1/user/service/activate"
         url = EkoRoutes.ACTIVATE_SERVICE.value
 
-        address=json.dumps({"line": line, "city": city, "state": state, "pincode": pincode, "state_id": int(state_id)})
-        appaddress=json.dumps({"line": appline, "city": appcity, "state": appstate, "pincode": apppincode, "state_id": int(appstate_id)})
+        address=json.dumps({"line": line, "city": city, "state": state, "pincode": pincode, "state_id": state_id})
+        appaddress=json.dumps({"line": appline, "city": appcity, "state": appstate, "pincode": apppincode, "state_id": appstate_id})
 
         # payload = {"form-data": f"user_code={user_code}&initiator_id=9568855837&service_code=43&modelname={modelname}&devicenumber={devicenumber}&office_address={address}&address_as_per_proof={appaddress}"}
         payload = {
