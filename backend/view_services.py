@@ -598,7 +598,14 @@ def activate_aeps(request):
         logger.error(f"==> AEPS Payload: {payload}")
         api_data = response.json()
         message = api_data.get('message')
-        messages.success(request, message=message, extra_tags='success')
+        response_status_id = api_data.get('response_status_id')
+
+        if response_status_id == 1 and message != 'This service already exist for the user code':
+            reason = api_data.get("data").get("reason") if api_data.get("data") else None
+            messages.error(request, message=message, extra_tags="danger")
+            messages.error(request, message=reason, extra_tags="danger")
+        else:
+            messages.success(request, message=message, extra_tags='success')
 
         if created or not service_activation.AepsService:
             if message == 'This service already exist for the user code' or message == 'AePS Registration Successful':
