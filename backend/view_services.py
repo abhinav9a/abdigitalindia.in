@@ -571,6 +571,11 @@ def activate_aeps(request):
         # url = "https://api.eko.in/ekoicici/v1/user/service/activate"
         url = EkoRoutes.ACTIVATE_SERVICE.value
 
+        if state_id == "27":
+            state = "Uttar Pradesh"
+        if appstate_id == "27":
+            appstate = "Uttar Pradesh"
+
         address=json.dumps({"line": line, "city": city, "state": state, "pincode": pincode, "state_id": state_id})
         appaddress=json.dumps({"line": appline, "city": appcity, "state": appstate, "pincode": apppincode, "state_id": appstate_id})
 
