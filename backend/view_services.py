@@ -602,8 +602,11 @@ def activate_aeps(request):
 
         if response_status_id == 1 and message != 'This service already exist for the user code':
             reason = api_data.get("data").get("reason") if api_data.get("data") else None
+            invalid_params_msg = api_data.get("invalid_params")
             messages.error(request, message=message, extra_tags="danger")
             messages.error(request, message=reason, extra_tags="danger")
+            if invalid_params_msg:
+                messages.error(request, message=invalid_params_msg, extra_tags="danger")
         else:
             messages.success(request, message=message, extra_tags='success')
 
